@@ -52,6 +52,7 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 power-profiles-daemon
+python-mutagen
 qt6ct
 qt6-multimedia-ffmpeg
 qt6-svg

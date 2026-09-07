@@ -3625,3 +3625,71 @@ test-only output afterward.
 1280 720, move position center` -- a utility popup like rmpc gets, minus
 rmpc's blur/scratchpad treatment, since this is meant to be watched
 immediately, not tucked away and toggled back into view later.
+
+## music-search.py, round two: real controllability, direct feedback fixed three real bugs
+
+v1.6.0's play-by-default redesign got real hands-on use immediately, and
+surfaced three genuine problems the earlier verification (mpv launched,
+window appeared, IPC showed time-pos advancing) hadn't actually caught:
+
+**1. Audio mode was genuinely uncontrollable.** `mpv --no-video
+--force-window=no` plays real audio with no window, no taskbar entry,
+nothing to click -- confirmed the hard way: a test-run audio process was
+still playing in the background with no way to stop it short of `ps aux`
+and `kill` by hand. That's not a rough edge, it's a real defect. Fixed by
+routing music through `rmpc addyt` instead (rmpc's own built-in
+YouTube-to-queue command) and opening rmpc afterward -- every control
+(play/pause/next/prev/seek/volume) already exists and already works,
+because it's the exact same player used for the regular library. No
+reason to give music its own separate, worse-controlled playback path
+when a fully-controllable one already existed one command away.
+
+**2. Video mode's window never got keyboard focus.** Confirmed directly:
+spawn a video, check `swaymsg -t get_tree`'s `focused` field -- it stayed
+on whatever window was focused *before* mpv launched, not mpv itself.
+Every mpv keybind (space, arrows, everything) was silently going nowhere.
+Root cause: a window spawned from a detached background process (Python's
+`subprocess.Popen(start_new_session=True)`, not an already-focused
+terminal's own exec chain) doesn't get automatic keyboard focus in sway
+the way a window opened from the currently-active context normally would.
+Fixed with one word: `focus` added to the `for_window` rule. Re-verified
+properly this time -- not just "the rule looks right" -- by launching a
+real video, confirming `focused: true` for `app_id: mpv`, sending a real
+spacebar via `wtype`, and reading mpv's own IPC `pause` property back as
+`true` afterward. That last step is what was missing from the *first*
+round of verification: a window existing and video advancing proves
+playback works, it says nothing about whether input reaches it.
+
+**3. The search felt broken between query and results.** wofi's dmenu
+mode closes the instant you press Enter -- there's a real ~2-3s gap while
+`yt-dlp` searches and thumbnails download before the results list opens,
+during which nothing on screen indicates anything is happening at all.
+Reported directly as "the UI just becomes invisible". Fixed with a
+`notify-send` fired the moment the query is captured, before search()
+even runs -- "Searching for '...'" bridges the gap with something
+visible, cheaper and more robust than trying to keep a wofi window open
+across two separate subprocess invocations with nothing to show in it yet.
+
+**Also folded in**: the persisted audio/video toggle (`media-play-mode.sh`,
+Mod+Ctrl+Y) was removed entirely in favor of two direct keybindings
+(Mod+Shift+Y = video, Mod+Ctrl+Shift+Y = music) -- reported as simpler to
+actually use than "press one key, then remember which mode you left it
+in". `music-search.py` now takes a required `video`/`music` positional
+argument instead of reading a state file. The video resolution cap's
+format string was also corrected from `height<=?1080` (the `?` tolerates
+an *unknown* height field, not "fall back to highest available below
+1080") to plain `height<=1080`, which is yt-dlp's actual documented idiom
+for "best format satisfying this cap" -- functionally these produced the
+same result in every case tested, but the corrected string says what it
+means instead of working by coincidence.
+
+**Known gap, not silently glossed over**: `rmpc addyt` requires
+`python-mutagen`, which this machine didn't have installed
+(`rmpc debuginfo` already flagged it as missing before any of this work
+started). The failure path -- `addyt` exits non-zero, this script surfaces
+its real stderr as a notification instead of proceeding to `rmpc play`
+against nothing -- was verified live. The *success* path (a real song
+actually queued and playing through rmpc via this script) has not been,
+since installing the package needs a sudo password this session doesn't
+have. Added to `packages/pacman.txt`; first real verification of the
+success path is still owed once it's installed.

@@ -162,31 +162,45 @@ for_window [app_id="^rmpc$"] floating enable, resize set 1152 648, move position
 # watched immediately, not tucked away and toggled back into view.
 # app_id confirmed directly (`swaymsg -t get_tree` while a real video
 # was playing), not assumed from mpv's binary name.
-for_window [app_id="^mpv$"] floating enable, resize set 1280 720, move position center
-
-# Search YouTube and play the result immediately (mpv) -- replaces
-# termusic's own `s` popup, which turned out to depend entirely on the
-# public Invidious instance network (confirmed dead across the board,
-# see docs/ARCHITECTURE.md and music-search.py's own docstring for the
-# full story). wofi-based, so it routes through toggle-popup.sh like
-# every other picker above.
 #
-# Enter plays -- it used to download first, which meant waiting before
-# hearing/seeing anything. Whether that means audio or video is
-# whatever media-play-mode.sh last set (Mod+Ctrl+Y toggles it, shown in
-# the search prompt itself so it's never a guess which mode is active).
-bindsym $mod+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearch wofi ~/.local/bin/music-search.py
+# `focus` matters, not cosmetic: confirmed live that a window spawned
+# this way (detached Popen from music-search.py, not from an already-
+# focused terminal's own exec chain) does NOT get keyboard focus
+# automatically in sway -- space/arrows/etc. silently went to whatever
+# window was focused before, not to mpv, which is exactly "I can't
+# control it" from the outside. Explicitly focusing here fixed it,
+# verified via mpv's own IPC (`pause` property actually flipped after
+# a spacebar press once focus was forced) before trusting it.
+for_window [app_id="^mpv$"] floating enable, resize set 1280 720, move position center, focus
 
-# Same search, but downloads an mp3 into ~/Music instead of playing --
-# the original behavior, kept for when you actually want it in the
-# permanent library (MPD's own filesystem watcher picks it up
-# automatically, see music-search.py's docstring), just moved off the
-# default Enter action above.
-bindsym $mod+Shift+Ctrl+y exec ~/.local/bin/toggle-popup.sh musicsearchdl wofi ~/.local/bin/music-search.py --download
+# Two direct keybindings instead of one + a mode toggle -- simpler to
+# hold in your head than "press Y, then remember which mode is active".
+# Both replace termusic's own `s` popup, which turned out to depend
+# entirely on the public Invidious instance network (confirmed dead
+# across the board, see docs/ARCHITECTURE.md and music-search.py's own
+# docstring for the full story). wofi-based, so both route through
+# toggle-popup.sh like every other picker above.
 
-# Toggles whether Mod+Shift+Y's Enter plays audio-only or a real video
-# window -- same persisted-toggle pattern as notification-mode.sh above.
-bindsym $mod+Ctrl+y exec ~/.local/bin/media-play-mode.sh toggle
+# Search YouTube, play the picked result as real video (mpv, a genuine
+# controllable window -- see the for_window rule above) -- `video` is
+# a required positional argument to music-search.py now, not a
+# persisted toggle read behind the scenes.
+bindsym $mod+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchvideo wofi ~/.local/bin/music-search.py video
+
+# Search YouTube, add the picked result straight into MPD's queue via
+# rmpc's own built-in `addyt` (rmpc already ships this -- yt-dlp under
+# the hood, cached to ~/.cache/rmpc/youtube/, no reason to hand-roll a
+# second download path) and open rmpc so it's immediately visible and
+# controllable with every normal rmpc/MPD control (play/pause/next/
+# prev/seek/volume) -- this is "opens in the music player", not a
+# headless process with no way to stop it.
+#
+# Needs python-mutagen installed (`sudo pacman -S python-mutagen`) --
+# confirmed live that addyt's own post-processing step fails without
+# it (rmpc debuginfo already flags this as "not installed" on this
+# machine) and surfaces a clear error notification if it's still
+# missing, rather than failing silently.
+bindsym $mod+Ctrl+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchmusic wofi ~/.local/bin/music-search.py music
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
 # script and same three-state cycle the waybar bell's scroll wheel uses

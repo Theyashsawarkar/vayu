@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.6.1 -- 2026-09-07
+
+v1.6.0's YouTube play redesign got immediate hands-on use and turned up
+three real bugs verification hadn't caught: audio mode played through a
+headless, windowless mpv process with no way to stop/skip/control it at
+all (fixed by routing music through rmpc's own `addyt` + opening rmpc,
+so every existing rmpc/MPD control just works); video mode's mpv window
+never received keyboard focus, so every mpv keybind silently went
+nowhere (fixed with `focus` on its for_window rule, re-verified this
+time by actually sending a keypress and reading mpv's own IPC state
+back, not just confirming the window existed); and the search felt
+broken for ~2-3s between pressing Enter and results appearing, with
+nothing on screen to say it was working (fixed with an immediate
+"Searching..." notification). Also removed the persisted audio/video
+toggle in favor of two direct keybindings (Mod+Shift+Y video,
+Mod+Ctrl+Shift+Y music) -- reported simpler than remembering which mode
+was last set. See `docs/ARCHITECTURE.md` for the full detail on each.
+One real gap not glossed over: the music path needs `python-mutagen`
+(added to `packages/pacman.txt`), not yet installed on this machine, so
+its success path is verified only up to the point that dependency
+blocks it. PATCH bump: these are fixes to real defects in what v1.6.0
+shipped, not new capability.
+
 ## v1.6.0 -- 2026-09-07
 
 Two direct fixes/additions on the desktop side: waybar's clock/date pill

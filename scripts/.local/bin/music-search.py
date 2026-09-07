@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Search YouTube and either play the picked result immediately (mpv)
-or download it into the local music library, no Invidious involved.
+"""Search YouTube and immediately play the picked result -- as a real,
+controllable video window (mpv) or straight into MPD's own queue via
+rmpc (music), no Invidious involved.
 
 Originally built to replace termusic's own `s` (youtube_search) popup,
 which turned out to be entirely dependent on the public Invidious
@@ -9,59 +10,60 @@ instance directory directly: 0 of 11 currently-listed public instances
 have their API enabled at all). termusic itself has since been replaced
 entirely (rmpc + MPD now, see docs/ARCHITECTURE.md).
 
-Default action is now **play**, not download -- Mod+Shift+Y should get
-you listening/watching immediately, not leave you waiting on a download
-first. mpv handles this directly via its bundled yt-dlp hook (confirmed
-live: `mpv <youtube-url>` resolves and plays with zero extra plumbing,
-both `--no-video --ytdl-format=bestaudio` for audio-only and
-`--force-window=yes` for real video, each verified end-to-end by reading
-back mpv's own IPC `time-pos` as it advanced, not just checking the
-process stayed alive). Whether Enter plays audio or video is controlled
-by a persisted toggle (media-play-mode.sh, Mod+Ctrl+Y) -- read fresh
-every run via read_play_mode() below, so switching modes takes effect on
-the very next search with no restart of anything needed.
+Usage: music-search.py video|music -- required, no default. Two direct
+keybindings (Mod+Shift+Y / Mod+Ctrl+Shift+Y) instead of one key plus a
+persisted mode toggle -- simpler to hold in your head, and there's
+never a "which mode is it in right now" question to answer first.
 
-The original download-to-library behavior hasn't been removed, just
-moved off the default path: `--download` (bound to Mod+Shift+Ctrl+Y)
-reuses all the same search/pick code above and does exactly what this
-script always did -- get a real mp3 with embedded art into ~/Music,
-where MPD's own filesystem watcher (`auto_update "yes"`,
-mpd/.config/mpd/mpd.conf) picks it up on its own, no restart or manual
-rescan needed (confirmed directly by watching MPD's own log after
-dropping a file into ~/Music with no client open at all).
+**video** mode: mpv, a real floating window (sway/config's for_window
+rule also explicitly focuses it -- confirmed live that a window
+spawned this way doesn't get keyboard focus automatically, which
+otherwise means every mpv keybind -- space, arrows, everything --
+silently does nothing). Capped at 1080p
+(`bestvideo[height<=1080]+bestaudio/best[height<=1080]`): confirmed
+directly that yt-dlp's own "best" format picks whatever the highest
+resolution available is (4K here) with zero regard for whether this
+machine can decode it smoothly (dropped-frame count climbed
+continuously in a live test) -- `height<=1080` picks the best format
+that still satisfies the cap, so a video that only has 720p or lower
+available correctly still gets its own actual highest tier, nothing is
+ever force-upscaled or left unplayable.
 
-Flow: wofi prompt for a query -> yt-dlp search (fast, ~2-3s, --flat-playlist
-so it only fetches search-result-page metadata, not per-video detail) ->
-wofi list of results (title, uploader, duration -- duration shown
-specifically because search results can include multi-hour livestreams
-alongside actual songs, confirmed by literally downloading one by
-accident once while testing this) -> play (default) or download
-(--download) the picked one.
+**music** mode: does *not* download or launch anything of its own --
+hands the picked URL straight to `rmpc addyt` (rmpc's own built-in
+YouTube-to-queue command, already using yt-dlp under the hood, cached
+to ~/.cache/rmpc/youtube/) and opens rmpc so it's immediately visible
+and controllable with every normal rmpc/MPD action: play, pause, next,
+prev, seek, volume. This replaced an earlier version of this script
+that downloaded an mp3 into ~/Music directly and played it with a
+headless, windowless mpv process -- which played real audio but had
+*no way to stop, skip, or otherwise control it* once started, a real,
+directly-reported problem, not a hypothetical one. rmpc already solves
+this exact problem for its own library; there was no reason to solve
+it worse a second time. Needs `python-mutagen` installed
+(`sudo pacman -S python-mutagen`) -- confirmed live that `addyt`'s own
+post-processing step fails without it, surfaced here as a clear error
+notification (not a silent no-op) if it's still missing.
 
-`--extractor-args "youtube:player_client=android"` on the download step
-specifically: confirmed directly, not assumed, that yt-dlp's default
-web-client extraction hit YouTube's "Sign in to confirm you're not a
-bot" wall on 2 of 3 real test downloads, while the exact same URLs
-downloaded cleanly every time with this flag -- a known, standard
-workaround (the android player API isn't gated behind the same
-web-based verification), not something invented here. mpv's own ytdl
-hook hit no such wall in direct testing, so the play path doesn't carry
-this flag -- if that changes later, `--ytdl-raw-options` is the place to
-add the equivalent for mpv.
+Flow: wofi prompt for a query (a "Searching..." notification fires
+immediately after Enter -- confirmed live that without this, wofi's
+query window just closes and nothing visible happens for the ~2-3s the
+search itself takes, which reads as "did my keypress even register?")
+-> yt-dlp search (--flat-playlist so it only fetches search-result-page
+metadata, not per-video detail) -> wofi list of results (title,
+uploader, duration -- duration shown specifically because search
+results can include multi-hour livestreams alongside actual songs,
+confirmed by literally picking one by accident once while testing
+this) -> play (video) or queue+open rmpc (music).
 """
 import concurrent.futures
-import glob
 import html
 import json
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import urllib.request
-
-MUSIC_DIR = os.path.expanduser("~/Music")
-PLAY_MODE_FILE = os.path.expanduser("~/.local/state/media-play-mode/current")
 
 # Absolute paths, not theme names -- same reasoning as every other icon
 # fix this session: mako has no GTK-style theme resolution, and these
@@ -70,22 +72,13 @@ ICON_INFO = "/usr/share/icons/Papirus/48x48/status/dialog-information.svg"
 ICON_ERROR = "/usr/share/icons/Papirus/48x48/status/dialog-error.svg"
 ICON_WARNING = "/usr/share/icons/Papirus/48x48/status/dialog-warning.svg"
 
+VIDEO_FORMAT = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
+
 
 def notify(title, body, icon=ICON_INFO, urgency="normal"):
     subprocess.run(
         ["notify-send", "-u", urgency, "-i", icon, title, body], check=False
     )
-
-
-def read_play_mode():
-    """"audio" or "video", persisted by media-play-mode.sh (Mod+Ctrl+Y)
-    -- read fresh on every run rather than cached anywhere, so toggling
-    the mode always takes effect on the very next search."""
-    try:
-        mode = open(PLAY_MODE_FILE).read().strip()
-    except OSError:
-        mode = ""
-    return mode if mode in ("audio", "video") else "audio"
 
 
 def get_query(prompt):
@@ -152,7 +145,7 @@ def fetch_thumbnail(video_id, dest_dir):
     directly: ~0.4s for 10 at the smaller mqdefault size, ~0.5s for
     10 at this larger hqdefault size -- a real, small cost, not
     hand-waved as "still fast" without checking)."""
-    path = os.path.join(dest_dir, f"{video_id}.jpg")
+    path = f"{dest_dir}/{video_id}.jpg"
     try:
         with urllib.request.urlopen(
             f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg", timeout=5
@@ -213,153 +206,101 @@ def pick_result(results):
         return lookup.get(sel)
     finally:
         # Only needed for wofi to have something to read while the list
-        # is open -- nothing downstream (the download step) touches
-        # these, so they're safe to clean up unconditionally afterward.
+        # is open -- nothing downstream touches these, so they're safe
+        # to clean up unconditionally afterward.
         shutil.rmtree(thumb_dir, ignore_errors=True)
 
 
-def play(video_id, title, mode):
+def play_video(video_id, title):
     """Launches mpv detached (Popen, not run) and returns immediately --
-    this script's job is "start playback", not "wait for the song/video
-    to finish". toggle-popup.sh (sway/config's wrapper around this
-    script) tracks "is the popup open" by whether this process is still
-    alive; blocking here for the full playback duration would keep that
-    marker alive the whole time too, so this returns as soon as mpv has
-    actually launched, letting toggle-popup.sh -- and Mod+Shift+Y itself
-    -- behave normally again right away.
-
-    Video is capped at 1080p (`height<=?1080`) rather than trusting
-    mpv/yt-dlp's own "best" default -- confirmed directly that "best"
-    picks whatever the highest available resolution is (4K here, for a
-    result that had it) with zero regard for whether the machine can
-    actually decode/display it smoothly at that size: dropped-frame
-    count climbed continuously in a live 4K test versus this run
-    cleanly. Audio-only mode uses --ytdl-format=bestaudio specifically
-    (not just --no-video) so yt-dlp fetches only an audio stream over
-    the network in the first place, not a full video+audio stream with
-    the video half simply never rendered.
+    this script's job is "start playback", not "wait for the video to
+    finish". toggle-popup.sh (sway/config's wrapper around this script)
+    tracks "is the popup open" by whether this process is still alive;
+    blocking here for the full video duration would keep that marker
+    alive the whole time too, so this returns as soon as mpv has
+    actually launched, letting toggle-popup.sh -- and Mod+Shift+Y
+    itself -- behave normally again right away. Keyboard focus (so
+    space/arrows/etc. actually reach the new window) is handled by
+    sway/config's own for_window rule, not here.
     """
     url = f"https://youtube.com/watch?v={video_id}"
-    notify("Music search", f"Playing ({mode}): {title}", icon=ICON_INFO)
-
-    cmd = ["mpv", "--no-terminal", f"--force-window={'yes' if mode == 'video' else 'no'}"]
-    if mode == "audio":
-        cmd += ["--no-video", "--ytdl-format=bestaudio"]
-    else:
-        cmd += ["--ytdl-format=bestvideo[height<=?1080]+bestaudio/best[height<=?1080]"]
-    cmd.append(url)
-
+    notify("YouTube video", f"Playing: {title}", icon=ICON_INFO)
     subprocess.Popen(
-        cmd,
+        ["mpv", "--no-terminal", "--force-window=yes", f"--ytdl-format={VIDEO_FORMAT}", url],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         start_new_session=True,
     )
 
 
-def download(video_id, title):
+def play_music(video_id, title):
+    """Queues the picked video into MPD via rmpc's own `addyt` (rmpc
+    already ships this -- yt-dlp under the hood, cached to
+    ~/.cache/rmpc/youtube/ -- no reason to hand-roll a second download
+    path) at the front of the queue, plays it, and opens rmpc so it's
+    immediately visible with every normal rmpc/MPD control available:
+    play, pause, next, prev, seek, volume. This is the fix for a real,
+    directly-reported problem with the previous version of this
+    script -- a headless mpv process playing real audio with no window,
+    no indicator, and no way to stop it short of finding and killing
+    the process by hand.
+    """
     url = f"https://youtube.com/watch?v={video_id}"
-    notify("Music search", f"Downloading: {title}", icon=ICON_INFO)
+    notify("YouTube music", f"Adding to queue: {title}", icon=ICON_INFO)
 
-    proc = subprocess.run(
-        [
-            "yt-dlp",
-            "-x",
-            "--audio-format",
-            "mp3",
-            "--embed-thumbnail",
-            "--add-metadata",
-            "--write-thumbnail",
-            # See module docstring -- confirmed directly this avoids the
-            # "Sign in to confirm you're not a bot" wall the default web
-            # client hits on a real fraction of videos.
-            "--extractor-args",
-            "youtube:player_client=android",
-            "--no-warnings",
-            "-o",
-            os.path.join(MUSIC_DIR, "%(title)s.%(ext)s"),
-            url,
-        ],
+    add = subprocess.run(
+        ["rmpc", "addyt", "--position", "0", url],
         capture_output=True,
         text=True,
-        timeout=180,
+        timeout=60,
     )
-
-    if proc.returncode != 0:
-        # Bot-check and other yt-dlp failures land here -- surfaced
-        # honestly rather than silently swallowed, with enough of the
-        # real error visible to actually act on (e.g. try a different
-        # result if this one specifically is blocked).
-        err = proc.stderr.strip().splitlines()[-1] if proc.stderr.strip() else "unknown error"
-        notify("Music search failed", err[:200], icon=ICON_ERROR, urgency="critical")
+    if add.returncode != 0:
+        # Surfaced honestly rather than swallowed -- confirmed live this
+        # is exactly how a missing python-mutagen (rmpc's own YouTube
+        # feature dependency) shows up: addyt exits non-zero with a
+        # real, specific error on stderr, not a generic failure.
+        err = add.stderr.strip().splitlines()[-1] if add.stderr.strip() else "unknown error"
+        notify("YouTube music failed", err[:200], icon=ICON_ERROR, urgency="critical")
         return
 
-    # Use the track's own thumbnail as the completion notification's
-    # icon -- same "the real fetched image is its own icon" pattern
-    # fetch_wallpaper.sh already uses. Deliberately *not* reconstructing
-    # the expected filename from `title` -- a real bug caught by testing
-    # this directly: yt-dlp's own filesystem sanitization doesn't match
-    # the raw title string (confirmed on a real download -- the search
-    # JSON's title had a plain ASCII "|", the file yt-dlp actually wrote
-    # had a fullwidth "｜" in its place, U+FF5C, since a literal pipe
-    # isn't filesystem-safe), so a glob built from `title` silently
-    # matched nothing and left the thumbnail undeleted. Finding the
-    # newest image file in MUSIC_DIR instead sidesteps needing to
-    # predict yt-dlp's own sanitization rules at all -- safe here since
-    # this script only ever runs one download at a time.
-    thumb_icon = ICON_INFO
-    thumbs = sorted(
-        (
-            p
-            for ext in ("jpg", "jpeg", "webp", "png")
-            for p in glob.glob(os.path.join(MUSIC_DIR, f"*.{ext}"))
-        ),
-        key=os.path.getmtime,
-        reverse=True,
+    subprocess.run(["rmpc", "play", "0"], capture_output=True, text=True, timeout=10, check=False)
+
+    # Same launcher rmpc's own keybinding uses -- opens the window if
+    # it doesn't exist yet, or brings it to front if rmpc is already
+    # running, so the track that was just queued is immediately visible
+    # and controllable, not just playing somewhere unseen.
+    subprocess.Popen(
+        ["/home/yash/.local/bin/rmpc-toggle.sh"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
     )
-    if thumbs:
-        thumb_icon = thumbs[0]
-        thumbs = thumbs[:1]
-
-    notify("Music search", f"Downloaded: {title}", icon=thumb_icon)
-
-    # The separate thumbnail file's only purpose was this notification
-    # icon -- the mp3 already has the same art embedded
-    # (--embed-thumbnail above). Removing it afterward keeps ~/Music a
-    # clean folder of just tracks for MPD's own library scan, instead
-    # of a stray image file sitting next to every song.
-    for t in thumbs:
-        try:
-            os.remove(t)
-        except OSError:
-            pass
 
 
 def main():
-    # --download (Mod+Shift+Ctrl+Y) is the only flag -- everything else
-    # is the default, unconditional "play" action (Mod+Shift+Y).
-    do_download = "--download" in sys.argv[1:]
+    if len(sys.argv) != 2 or sys.argv[1] not in ("video", "music"):
+        print("usage: music-search.py video|music", file=sys.stderr)
+        return 1
+    mode = sys.argv[1]
 
-    os.makedirs(MUSIC_DIR, exist_ok=True)
-
-    if do_download:
-        prompt = "Search YouTube (download)..."
-    else:
-        mode = read_play_mode()
-        prompt = f"Search YouTube ({mode})..."
-
-    query = get_query(prompt)
+    query = get_query(f"Search YouTube ({mode})...")
     if not query:
         return
+
+    # Fired immediately after Enter -- confirmed live that without
+    # this, wofi's query window just closes and nothing visible happens
+    # for the ~2-3s the search itself takes, reading as "did my
+    # keypress even register?" rather than "it's working".
+    notify("YouTube search", f"Searching for \"{query}\"...", icon=ICON_INFO)
 
     try:
         results = search(query)
     except subprocess.TimeoutExpired:
-        notify("Music search", "Search timed out", icon=ICON_WARNING, urgency="critical")
+        notify("YouTube search", "Search timed out", icon=ICON_WARNING, urgency="critical")
         return
 
     if not results:
-        notify("Music search", f"No results for \"{query}\"", icon=ICON_WARNING)
+        notify("YouTube search", f"No results for \"{query}\"", icon=ICON_WARNING)
         return
 
     picked = pick_result(results)
@@ -369,16 +310,13 @@ def main():
     title = (picked.get("title") or "?").replace("\n", " ")
     video_id = picked.get("id")
     if not video_id:
-        notify("Music search", "Couldn't get a video id for that result", icon=ICON_ERROR, urgency="critical")
+        notify("YouTube search", "Couldn't get a video id for that result", icon=ICON_ERROR, urgency="critical")
         return
 
-    if do_download:
-        try:
-            download(video_id, title)
-        except subprocess.TimeoutExpired:
-            notify("Music search", f"Download timed out: {title}", icon=ICON_ERROR, urgency="critical")
+    if mode == "video":
+        play_video(video_id, title)
     else:
-        play(video_id, title, read_play_mode())
+        play_music(video_id, title)
 
 
 if __name__ == "__main__":
