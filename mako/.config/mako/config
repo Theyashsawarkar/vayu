@@ -4,8 +4,19 @@
 # Anchors alerts to the top right corner, perfectly clear of the Waybar pills
 anchor=top-right
 margin=10,20,0,0
-width=350
-height=150
+# width is a fixed value (mako's own docs: no shrink-to-fit); height is
+# a *maximum*, shrunk to fit shorter text -- confirmed directly (man
+# mako(5)). That combination is exactly why these looked square-ish:
+# most everyday notifications here are short (1-2 lines), so height
+# was already shrinking well below its old 150px cap while width sat
+# fixed at 350 regardless -- reads as a boxier shape than the raw
+# numbers alone suggest, especially with a 48px icon eating into the
+# narrower content column. Widened to 420 and capped height lower at
+# 130 (still generous for a wrapped 3-4 line body) so the box reads as
+# a clear horizontal toast across the actual range of real notification
+# lengths this desktop's scripts send, not just in the numeric ratio.
+width=420
+height=130
 border-size=2
 border-radius=12
 padding=15

@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-07 (mako: wider notification toasts, less square)
+
+Reported: notification popups read as more square than the config's own
+350x150 numbers suggested. Root cause, confirmed via `man mako(5)`:
+`width` is a fixed value, but `height` is a documented *maximum* --
+"notifications whose text takes up less space are shrunk to fit". Most
+of this desktop's own notifications are short (1-2 lines), so height
+was already shrinking well below its old 150px cap while width sat
+rigidly at 350 regardless -- boxier in practice than the raw numbers
+alone imply, especially with a 48px icon eating into the narrower
+content column next to it. Widened to 420, and lowered the height cap
+to 130 (still generous for a wrapped 3-4 line body) so even the
+longest real notifications stay a clear horizontal toast shape, not
+just the short common-case ones.
+
 ## v1.6.1 -- 2026-09-07
 
 v1.6.0's YouTube play redesign got immediate hands-on use and turned up
