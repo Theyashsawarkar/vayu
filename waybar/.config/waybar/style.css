@@ -219,7 +219,24 @@ window#waybar {
    Maroon as a genuine two-tone pair instead of two blues. */
 #clock {
     color: #EBA0AC; /* Maroon */
-    margin-left: -8px; /* pulls in against the time text to its left, reads as one unit */
+    /* Was margin-left: -8px, pulling this pill left of its own allocated
+       box to sit flush against the time text -- caused a real,
+       intermittent bug: the date pill's left edge (its rounded corner
+       included) would occasionally fail to render, then look normal
+       again after a moment. Root cause: a negative margin makes GTK
+       paint outside this module's own allocated rectangle, into
+       clock#time's, and #clock lives in modules-center, which waybar
+       re-centers every time modules-left/modules-right's total width
+       changes -- exactly what network#speed's own comment above already
+       documents happening constantly ("digit count changes constantly").
+       Every one of those re-centers is a relayout of the center group,
+       and the negatively-margined region was only reliably repainted on
+       some of those passes, not all -- hence "sometimes doesn't appear,
+       then becomes normal" instead of a constant, reproducible glitch.
+       0 here still sits tighter than the shared 4px every other pill
+       gets (see the shared multi-selector rule above), without ever
+       painting outside this module's own box. */
+    margin-left: 0;
 }
 
 /* Notification history bell -- left of the clock cluster, its own

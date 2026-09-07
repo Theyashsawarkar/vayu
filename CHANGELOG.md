@@ -5,6 +5,35 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-07 (waybar: fixed the clock/date pill's intermittently-vanishing left corner)
+
+Reported bug: the time+date cluster in the center of the bar would
+sometimes have its left corner just not render, then look normal again
+after a while -- not constant, not reproducible on demand.
+
+Root cause: `#clock` (the date pill) had `margin-left: -8px`, deliberately
+pulling it left of its own allocated box to sit flush against `clock#time`
+(the plain-text time to its left) so the pair would read as one unit. A
+negative margin means GTK paints outside the module's own allocated
+rectangle -- and `#clock` lives in `modules-center`, which waybar
+re-centers on the bar every time `modules-left`/`modules-right`'s total
+width changes. `network#speed` right there in `modules-left` already has
+its own comment admitting its text width "changes digit count constantly"
+(12KB vs 1.2MB vs 999B) -- so the center group was being re-laid-out
+continuously, and the negatively-margined region only reliably repainted
+on some of those passes, not all. That's exactly "sometimes doesn't
+appear, then becomes normal" instead of a constant glitch.
+
+Fixed by dropping the margin to `0` instead of `-8px` -- still tighter
+than the shared `4px` every other pill gets, but never painting outside
+`#clock`'s own box, so there's nothing left for a relayout to intermittently
+clip. Restarted waybar for real to apply it (config/CSS edits don't
+hot-reload -- confirmed again, same as the network#speed investigation
+already noted elsewhere in this file); came back up clean, no CSS parse
+warnings, bar configured normally. Visual confirmation of the fix itself
+(whether the corner still ever vanishes) is still pending -- that part
+needs eyes on the actual screen, not just a clean process restart.
+
 ## v1.5.1 -- 2026-09-04
 
 Fixed two real flash bugs, each with a specific, identified cause rather
