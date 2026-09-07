@@ -97,7 +97,7 @@ Themed wrapper around the installed `networkmanager_dmenu` -- waybar's `network`
 
 <div class="pkg-card" markdown="1">
 <h4><code>rmpc</code> <span class="pkg-path"><code>~/.config/rmpc/</code></span></h4>
-<p>Terminal music player UI, an MPD client -- no playback logic of its own. Paired with `music-search.py` (`scripts/` package) for search/download via `yt-dlp` -- no Spotify/YouTube Premium needed. See its own `README.md`.</p>
+<p>Terminal music player UI, an MPD client -- no playback logic of its own. Paired with `music-search.py` (`scripts/` package) for immediate search/play via `yt-dlp` + `mpv` (or search/download into the library with a flag) -- no Spotify/YouTube Premium needed. See its own `README.md`.</p>
 </div>
 
 <div class="pkg-card" markdown="1">
@@ -3563,3 +3563,65 @@ different, real cosmetic bugs (entities get double-escaped by a working
 code-span's own auto-escaping; backslash escapes aren't processed inside
 code spans per the CommonMark spec at all, so the backslash itself stays
 visible).
+
+## music-search.py: play by default (mpv), download moved to a flag
+
+`music-search.py`'s Enter action used to be "download an mp3 into
+~/Music", full stop -- the only thing it was ever built to do. Asked for
+a real change: Mod+Shift+Y's Enter should play the picked result
+immediately, with a way to choose audio-only vs. a real video window,
+and the old download-to-library behavior should still exist somewhere
+rather than being deleted.
+
+**Player choice**: mpv, not MPD/rmpc. MPD's whole design center is a
+curated, persistent local library (that's what rmpc's own card above is
+for) -- repurposing it for "stream this one URL right now, don't add it
+to anything" would fight its actual job. mpv is built for exactly this:
+it ships a `ytdl_hook.lua` that resolves and plays a YouTube URL directly
+with zero extra plumbing, confirmed live with nothing more than
+`mpv <url>`, and it's already installed (v0.41.0) with no dotfiles
+config of its own before this. One binary covers both modes needed here
+(`--no-video --ytdl-format=bestaudio` for audio-only, `--force-window=yes`
+for real video) instead of reaching for a second tool.
+
+**Verification, not just "it launched"**: a live process staying alive
+isn't proof of playback -- confirmed via mpv's own JSON IPC socket
+(`--input-ipc-server`), querying `time-pos` twice a few seconds apart and
+watching it actually advance, for both audio and video. Video specifically
+was also confirmed via `swaymsg -t get_tree` mid-playback: real app_id
+`mpv` (lowercase, confirmed rather than assumed from the binary name),
+floating, `1280x722` (the requested `1280 720` plus mpv's own window
+decoration), centered. The whole play path was driven through the actual
+sway keybinding's real code path too, not just raw mpv calls in
+isolation -- `wtype` simulated real keystrokes into the live wofi popups
+(search query, then picking a result) so the exact command music-search.py
+itself constructs was what got verified, args and all.
+
+**A real bug caught in that verification**: mpv/yt-dlp's own "best"
+format selection picks whatever the highest resolution available is with
+zero regard for whether the machine can actually decode it smoothly --
+dropped-frame count climbed continuously through a live 4K test result.
+Video mode now explicitly caps at 1080p
+(`bestvideo[height<=?1080]+bestaudio/best[height<=?1080]`) instead of
+trusting the untouched default.
+
+**Mode toggle**: `media-play-mode.sh` (Mod+Ctrl+Y), same persisted-state-file
+pattern as `notification-mode.sh`/`theme-toggle.sh` -- a plain file under
+`~/.local/state/`, not anything transient, since it has to be readable by
+whatever separate `music-search.py` invocation runs next, possibly long
+after the toggle itself ran. `music-search.py` reads it fresh on every
+run (no caching), and echoes the active mode straight into the wofi
+search prompt itself ("Search YouTube (audio)..." / "(video)...") so
+which mode is active is never a guess at the point it actually matters.
+
+**Download preserved, not removed**: `--download` (Mod+Shift+Ctrl+Y)
+reuses every bit of the existing search/pick code and does exactly what
+this script always did -- confirmed with a real end-to-end download
+through the same `wtype`-driven flow, a real mp3 landed in `~/Music` with
+its thumbnail cleaned up afterward same as before, then removed as
+test-only output afterward.
+
+**for_window rule**: mpv's video window gets `floating enable, resize set
+1280 720, move position center` -- a utility popup like rmpc gets, minus
+rmpc's blur/scratchpad treatment, since this is meant to be watched
+immediately, not tucked away and toggled back into view later.

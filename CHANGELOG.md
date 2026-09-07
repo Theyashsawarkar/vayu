@@ -34,6 +34,45 @@ warnings, bar configured normally. Visual confirmation of the fix itself
 (whether the corner still ever vanishes) is still pending -- that part
 needs eyes on the actual screen, not just a clean process restart.
 
+## 2026-09-07 (music-search.py: play by default, mpv, audio/video toggle)
+
+Mod+Shift+Y's Enter used to download an mp3 into ~/Music before you could
+hear or see anything -- changed so it plays the result immediately
+instead, via mpv (already installed, v0.41.0, ships its own yt-dlp hook
+so a bare `mpv <youtube-url>` resolves and plays with no extra plumbing --
+confirmed live, not assumed). Chose mpv over reusing MPD/rmpc
+specifically because MPD's whole design center is a curated persistent
+library, the wrong tool for "stream this one URL right now, don't add it
+to anything".
+
+Whether Enter plays audio-only or a real video window is controlled by a
+new persisted toggle, `media-play-mode.sh` (Mod+Ctrl+Y) -- same
+state-file pattern as `notification-mode.sh`/`theme-toggle.sh`. The
+active mode is echoed straight into the wofi search prompt itself
+("Search YouTube (audio)..." / "(video)...") so it's never a guess which
+one is live. The original download-to-library behavior wasn't removed,
+just moved off the default action: `--download` (now Mod+Shift+Ctrl+Y)
+reuses the same search/pick code and does exactly what this script
+always did.
+
+A real bug caught during verification: mpv/yt-dlp's own "best" format
+selection picked a 4K stream with zero regard for whether this machine
+could actually decode it smoothly (dropped-frame count climbed
+continuously in a live test) -- video mode now explicitly caps at 1080p
+instead of trusting the untouched default.
+
+Verified end-to-end through the actual sway keybinding's real code path,
+not just raw mpv calls in isolation: `wtype` simulated real keystrokes
+into the live wofi popups (typing a search query, picking a result) for
+both audio and video modes and for `--download`, and mpv's own JSON IPC
+socket confirmed real playback progress (`time-pos` actually advancing),
+not just a process staying alive. Video mode's window was confirmed via
+`swaymsg -t get_tree` mid-playback: real app_id `mpv`, floating,
+correctly sized and centered per the new `for_window` rule. See
+`docs/ARCHITECTURE.md`'s own entry on this for the full detail. MINOR
+bump: a real new capability (play + a toggle that didn't exist before),
+not just a fix.
+
 ## v1.5.1 -- 2026-09-04
 
 Fixed two real flash bugs, each with a specific, identified cause rather
