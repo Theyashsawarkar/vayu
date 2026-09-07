@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.6.0 -- 2026-09-07
+
+Two direct fixes/additions on the desktop side: waybar's clock/date pill
+had an intermittently-vanishing left corner (a negative-margin GTK
+box-overlap bug, fixed by dropping the margin to 0); and Mod+Shift+Y's
+YouTube search now plays the picked result immediately via mpv instead
+of downloading first, with a persisted toggle (Mod+Ctrl+Y) between
+audio-only and real video, and the original download behavior preserved
+under its own key (Mod+Shift+Ctrl+Y). See the two dated entries below
+for the full detail on each. MINOR bump: the play+toggle capability is
+genuinely new, not just a fix.
+
 ## 2026-09-07 (waybar: fixed the clock/date pill's intermittently-vanishing left corner)
 
 Reported bug: the time+date cluster in the center of the bar would
