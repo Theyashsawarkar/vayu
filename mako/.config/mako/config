@@ -104,7 +104,16 @@ on-notify=exec paplay /usr/share/sounds/freedesktop/stereo/message.oga
 
 # --- High Urgency Alerts ---
 # Overrides the border to a warm peach tone if a system-critical event occurs
-[urgency=high]
+#
+# Real bug found while chasing an unrelated report: mako's own config
+# format only ever matches urgency= against "low", "normal", "critical"
+# (confirmed directly, man mako(5)) -- "high" isn't one of the three,
+# so this section has never matched a single real notification. Every
+# notify-send -u critical call across this repo's scripts (every error
+# notification there is) has been rendering with the default border and
+# the default 5000ms timeout this whole time, not the peach border +
+# "never auto-dismiss" this section was clearly meant to give it.
+[urgency=critical]
 border-color=#FAB387
 default-timeout=0
 

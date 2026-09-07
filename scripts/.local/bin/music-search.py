@@ -34,16 +34,24 @@ hands the picked URL straight to `rmpc addyt` (rmpc's own built-in
 YouTube-to-queue command, already using yt-dlp under the hood, cached
 to ~/.cache/rmpc/youtube/) and opens rmpc so it's immediately visible
 and controllable with every normal rmpc/MPD action: play, pause, next,
-prev, seek, volume. This replaced an earlier version of this script
-that downloaded an mp3 into ~/Music directly and played it with a
-headless, windowless mpv process -- which played real audio but had
-*no way to stop, skip, or otherwise control it* once started, a real,
-directly-reported problem, not a hypothetical one. rmpc already solves
-this exact problem for its own library; there was no reason to solve
-it worse a second time. Needs `python-mutagen` installed
+prev, seek, volume. Needs `python-mutagen` installed
 (`sudo pacman -S python-mutagen`) -- confirmed live that `addyt`'s own
 post-processing step fails without it, surfaced here as a clear error
 notification (not a silent no-op) if it's still missing.
+
+Which exact queue entry gets played is *not* assumed from `addyt`'s own
+exit code -- a real, directly-reported bug (an already-downloaded song
+kept starting instead of the newly picked one) was root-caused with the
+logging added here: `rmpc addyt` exits 0 even when the underlying
+download genuinely fails (confirmed directly in the log -- a missing
+python-mutagen produced a real error on stderr, but exit code 0), so an
+earlier `if add.returncode != 0: return` check never fired, and
+`rmpc play 0` ran unconditionally and played whatever was already
+sitting at position 0. play_music() instead snapshots the real queue
+before and after addyt and trusts *that* diff -- if the number of
+entries in the queue didn't actually grow by exactly one, nothing gets
+played and the real stderr is surfaced instead, regardless of what
+addyt's own exit code claims.
 
 Flow: wofi prompt for a query (a "Searching..." notification fires
 immediately after Enter -- confirmed live that without this, wofi's
@@ -55,15 +63,29 @@ uploader, duration -- duration shown specifically because search
 results can include multi-hour livestreams alongside actual songs,
 confirmed by literally picking one by accident once while testing
 this) -> play (video) or queue+open rmpc (music).
+
+Every run is logged to LOG_PATH (rotated at 1MB, 3 backups kept) --
+the query, every subprocess command actually run and its exit code,
+full stdout/stderr on failure, the queue snapshots for music mode, and
+any unhandled exception with its full traceback. notify-send popups
+stay the fast, at-a-glance feedback; the log is what to check afterward
+when something's wrong and the popup's already gone.
 """
 import concurrent.futures
 import html
 import json
+import logging
+import logging.handlers
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
+import traceback
 import urllib.request
+
+STATE_DIR = os.path.expanduser("~/.local/state/music-search")
+LOG_PATH = os.path.join(STATE_DIR, "music-search.log")
 
 # Absolute paths, not theme names -- same reasoning as every other icon
 # fix this session: mako has no GTK-style theme resolution, and these
@@ -75,35 +97,68 @@ ICON_WARNING = "/usr/share/icons/Papirus/48x48/status/dialog-warning.svg"
 VIDEO_FORMAT = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
 
 
+def setup_logging():
+    os.makedirs(STATE_DIR, exist_ok=True)
+    logger = logging.getLogger("music-search")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=1_000_000, backupCount=3)
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+    logger.addHandler(handler)
+    return logger
+
+
+log = setup_logging()
+
+
 def notify(title, body, icon=ICON_INFO, urgency="normal"):
     subprocess.run(
         ["notify-send", "-u", urgency, "-i", icon, title, body], check=False
     )
 
 
-def get_query(prompt):
-    result = subprocess.run(
-        ["wofi", "--show", "dmenu", "--prompt", prompt, "--lines", "1"],
-        capture_output=True,
-        text=True,
+_LOG_TRUNCATE = 1000
+
+
+def _truncated(text):
+    if len(text) <= _LOG_TRUNCATE:
+        return text
+    return f"{text[:_LOG_TRUNCATE]}... [{len(text) - _LOG_TRUNCATE} more chars truncated]"
+
+
+def run_logged(cmd, **kwargs):
+    """subprocess.run wrapper that logs the exact command and its exit
+    code/output every time -- the single choke point every external
+    command in this script goes through, so nothing runs unlogged.
+    Output is truncated in the log (not in what the function returns --
+    callers still get the real, full stdout/stderr) -- yt-dlp's search
+    output alone is tens of KB of JSON per call, and logging that in
+    full on every single search would blow through the log's rotation
+    size in a handful of runs, pushing out the far more useful entries
+    (which are always short: a query, a video id, an error line) long
+    before they'd naturally age out."""
+    log.info("running: %s", " ".join(cmd))
+    kwargs.setdefault("capture_output", True)
+    kwargs.setdefault("text", True)
+    proc = subprocess.run(cmd, **kwargs)
+    level = logging.INFO if proc.returncode == 0 else logging.ERROR
+    log.log(
+        level, "exit=%s stdout=%r stderr=%r",
+        proc.returncode, _truncated(proc.stdout or ""), _truncated(proc.stderr or ""),
     )
-    return result.stdout.strip()
+    return proc
+
+
+def get_query(prompt):
+    proc = run_logged(["wofi", "--show", "dmenu", "--prompt", prompt, "--lines", "1"])
+    return proc.stdout.strip()
 
 
 def search(query, count=10):
     """Search-only, via yt-dlp directly -- no Invidious. --flat-playlist
     keeps this fast (~2-3s for 10 results) since it only reads the
     search-results page itself, not each video's own full metadata."""
-    proc = subprocess.run(
-        [
-            "yt-dlp",
-            f"ytsearch{count}:{query}",
-            "--flat-playlist",
-            "--dump-json",
-            "--no-warnings",
-        ],
-        capture_output=True,
-        text=True,
+    proc = run_logged(
+        ["yt-dlp", f"ytsearch{count}:{query}", "--flat-playlist", "--dump-json", "--no-warnings"],
         timeout=20,
     )
     results = []
@@ -116,6 +171,7 @@ def search(query, count=10):
         except json.JSONDecodeError:
             continue
         results.append(d)
+    log.info("search %r -> %d result(s)", query, len(results))
     return results
 
 
@@ -184,26 +240,17 @@ def pick_result(results):
             lines.append(line)
             lookup[line] = d
 
-        proc = subprocess.run(
+        proc = run_logged(
             [
-                "wofi",
-                "--dmenu",
-                "--allow-images",
-                "--allow-markup",
-                "--insensitive",
-                "--matching",
-                "fuzzy",
-                "--prompt",
-                "Pick a track...",
-                "--lines",
-                "10",
+                "wofi", "--dmenu", "--allow-images", "--allow-markup", "--insensitive",
+                "--matching", "fuzzy", "--prompt", "Pick a track...", "--lines", "10",
             ],
             input="\n".join(lines),
-            capture_output=True,
-            text=True,
         )
         sel = proc.stdout.strip()
-        return lookup.get(sel)
+        picked = lookup.get(sel)
+        log.info("picked: %s", picked.get("id") if picked else None)
+        return picked
     finally:
         # Only needed for wofi to have something to read while the list
         # is open -- nothing downstream touches these, so they're safe
@@ -225,45 +272,79 @@ def play_video(video_id, title):
     """
     url = f"https://youtube.com/watch?v={video_id}"
     notify("YouTube video", f"Playing: {title}", icon=ICON_INFO)
-    subprocess.Popen(
-        ["mpv", "--no-terminal", "--force-window=yes", f"--ytdl-format={VIDEO_FORMAT}", url],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-    )
+    cmd = ["mpv", "--no-terminal", "--force-window=yes", f"--ytdl-format={VIDEO_FORMAT}", url]
+    log.info("launching (detached): %s", " ".join(cmd))
+    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+def _queue_files():
+    """{file: pos} for every entry currently in MPD's queue, via rmpc's
+    own `queue` command -- used to snapshot before/after an addyt call
+    so the actual new entry can be identified from real data instead of
+    assumed from position-number bookkeeping."""
+    proc = run_logged(["rmpc", "queue"], timeout=10)
+    if proc.returncode != 0:
+        return {}
+    try:
+        entries = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        log.error("couldn't parse `rmpc queue` output as JSON")
+        return {}
+    return {e["file"]: e.get("metadata", {}).get("pos") for e in entries}
 
 
 def play_music(video_id, title):
     """Queues the picked video into MPD via rmpc's own `addyt` (rmpc
     already ships this -- yt-dlp under the hood, cached to
     ~/.cache/rmpc/youtube/ -- no reason to hand-roll a second download
-    path) at the front of the queue, plays it, and opens rmpc so it's
-    immediately visible with every normal rmpc/MPD control available:
-    play, pause, next, prev, seek, volume. This is the fix for a real,
-    directly-reported problem with the previous version of this
-    script -- a headless mpv process playing real audio with no window,
-    no indicator, and no way to stop it short of finding and killing
-    the process by hand.
+    path), plays it, and opens rmpc so it's immediately visible with
+    every normal rmpc/MPD control available: play, pause, next, prev,
+    seek, volume.
+
+    Does not trust that addyt's insert position and play's position
+    argument necessarily agree with each other -- snapshots the queue
+    before and after addyt, diffs them for the file that's actually new,
+    and plays that file's own real `pos` from the AFTER snapshot. This
+    is the direct fix for a real, reported bug: an already-downloaded
+    song kept starting instead of the newly picked one, which is exactly
+    what happens if a position assumption is wrong and `play <n>` lands
+    on whatever was already sitting at that index.
     """
     url = f"https://youtube.com/watch?v={video_id}"
     notify("YouTube music", f"Adding to queue: {title}", icon=ICON_INFO)
 
-    add = subprocess.run(
-        ["rmpc", "addyt", "--position", "0", url],
-        capture_output=True,
-        text=True,
-        timeout=60,
-    )
-    if add.returncode != 0:
-        # Surfaced honestly rather than swallowed -- confirmed live this
-        # is exactly how a missing python-mutagen (rmpc's own YouTube
-        # feature dependency) shows up: addyt exits non-zero with a
-        # real, specific error on stderr, not a generic failure.
+    before = _queue_files()
+    log.info("queue before addyt: %s", before)
+
+    # addyt's own exit code is NOT trusted as the success/failure signal
+    # -- confirmed directly, by logging it: a download that failed
+    # (missing python-mutagen) still exited 0, with the real error only
+    # visible in its stderr text. This is exactly how a real, reported
+    # bug got past an earlier version of this function that checked
+    # `if add.returncode != 0: return` -- that check never fired, so
+    # `rmpc play 0` ran unconditionally and played whatever was already
+    # sitting at position 0 (an older, already-downloaded song), not the
+    # new one that had actually failed to download. The before/after
+    # queue diff below is the only signal this function trusts now.
+    add = run_logged(["rmpc", "addyt", "--position", "0", url], timeout=60)
+
+    after = _queue_files()
+    log.info("queue after addyt: %s", after)
+
+    new_files = [f for f in after if f not in before]
+    if len(new_files) != 1:
+        # Covers both the confirmed real failure mode (0 new entries,
+        # exit code lied) and a genuinely ambiguous result (2+ new
+        # entries) -- neither is safe to guess a position for. Full
+        # before/after state is already in the log above either way.
         err = add.stderr.strip().splitlines()[-1] if add.stderr.strip() else "unknown error"
+        log.error("addyt did not produce exactly 1 new queue entry (found %d): %s", len(new_files), err)
         notify("YouTube music failed", err[:200], icon=ICON_ERROR, urgency="critical")
         return
 
-    subprocess.run(["rmpc", "play", "0"], capture_output=True, text=True, timeout=10, check=False)
+    pos = after[new_files[0]]
+    log.info("new entry %r is at real pos=%r -- playing that", new_files[0], pos)
+    run_logged(["rmpc", "play", str(pos)], timeout=10)
 
     # Same launcher rmpc's own keybinding uses -- opens the window if
     # it doesn't exist yet, or brings it to front if rmpc is already
@@ -278,6 +359,8 @@ def play_music(video_id, title):
 
 
 def main():
+    log.info("=== invoked with argv=%s ===", sys.argv[1:])
+
     if len(sys.argv) != 2 or sys.argv[1] not in ("video", "music"):
         print("usage: music-search.py video|music", file=sys.stderr)
         return 1
@@ -285,6 +368,7 @@ def main():
 
     query = get_query(f"Search YouTube ({mode})...")
     if not query:
+        log.info("empty query, exiting")
         return
 
     # Fired immediately after Enter -- confirmed live that without
@@ -296,6 +380,7 @@ def main():
     try:
         results = search(query)
     except subprocess.TimeoutExpired:
+        log.error("search timed out for query=%r", query)
         notify("YouTube search", "Search timed out", icon=ICON_WARNING, urgency="critical")
         return
 
@@ -305,11 +390,13 @@ def main():
 
     picked = pick_result(results)
     if not picked:
+        log.info("no result picked, exiting")
         return
 
     title = (picked.get("title") or "?").replace("\n", " ")
     video_id = picked.get("id")
     if not video_id:
+        log.error("picked result had no video id: %r", picked)
         notify("YouTube search", "Couldn't get a video id for that result", icon=ICON_ERROR, urgency="critical")
         return
 
@@ -320,4 +407,12 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception:
+        # An unhandled exception here would otherwise just vanish --
+        # this script is launched from a sway keybinding via wofi, with
+        # nowhere any traceback on stderr would ever actually be seen.
+        log.error("unhandled exception:\n%s", traceback.format_exc())
+        notify("YouTube search", "Something went wrong -- see music-search.log", icon=ICON_ERROR, urgency="critical")
+        sys.exit(1)

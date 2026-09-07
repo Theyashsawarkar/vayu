@@ -20,6 +20,28 @@ to 130 (still generous for a wrapped 3-4 line body) so even the
 longest real notifications stay a clear horizontal toast shape, not
 just the short common-case ones.
 
+## v1.6.2 -- 2026-09-07
+
+Root-caused the wrong-song bug reported against v1.6.1's rmpc
+integration: `rmpc addyt` exits 0 even when the download genuinely
+fails (confirmed directly in a log, not inferred), so the old
+`if add.returncode != 0: return` check could never fire, and
+`rmpc play 0` ran unconditionally every time, playing whatever was
+already at queue position 0 -- exactly the reported symptom.
+`play_music()` now snapshots the real queue before and after `addyt`
+and only plays if exactly one new file actually appears, using its
+real reported position rather than assuming 0. Also added persistent
+logging (`~/.local/state/music-search/music-search.log`, rotated) for
+music-search.py -- every subprocess command, exit code, and output,
+truncated sensibly so verbose commands like yt-dlp's search dump don't
+crowd out the useful entries, plus any unhandled exception's full
+traceback, so bugs like this one are diagnosable from the log alone
+next time. Along the way, found mako's `[urgency=high]` has never
+matched anything real (the spec only defines low/normal/critical) --
+every error notification's "never auto-dismiss" treatment was silently
+inert since it was added; fixed to `[urgency=critical]`, verified via
+`makoctl list`. PATCH bump: fixes to real, confirmed defects.
+
 ## v1.6.1 -- 2026-09-07
 
 v1.6.0's YouTube play redesign got immediate hands-on use and turned up

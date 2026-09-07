@@ -3693,3 +3693,72 @@ actually queued and playing through rmpc via this script) has not been,
 since installing the package needs a sudo password this session doesn't
 have. Added to `packages/pacman.txt`; first real verification of the
 success path is still owed once it's installed.
+
+## music-search.py: real root cause of the wrong-song bug, plus persistent logging
+
+Reported again: music mode kept starting an already-downloaded song
+instead of the newly picked one. Every prior fix to this script had been
+verified through live testing with a debugger's worth of manual
+`swaymsg`/IPC/`wtype` checks each time -- useful for finding a bug once,
+useless for a *user* diagnosing a *recurrence* days later with no
+Claude Code session open. Two real, separate problems, both fixed here.
+
+**Root cause, finally confirmed**: `rmpc addyt` exits `0` even when the
+underlying download genuinely fails. Logged directly, not inferred: a
+run with the still-missing `python-mutagen` dependency printed a real
+`ERROR: Postprocessing: module mutagen was not found` on stderr --
+and reported `exit=0` in the very same log line. The previous version
+of `play_music()` checked `if add.returncode != 0: return` before ever
+calling `rmpc play` -- a check that, it turns out, could never fire for
+this failure mode, so `rmpc play 0` ran unconditionally every time and
+played whatever already happened to be sitting at queue position 0 (an
+older, already-downloaded song), regardless of whether the new one had
+actually been added at all. This is exactly, precisely, the reported
+symptom -- not a position-indexing mismatch (the theory going in), a
+plain unreliable exit code.
+
+**The fix trusts the queue, not the exit code.** `play_music()` snapshots
+`rmpc queue`'s real file list before and after `addyt`, and only calls
+`rmpc play` if exactly one new file appears in the after-snapshot --
+using *that* entry's own real `pos` value from MPD's own response, not
+a hardcoded `0`. Anything else (0 new entries -- the confirmed failure
+mode; 2+ -- genuinely ambiguous) surfaces the real error instead of
+guessing. Verified live: the exact same missing-mutagen failure now
+correctly finds 0 new entries and leaves the queue/playback completely
+untouched, instead of resuming the old song.
+
+**Persistent logging, requested directly rather than relying on live
+debugging every time**: every subprocess this script runs -- wofi,
+yt-dlp, mpv, rmpc -- now goes through one `run_logged()` choke point
+that records the exact command, its exit code, and its stdout/stderr to
+`~/.local/state/music-search/music-search.log` (rotated at 1MB, 3
+backups). Output is truncated at 1000 chars per stream in the log
+specifically because yt-dlp's search results alone are tens of KB of
+JSON per call -- logging that in full would have blown through the
+rotation size in a handful of runs and pushed out far more useful
+entries (a query, a video id, an error line, all naturally short) long
+before they'd age out on their own. `main()`'s own entry point is
+wrapped in a bare `try/except` that logs any unhandled exception's full
+traceback before exiting -- this script is launched from a sway
+keybinding via wofi, with no terminal anywhere a stray Python traceback
+would otherwise ever be seen.
+
+**A second, unrelated real bug found investigating this**: mako's own
+config format only ever matches `urgency=` against `"low"`, `"normal"`,
+`"critical"` (confirmed directly, `man mako(5)`) -- this desktop's config
+had `[urgency=high]`, which is not one of the three and has therefore
+never matched a single real notification. Every `notify-send -u critical`
+call across this repo's scripts -- every error notification there is --
+has been rendering with the default border and the default 5000ms
+timeout the whole time, not the peach border + "never auto-dismiss" that
+section was clearly meant to give it. Fixed to `[urgency=critical]`,
+verified live via `makoctl list -j` showing a critical test notification
+still present 6 seconds after firing it (past the normal default
+timeout), which it wasn't before the fix.
+
+**Known gap, still not glossed over**: `python-mutagen` still isn't
+installed on this machine (needs a sudo password this session doesn't
+have) -- the *fix* to the wrong-song bug is verified against the
+confirmed failure mode (0 new entries, correctly detected, playback
+correctly untouched), but a real successful add-and-play through this
+exact code path is still owed once that dependency is actually installed.
