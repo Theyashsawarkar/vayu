@@ -3762,3 +3762,44 @@ have) -- the *fix* to the wrong-song bug is verified against the
 confirmed failure mode (0 new entries, correctly detected, playback
 correctly untouched), but a real successful add-and-play through this
 exact code path is still owed once that dependency is actually installed.
+
+## music-search.py: the real success path, finally confirmed end-to-end
+
+`python-mutagen` got installed, clearing the blocker every prior entry
+on this feature had to work around rather than through. That surfaced
+one more real bug immediately, then everything actually worked.
+
+**The bug**: `addyt` now got past the metadata step but failed
+differently -- `ACK [4@0] {add} Access to local files via TCP is not
+allowed`. This is a real, deliberate MPD security restriction, not a
+misconfiguration: MPD only trusts a client to `add` a file living
+outside its `music_directory` (exactly what rmpc's own YouTube cache,
+`~/.cache/rmpc/youtube/`, is) when that client connected over a Unix
+socket -- a TCP connection is refused even when it's only ever going to
+127.0.0.1. rmpc's own config (`rmpc/.config/rmpc/config.ron`) had
+`address: "127.0.0.1:6600"`. Confirmed MPD already had a Unix socket
+available without needing any mpd.conf changes at all: `ss -lx` showed
+`/run/user/1000/mpd/socket` already LISTENing, backed by the distro's
+own `mpd.socket` systemd unit. Pointed rmpc's `address` at that socket
+path instead -- one-line config change, no MPD-side changes needed.
+
+**Verified for real this time, not just "exit code 0"**: ran the exact
+keybinding code path end-to-end (wtype into the live wofi popups, same
+as every other verification this feature has gotten) and read the
+result back from `rmpc queue`/`rmpc status` afterward: a real new
+entry (`/home/yash/.cache/rmpc/youtube/<id>.opus`) at queue position 0,
+`rmpc play 0` exiting cleanly, and MPD's own status correctly reporting
+it playing. The test video was a deliberately short (10s) tone, so by
+the time status was checked again it had already finished and MPD had
+auto-advanced to the next queued song, per its own normal (non-repeat,
+non-single) behavior -- confirmed this was normal advancement, not
+another bug, from the elapsed/song-index numbers matching that timeline
+exactly. Test queue entry and its cached file were removed afterward;
+the real pre-existing library queue was restored to its exact original
+state (`rmpc clear` + re-`add` by its real library path).
+
+**This closes out the "known gap" every one of the three prior entries
+on this feature had to leave open** -- v1.6.0 through v1.6.2 each fixed
+something real but couldn't verify the actual success path without this
+dependency. It's now been run and confirmed working, not just argued to
+be correct from reading the code.

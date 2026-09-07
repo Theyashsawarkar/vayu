@@ -2,7 +2,15 @@
 #![enable(unwrap_newtypes)]
 #![enable(unwrap_variant_newtypes)]
 (
-    address: "127.0.0.1:6600",
+    // MPD only trusts local-filesystem operations (like `add`ing a file
+    // outside music_directory -- exactly what rmpc's own YouTube cache
+    // needs) over a Unix socket, not TCP, even when the TCP connection
+    // is itself only to 127.0.0.1 -- confirmed directly: `addyt` failed
+    // with "Access to local files via TCP is not allowed" against the
+    // TCP address below, and MPD's own systemd socket unit (already
+    // active, confirmed via `ss -lx`) exposes exactly this at
+    // /run/user/1000/mpd/socket.
+    address: "/run/user/1000/mpd/socket",
     password: None,
     theme: "catppuccin-mocha",
     cache_dir: "~/.cache/rmpc",

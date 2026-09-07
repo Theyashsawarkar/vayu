@@ -20,6 +20,24 @@ to 130 (still generous for a wrapped 3-4 line body) so even the
 longest real notifications stay a clear horizontal toast shape, not
 just the short common-case ones.
 
+## v1.6.3 -- 2026-09-07
+
+python-mutagen got installed, clearing the blocker every prior entry on
+this feature had to work around. Immediately surfaced one more real
+bug: `addyt` failed with "Access to local files via TCP is not
+allowed" -- a real MPD security restriction (local-filesystem `add`
+outside music_directory is only trusted over a Unix socket, never TCP,
+even to 127.0.0.1). Fixed with a one-line change to rmpc's own config
+(`address: "127.0.0.1:6600"` -> the Unix socket MPD's systemd unit
+already exposes at `/run/user/1000/mpd/socket`, confirmed already
+listening, no MPD-side config change needed). Verified for real this
+time: ran the actual keybinding code path end-to-end and confirmed via
+`rmpc queue`/`status` that a real new song was added, played, and
+(being a short test clip) correctly auto-advanced afterward -- not
+just an exit code, an actual result read back. This closes the "known
+gap" v1.6.0 through v1.6.2 each had to leave open. PATCH bump: another
+fix to a real, confirmed defect.
+
 ## v1.6.2 -- 2026-09-07
 
 Root-caused the wrong-song bug reported against v1.6.1's rmpc
