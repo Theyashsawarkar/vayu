@@ -1,11 +1,27 @@
-# Lock the screen after 5 minutes (same wallpaper as the desktop, via lockconfig's image=)
-timeout 300 'swaylock -C ~/.config/sway/lockconfig'
+# Lock the screen after 15 minutes of no input (same wallpaper as the
+# desktop, via lockconfig's image=) -- was 5. Only reachable at all with
+# caffeine mode off (caffeine-toggle.sh stops this whole service rather
+# than inhibiting suspend, see its own comments) and with nothing holding
+# the wayland idle-inhibit lock: sway-audio-idle-inhibit.service holds it
+# for as long as literally anything is outputting or receiving audio
+# (confirmed live -- its own journal logs "IDLE INHIBITED" the instant
+# audio starts), which is what actually protects a long video with sound
+# regardless of window/fullscreen state; sway/config's own
+# `inhibit_idle fullscreen` rule is the second, independent layer for a
+# fullscreen window specifically. A muted video in a non-fullscreen
+# window is the one real gap neither layer covers -- inherent to how
+# both mechanisms detect activity, not something this timeout value
+# changes either way.
+timeout 900 'swaylock -C ~/.config/sway/lockconfig'
 
-# Turn off the screen after 10 minutes (Power saving)
-timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"'
+# Turn off the screen after 20 minutes (Power saving) -- kept the same
+# +5min gap after the lock timeout above had, just shifted to match its
+# new value (was 10 after a 5-minute lock).
+timeout 1200 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"'
 
-# Suspend the system after 30 minutes
-timeout 1800 'systemctl suspend'
+# Suspend the system after 40 minutes -- same +20min gap after the dpms
+# timeout above had, shifted the same way.
+timeout 2400 'systemctl suspend'
 
 # Security: Lock the screen immediately before the system enters sleep/suspend
 before-sleep 'swaylock -C ~/.config/sway/lockconfig'

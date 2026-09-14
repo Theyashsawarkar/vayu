@@ -104,6 +104,16 @@ bindsym $mod+Shift+n exec ~/.local/bin/toggle-popup.sh notifhistory wofi ~/.loca
 # obvious to the eye which button Tab landed on.
 bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar -i 40
 
+# Caffeine mode keyboard path -- was click-only via waybar's
+# custom/caffeine module (on-click in waybar/config) until now. Direct
+# exec straight to caffeine-toggle.sh, not toggle-popup.sh -- there's no
+# picker window here to show/hide, just an instant on/off flip, same
+# shape as $mod+Shift+q/kill or $mod+Shift+c/reload above rather than the
+# wofi-popup bindings. $mod+Shift+k free and unused elsewhere in this
+# file; "k" for "keep awake", the same phrase caffeine-toggle.sh's own
+# notification text already uses.
+bindsym $mod+Shift+k exec ~/.local/bin/caffeine-toggle.sh
+
 # rmpc -- terminal music player, replacing termusic entirely (removed:
 # its own search was the only thing ever broken, but the whole tool got
 # swapped out rather than kept around as a half-used shell -- see
@@ -276,6 +286,23 @@ layer_effects "wofi" {
     blur enable
     blur_xray enable
     corner_radius 16
+    shadows enable
+}
+
+# Same glass treatment for mako's toasts -- namespace confirmed live the
+# same way wofi's was, not guessed: `swaymsg -t get_outputs` while a real
+# notification was on screen lists it as "notifications" (mako doesn't
+# hold a layer-shell surface at all when idle, only while something's
+# actually showing). Before this, mako/config's own background-color
+# alpha had nothing real behind it to blur, the same gap wofi's rule
+# above already fixed once. corner_radius 12 matches mako's own
+# border-radius=12 exactly, same reasoning as wofi's 16 above: the
+# blurred/shadowed shape has to line up with the toast's actual rounded
+# corners.
+layer_effects "notifications" {
+    blur enable
+    blur_xray enable
+    corner_radius 12
     shadows enable
 }
 

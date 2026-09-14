@@ -5,6 +5,126 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (lid-timeout-poweroff: root-caused why it never actually fired; idle-lock bumped to 15 minutes)
+
+Reported: the laptop died from battery drain overnight instead of cleanly
+powering off from the lid-closed-30-minutes hook. Root-caused rather than
+re-tuning the timeout blind -- `journalctl -b -1` on the affected boot
+shows a real `suspend requested`/`PM: suspend entry (deep)` sequence with
+*nothing after it*: no `lid-timeout-poweroff` logger line (the hook's own
+`post/suspend` path always writes one, dry-run or real, per its own
+design), no clean `systemctl poweroff`, nothing -- the boot's log just
+stops, meaning the machine sat suspended until the battery physically ran
+out, not until this hook's 30-minute timer fired.
+
+Checked whether the hook itself was ever actually installed rather than
+assuming the logic was at fault: confirmed
+`/etc/lid-timeout-poweroff.conf` exists on this machine (its `TIMEOUT_SECONDS=1800`
+matches the repo's copy exactly) but
+`/etc/systemd/system-sleep/lid-timeout-poweroff` -- the actual executable
+systemd-sleep hook, the one file that makes any of this run at all --
+does not exist. The config's reference copy made it into place at some
+point; the script itself never did. Nothing in `install.sh` or
+`docs/ARCHITECTURE.md` covers this step either -- root-owned
+`/etc/systemd/system-sleep/*` hooks are outside anything `install.sh`
+touches (same as `HandleLidSwitch=suspend` in `/etc/systemd/logind.conf`),
+so this was never going to install itself; it needed one manual step that
+was simply never done. That step, not yet run on this machine:
+
+```sh
+sudo install -Dm755 ~/dotfiles/systemd/lid-timeout-poweroff /etc/systemd/system-sleep/lid-timeout-poweroff
+```
+
+Recommend setting `DRY_RUN=1` in `/etc/lid-timeout-poweroff.conf` first and
+closing the lid once to confirm the full close -> wait -> resume ->
+detect-still-closed -> notify pipeline actually fires (the config file's
+own comments describe exactly this safe-test workflow) before trusting it
+for real with `DRY_RUN=0`. Couldn't verify the RTC wake alarm itself
+end-to-end from here -- `rtcwake`/`/dev/rtc0` both need root, confirmed
+present but not exercised.
+
+**Idle-lock timeout: 5 minutes -> 15.** Asked to confirm screen-lock
+correctly engages 15 minutes after real inactivity (with caffeine off)
+without misfiring during long video playback.
+`sway/.config/sway/idle/config`'s lock timeout was 300s; bumped to 900s,
+with the dpms-off and suspend timeouts after it shifted by the same
+relative gaps they already had (10/30 -> 20/40 min) rather than left
+sitting ahead of the new lock time. Verified the video-safety concern
+live instead of assuming the fullscreen `inhibit_idle` rule alone covers
+it: `sway-audio-idle-inhibit.service` (a separate, always-running
+service, independent of caffeine mode) holds a real wayland idle-inhibit
+lock for as long as anything is outputting or receiving audio -- its own
+journal logged `IDLE INHIBITED` live during this check -- which is what
+actually protects a windowed (non-fullscreen) video with sound; the
+fullscreen `inhibit_idle` rule in sway/config is the separate layer for
+fullscreen specifically. Only real gap in either layer: a muted video in
+a non-fullscreen window, inherent to how both detection mechanisms work,
+not something the timeout value itself changes.
+
+## 2026-09-14 (notifications: real glass effect, per-urgency accent; caffeine keybinding; Zen dark-mode fix)
+
+Asked for the desktop's UI/UX and battery notifications to get a real pass.
+Several separate, independently-verified fixes:
+
+**Notification toasts actually get the glass treatment now.** mako's own
+layer-shell surface (namespace `notifications`, confirmed live via
+`swaymsg -t get_outputs` while a real toast was on screen -- mako only holds
+one at all while something's actually showing) had no `layer_effects` block
+in sway/config, unlike wofi's. mako/config's background-color alpha
+(0xfa, ~98%) had nothing real to blur behind it as a result -- the exact gap
+wofi/style.css's own history already diagnosed once. Added
+`layer_effects "notifications" { blur enable; blur_xray enable;
+corner_radius 12; shadows enable }`, and dropped the alpha to 0xd9 (~85%),
+the same value wofi already settled on for this same base color. Verified
+live: `effects` on the real layer surface now reports
+`blur=True, blur_xray=True, shadows=True, corner_radius=12` where it was
+all off/0 before.
+
+Added a `[urgency=low]` section (Surface2 gray border) so low-urgency
+toasts read as visually quieter than normal ones at a glance, the same
+"dim gray = quiet/off" language waybar/sway already use elsewhere
+(caffeine.inactive, bluetooth.disabled) rather than reusing the Mauve
+accent for everything regardless of urgency.
+
+**batsignal notifications had no icon at all** -- confirmed no default in
+its own source, `-I` was simply never passed. Added
+`-I battery-caution-symbolic` (freedesktop icon-naming-spec name,
+confirmed present under Papirus/mako's icon-path) to
+batsignal.service's ExecStart. Also audited every other notify-send call
+across this whole repo -- every one of them already passes a real icon
+except lid-timeout-poweroff's dry-run notification, which was missing one
+too; fixed the same way (dialog-warning).
+
+**Caffeine mode gets a keyboard path.** Was click-only via waybar's
+custom/caffeine module until now. `$mod+Shift+k` (free, unused elsewhere
+in sway/config) runs caffeine-toggle.sh directly -- same shape as
+$mod+Shift+q/kill, an instant action with no picker window, not a
+toggle-popup.sh binding.
+
+**Zen Browser "doesn't follow dark/light mode unlike Chrome" -- two
+separate, unrelated bugs, not one:**
+
+1. Browser chrome (toolbar/UI) stuck dark regardless of system theme:
+   about:addons has the static "Dark" theme add-on active instead of
+   "System theme — auto" (confirmed in extensions.json) -- a manual
+   theme-extension pick overrides the portal signal entirely, no
+   config file controls this, only the Themes panel does. Needs a
+   one-time manual fix in Zen: Settings -> Manage Themes -> enable
+   "System theme — auto", disable "Dark".
+2. Web content (sites' own `prefers-color-scheme` CSS) stuck light
+   regardless of system/browser theme: `user.js`'s own
+   `widget.use-xdg-desktop-portal.settings` fix (see the 2026-08-30
+   entry further down / ARCHITECTURE.md's "Theme toggle robustness"
+   section) only ever covered Zen's own chrome, never this. Found
+   `layout.css.prefers-color-scheme.content-override` sitting at `0`
+   ("always light") in prefs.js with no matching line in user.js and no
+   mention anywhere in this repo -- a stray about:config value, not a
+   documented choice. Pinned to `2` ("follow browser theme") in user.js
+   so it can't drift back silently. (Zen's profile lives outside this
+   repo, `~/.config/zen`, not stow-managed -- same as
+   `/etc/lid-timeout-poweroff.conf` below, this entry is the only
+   record of why.)
+
 ## 2026-09-13 (battery: dismiss stuck warnings on AC restore; auto-poweroff if the lid stays closed)
 
 Two related battery/power-lifecycle fixes, committed together since both

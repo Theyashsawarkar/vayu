@@ -3,7 +3,29 @@ Description=Battery warning/critical/danger notifications, force-suspend at dang
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/batsignal -w 20 -c 10 -d 5 -D "systemctl suspend"
+# -p was tried here to fix a stuck warning notification (replaces it
+# on charge via batsignal's own notification-reuse), but reverted:
+# confirmed directly in batsignal's source (main.c) that -p is a
+# single toggle (config.show_charging_msg) gating BOTH the charging
+# AND discharging announcements together -- there is no flag-level way
+# to get one without the other. That meant a "Discharging: 40%" toast
+# on every unplug regardless of battery level, which is exactly the
+# unwanted noise this service should never produce (warnings should
+# only ever fire near the real -w/-c/-d thresholds below). The actual
+# fix (silently dismissing a stuck warning on AC restore, with zero
+# added notifications of its own) lives in battery-warning-dismiss.service
+# instead -- see that unit and scripts/.local/bin/battery-warning-dismiss.sh.
+#
+# -I: batsignal shipped with no icon at all (confirmed: no default in
+# its own source, `-I` is unset unless passed) -- every one of its
+# warning/critical/danger toasts rendered icon-less. Only one -I for the
+# whole binary, not per-level (checked `batsignal -h`: no per-message
+# icon flag exists), but every message this unit ever sends is a
+# low-battery warning at heart (-p/full/-f are unused here, see above),
+# so one icon fits all of them -- battery-caution-symbolic is the
+# freedesktop icon-naming-spec name for exactly that state, confirmed
+# present under /usr/share/icons/Papirus (mako's icon-path).
+ExecStart=/usr/bin/batsignal -w 20 -c 10 -d 5 -D "systemctl suspend" -I battery-caution-symbolic
 Restart=on-failure
 RestartSec=2
 

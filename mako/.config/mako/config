@@ -64,8 +64,15 @@ icon-border-radius=8
 icon-path=/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus:/usr/share/icons/Adwaita
 
 # --- Elegant Colors ---
-# Deep Midnight background with smooth translucency
-background-color=#11111Bfa
+# Deep Midnight background. Alpha dropped from the old 0xfa (~98%,
+# essentially opaque) to 0xd9 (~85%) -- the exact value wofi/style.css
+# already settled on for this same base color, after that file's own
+# comments record trying 0.95 first and finding it too opaque to read
+# as glass once blurred. Paired with the new `layer_effects
+# "notifications"` block in sway/config (blur+blur_xray+shadows,
+# same mechanism wofi's glass look depends on) rather than tint alone --
+# an opaque box behind a blur has nothing real to blur.
+background-color=#11111Bd9
 # Clean silver text for easy readability
 text-color=#CDD6F4
 # Royal Mauve border outline for standard notifications
@@ -116,6 +123,16 @@ on-notify=exec paplay /usr/share/sounds/freedesktop/stereo/message.oga
 [urgency=critical]
 border-color=#FAB387
 default-timeout=0
+
+# --- Low Urgency ---
+# Quieter visual weight for the low end of the scale (hover/volume ticks,
+# routine status) -- Surface2 Gray instead of Mauve, so the eye can tell
+# "just FYI" apart from a normal notification without reading the text
+# first, the same way waybar/sway already reserve a dim gray specifically
+# for "off"/inactive states (caffeine.inactive, bluetooth.disabled) rather
+# than reusing an accent color there too.
+[urgency=low]
+border-color=#585B70
 
 # --- Notification modes ---
 # scripts/.local/bin/notification-mode.sh switches between these three
