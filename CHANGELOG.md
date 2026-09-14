@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: right margin 2 -> 10, a real trade-off not a free fix)
+
+Asked for "some margin from the right" -- the earlier fix for the
+right-edge bleed bug (margin 20 -> 2) left the toast sitting almost
+flush against the screen edge. Since mako bakes margin into the
+surface's own pixel buffer (see the entry below), any nonzero value here
+reintroduces some of that same bleed proportionally; there's no value
+that gets both a visible gap and zero bleed. Landed on 10: still shows a
+faint sliver at 400% zoom (checked directly rather than assumed), but
+reads completely clean at actual viewing scale, confirmed via a normal
+unzoomed screenshot.
+
 ## 2026-09-14 (notifications: top-edge bleed, same margin bug; caffeine icon collided with theme icons)
 
 Two more real reports on the same notification work:
