@@ -87,11 +87,25 @@
   <section id="install" class="install">
     <h2>Install</h2>
     <p>On a fresh Arch install, after <code>archinstall</code> finishes and you're logged
-    into a TTY as your normal user with networking up:</p>
-    <pre class="install-snippet"><code>bash &lt;(curl -fsSL https://raw.githubusercontent.com/Theyashsawarkar/vayu/main/install.sh)</code></pre>
+    into a TTY as your normal user with networking up, pick a channel:</p>
+
+    <div class="channel-toggle" role="tablist" aria-label="Update channel">
+      <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true">
+        Stable <span class="channel-version" id="version-stable"></span>
+      </button>
+      <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false">
+        Nightly <span class="channel-version" id="version-nightly"></span>
+      </button>
+    </div>
+
+    <pre class="install-snippet"><code id="install-cmd">bash &lt;(curl -fsSL https://raw.githubusercontent.com/Theyashsawarkar/vayu/main/install.sh) stable</code></pre>
+    <p class="channel-desc" id="channel-desc">Stable tracks <code>main</code> — tagged releases only, the safest choice.</p>
+
     <p>This installs every package, stows every config in this repo, sets up zsh/tmux/the
     Nerd Font the status bars need, and enables the required services. It backs up any
-    pre-existing conflicting dotfiles first, and is safe to re-run.</p>
+    pre-existing conflicting dotfiles first, and is safe to re-run. Not sure which channel to
+    pick? Stay on Stable — Nightly is for tracking day-to-day changes as they land, and can
+    break.</p>
     <p>Full walkthrough, manual/step-by-step installation, and how to add your own
     packages: see the <a href="https://github.com/Theyashsawarkar/vayu#readme">full README on GitHub</a>.</p>
   </section>
@@ -113,7 +127,7 @@
       </a>
       <a class="doc-card" href="docs/VERSIONING.html">
         <h3>Versioning</h3>
-        <p>The <code>main</code>/<code>develop</code> branch model and release process this repo actually follows.</p>
+        <p>The <code>main</code>/<code>development</code> branch model, Stable/Nightly channels, and release process this repo actually follows.</p>
       </a>
     </div>
   </section>
@@ -125,5 +139,6 @@
 <script src="assets/carousel.js"></script>
 <script src="assets/copy.js"></script>
 <script src="assets/version.js"></script>
+<script src="assets/channel.js"></script>
 </body>
 </html>

@@ -5,6 +5,52 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (docs site: Stable/Nightly channel toggle in the Install section)
+
+Asked directly for the site itself to let a visitor pick Stable or
+Nightly and hand them the matching command, rather than only offering
+the one bare Stable command it had before. `index.html`'s Install
+section now has a two-tab toggle (`assets/channel.js`, new file) above
+the install snippet -- clicking either tab swaps the generated command
+between `install.sh ... stable` and `install.sh ... nightly` (the `$1`
+argument added earlier today specifically so the site never has to hand
+someone a command that still stops to ask again after they already
+chose here) and the one-line description underneath it. The existing
+copy-to-clipboard button (`assets/copy.js`) needed no changes at all --
+it already reads the code block's live text at click time, not
+something cached at page load, so it keeps working correctly across
+channel switches for free.
+
+Each tab shows its own real current version, fetched live from GitHub's
+tags API -- Stable is the highest plain `vX.Y.Z` tag (identical
+comparison logic to the existing hero badge in `assets/version.js`);
+Nightly is the highest `vX.Y.Z-nightly` tag specifically, matched by
+its own explicit pattern so an unrelated tag can never get picked by
+accident. Kept as a separate script rather than folded into
+`version.js` -- that one has exactly one job (the single hero badge),
+this one has a different one (two channels, two tag shapes), matching
+this site's existing one-concern-per-file pattern. Also fixed a stale
+`develop` mention in the Versioning doc-card's own description text
+(missed in the earlier rename pass since this file lives outside
+`docs/` and wasn't covered by that grep).
+
+Verified by actually serving the site locally (`python3 -m http.server`
+in the repo root) and loading it in Zen: confirmed the default Stable
+state renders correctly and, more importantly, that both version
+badges resolve live and correctly -- v1.6.3 for Stable, v1.7.0-nightly
+for Nightly -- proving the fetch-and-regex-match logic genuinely works
+against the real GitHub API and the real tags just pushed today, not
+just that it reads correctly. Couldn't get a reliable simulated mouse
+click on the Nightly tab itself to land correctly in this sandboxed
+session (input-simulation coordinates kept missing their target and at
+one point hit the wrong window entirely) -- not pursued further once
+that became clear, rather than risking more stray input on a live
+desktop session chasing it. Not a gap in the toggle's own logic though:
+`setChannel()` is one shared function, and its "stable" call path (exact
+same code the "nightly" branch would run, just a different key into the
+same two lookup objects) is exactly what page load already exercises
+and the screenshots above confirm working.
+
 ## v1.7.0-nightly -- 2026-09-14
 
 Everything from here down to `v1.6.3` above, on `development` (Nightly

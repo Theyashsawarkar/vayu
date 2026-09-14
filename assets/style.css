@@ -384,6 +384,58 @@ code {
 }
 .btn-ghost:hover { border-color: var(--mauve); color: var(--mauve); background: rgba(203, 166, 247, 0.08); }
 
+/* Stable/Nightly channel toggle, assets/channel.js -- a segmented
+   control above the install snippet, same visual family as .btn (same
+   radius/weight/transition timing) but styled as tabs rather than two
+   separate buttons, since only one is ever "the" command showing below
+   at a time. */
+.channel-toggle {
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  margin: 1rem 0;
+  background: var(--mantle);
+  border: 1px solid var(--surface0);
+  border-radius: 12px;
+}
+.channel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--subtext);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+.channel-btn:hover { color: var(--text); }
+/* Active tab reuses .btn-primary's own mauve fill exactly (not a new
+   accent) -- this is a variant of the same "the thing you'll actually
+   run" affordance, not a different kind of control. */
+.channel-btn.active {
+  background: var(--mauve);
+  color: var(--crust);
+  box-shadow: 0 6px 18px rgba(203, 166, 247, 0.3);
+}
+.channel-btn.active:hover { color: var(--crust); }
+.channel-version {
+  font-family: "JetBrainsMono Nerd Font", "Fira Code", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+.channel-btn.active .channel-version { opacity: 0.85; }
+.channel-desc {
+  color: var(--subtext);
+  font-size: 0.9rem;
+  margin: -0.5rem 0 1.5rem;
+}
+
 .install-snippet {
   background: var(--mantle);
   border: 1px solid var(--surface0);
