@@ -5,6 +5,40 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: per-module black pills, waybar's own real pattern this time)
+
+Second same-day tmux revision, flagged directly as more important than the
+last pass ("this something serios"): the previous "hollow neon" design
+filled the *entire bar row* with one solid slate color
+(`status-style bg=#0F172A`), which isn't how waybar (the thing being
+referenced) actually works at all -- checked its own CSS again rather than
+assumed: `window#waybar { background-color: transparent; }`, with each
+individual `#module` carrying its own `background-color` and `margin`,
+producing floating pills with real gaps between them, not one continuous
+colored stripe.
+
+**`status-style` back to `bg=default`** (transparent) -- the bar itself is
+invisible again, same as waybar's own outer window. **Every module now
+wraps its own content in `bg=#11111b`** (waybar's real "Deep Midnight" hex,
+`rgba(17,17,27,0.92)` in `style.css`, reused directly rather than the
+previous pass's `#0F172A` guess) and explicitly switches back to
+`bg=default` right after its closing cap, so the space between modules
+shows real wallpaper through, matching waybar's margin gaps.
+
+**Windows now follow waybar's actual `sway/workspaces` pattern**, not just
+its colors: every workspace there shares one dim resting style except
+`.focused`, which alone gets visually distinct treatment. Asked directly
+for the same split -- inactive windows keep the hollow-outline-on-black
+pill (Green text+corners), but the **active window gets a solid, filled
+Purple pill** (`#8B5CF6`, dark `#11111b` text) using the filled half-circle
+caps (E0B6/E0B4) instead of the hollow pair, so it visually pops out of the
+shared resting state rather than just being a brighter version of it.
+
+Verified with two real windows open in the actual live session (not
+assumed from a single-window session where active/inactive can't both be
+seen at once) -- screenshotted both states side by side in the correct
+kitty tab.
+
 ## 2026-09-14 (tmux: hollow-pill status bar to an exact spec, replacing the earlier restyle)
 
 The prior same-day tmux restyle (solid pills, bookend outline only on the
