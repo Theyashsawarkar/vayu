@@ -5,6 +5,43 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: glass belongs behind the text, not the whole card; dropped the shared shadow halo)
+
+Two more real problems reported live after the previous blur revert
+(see the entry below), fixed properly rather than reverted further:
+
+**"Why do we have a translucent container behind all the toasts"** --
+SwayFX's shadow effect on the notifications layer surface blends between
+two stacked toasts (mako has no between-notification gap setting), so
+their individual soft shadows merge into what reads as one shared dark
+halo behind the whole stack rather than two separately-shadowed cards.
+Dropped `shadows enable` from `layer_effects "notifications"` in
+sway/config, kept `corner_radius` alone -- still real rounded corners,
+no shared halo between stacked toasts.
+
+**"Toast text background is solid, not glass-like"** -- the actual
+original ask, clarified: glass behind the *text specifically*, with the
+card itself staying a plain solid color. The compositor blur tried
+earlier made the whole card translucent instead, the opposite of this.
+mako's `format` is real Pango markup (`markup=1`, confirmed in `man
+mako(5)`'s FORMAT SPECIFIERS section) -- wrapped `%s`/`%b` in
+`<span background=...>` to give the text its own tinted backing distinct
+from `background-color` above. Real bug found getting there: Pango's own
+documented `bgalpha=` span attribute breaks mako's config parser outright
+here -- confirmed directly, `makoctl reload` fails with "Unable to parse
+configuration file" with it present, succeeds without it, on an
+otherwise-identical line. Worked around with an 8-digit RGBA hex
+straight in `background=` instead (`#CDD6F42E`/`#CDD6F41A`, Lavender at
+~18%/~10%) -- confirmed this both parses cleanly AND actually renders
+translucent via grim screenshots, not just accepted syntax that renders
+opaque.
+
+Verified live at every step, not just via `swaymsg -t get_outputs`'s
+effects flags: both `swaymsg reload` and `makoctl reload` clean, and
+grim screenshots of two real stacked toasts showing a clean edge between
+them and a visible lighter chip behind each line of text, not the whole
+card.
+
 ## 2026-09-14 (fix: caffeine keybind was unsearchable in keybind-search.py)
 
 Reported: searching for the caffeine keybind in `$mod+Shift+slash`'s
