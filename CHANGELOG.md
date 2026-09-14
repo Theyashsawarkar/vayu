@@ -5,6 +5,30 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: 0.85 alpha read as opaque at this card's size, not glass)
+
+Several rounds of remote guessing (pixel sampling, testing over wallpaper
+vs terminal, checking for a first-frame blur artifact) hadn't found
+anything wrong -- confirmed there was, in fact, a real problem, by asking
+for and getting an annotated, zoomed (392%) screenshot of the actual live
+toast: "Dark background" labeled the flat card body, "glass like
+background" labeled specifically the rounded top-right corner. The blur
+was only visibly doing anything right at that corner's edge antialiasing
+-- the bulk of the rectangular body read as a plain opaque dark box, not
+glass, despite `layer_effects "notifications"` genuinely having blur
+enabled the whole time (confirmed earlier via `swaymsg -t get_outputs`).
+
+Root cause, once an actual screenshot made it visible: wofi's own 0.85
+alpha (copied exactly in the previous entry, deliberately not guessed)
+works there because wofi's window covers a large fraction of the screen.
+This notification card is roughly 1/10th that area -- the same 0.85
+alpha leaves far too little of the compositor blur visible against that
+much smaller surface for it to read as anything but solid. Dropped
+`background-color` to 0x59 (~0.35 alpha) so blur actually dominates the
+fill across the whole card. Verified live over both the raw wallpaper
+and the dark terminal, confirming visible blur/depth across the entire
+body (not just one corner) with text still legible in both.
+
 ## 2026-09-14 (notifications: one glass card, not glass-behind-glass)
 
 Rejected directly, on sight, the moment it was live: "this is exactly
