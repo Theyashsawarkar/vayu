@@ -24,7 +24,15 @@ anchor=top-right
 # margin=10,2,0,0, the reported extent dropped to 422 (420+2), and a
 # fresh screenshot showed the rounded card's own edge as the true edge,
 # no separate rectangle beyond it.
-margin=10,2,0,0
+#
+# Top margin dropped from 10 to 2 for the exact same reason, found the
+# same way -- reported directly as "the top background goes out of the
+# top border": a zoomed screenshot of the real toast's top edge showed
+# the identical pattern, a flat-topped blurred rectangle sitting above
+# the actual rounded/bordered card, same as the right-edge bug above but
+# on the top side of the same baked-in-margin surface. Same fix, same
+# reasoning -- see the comment above in full.
+margin=2,2,0,0
 # width is a fixed value (mako's own docs: no shrink-to-fit); height is
 # a *maximum*, shrunk to fit shorter text -- confirmed directly (man
 # mako(5)). That combination is exactly why these looked square-ish:
