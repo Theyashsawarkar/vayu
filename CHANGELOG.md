@@ -5,6 +5,30 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: icons throughout, tighter date format -- fifth same-day pass)
+
+Asked directly to bring more design sense to the bar rather than tweak
+another color. The actual gap: session and docker were the only modules
+with an icon at all -- date and time were bare text, which read as
+unfinished/inconsistent next to everything else, no matter how good the
+colors were.
+
+**Added a calendar icon to date, a clock icon to time** -- confirmed both
+actually render in this exact font *before* using them (rendered
+candidates at 60pt in a real kitty window first): `F133` (calendar) and
+`F017` (clock-o) both render cleanly; `F64F` (fa-window-restore, considered
+for the window list) came back as an empty box in this font and was
+dropped rather than shipped unchecked. Same icon-then-double-space
+convention every other icon-bearing module here already uses.
+
+**Date trimmed from `%A %B %d` to `%a %b %d`** (`Mon Sep 14` instead of
+`Monday September 14`) -- the fully spelled-out weekday+month was the
+single widest, heaviest module in the whole bar, sitting right next to a
+compact `%I:%M %p` time; same information, abbreviated, now actually
+balances against its neighbor instead of visually dominating it.
+
+Verified live in the actual tmux tab.
+
 ## 2026-09-14 (tmux: Tailwind-400 palette, one considered shift instead of six ad-hoc hues)
 
 Fourth same-day tmux revision, asked directly to make the color choices
