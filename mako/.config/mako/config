@@ -3,7 +3,28 @@
 # --- Geometry & Positioning ---
 # Anchors alerts to the top right corner, perfectly clear of the Waybar pills
 anchor=top-right
-margin=10,20,0,0
+#
+# Right margin dropped from 20 to 2 -- real bug, found from an annotated
+# screenshot of the actual live toast calling out "the external
+# container" as its own visible rectangle, distinct from the toast's own
+# rounded/bordered card. Root-caused rather than guessed at the color
+# values again: `swaymsg -t get_outputs` while a real notification was
+# up reported this layer surface's own extent as 440px wide -- 20px
+# wider than the configured `width=420` below, exactly matching the old
+# right margin value. mako bakes its margin INTO the surface's own pixel
+# buffer rather than requesting true empty space outside a tightly-sized
+# surface via the layer-shell protocol's own margin fields -- so
+# SwayFX's `corner_radius`/`blur` in sway/config's layer_effects, which
+# operate on the FULL rectangular surface, were rounding and blurring a
+# 440-wide rectangle while mako's own rounded/tinted/bordered card only
+# actually draws across the left 420 of it, leaving that other 20px as a
+# plain sharp-cornered strip showing raw blurred background with none of
+# the card's own rounding, border, or tint -- exactly the separate
+# "container" rectangle reported. Confirmed the fix the same way: with
+# margin=10,2,0,0, the reported extent dropped to 422 (420+2), and a
+# fresh screenshot showed the rounded card's own edge as the true edge,
+# no separate rectangle beyond it.
+margin=10,2,0,0
 # width is a fixed value (mako's own docs: no shrink-to-fit); height is
 # a *maximum*, shrunk to fit shorter text -- confirmed directly (man
 # mako(5)). That combination is exactly why these looked square-ish:

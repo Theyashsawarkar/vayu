@@ -323,9 +323,22 @@ layer_effects "wofi" {
 # container behind all the toasts". wofi only ever shows one window at a
 # time, so its own shadow never hits this. corner_radius alone still
 # gets real rounded corners with a clean edge, no shared halo.
+#
+# blur_xray dropped too -- ruled out by direct isolation testing as the
+# cause of a second real bug (a separate sharp-cornered rectangle
+# visible around the rounded card, reported as "the external
+# container"): removing it alone didn't change that artifact at all, so
+# it wasn't blur_xray specifically causing it (the real cause was
+# mako/config's own margin -- see that file's own comment). Left off
+# anyway now that it's not needed: plain `blur` already blurs whatever's
+# genuinely behind the notification, which is the more honest behavior
+# for a popup that can appear over any window, rather than blur_xray's
+# "always blur the true desktop wallpaper regardless of what's actually
+# behind" -- wofi wants that specifically since it's meant to look the
+# same regardless of context; a notification appearing over whatever
+# you're actually doing doesn't need that same guarantee.
 layer_effects "notifications" {
     blur enable
-    blur_xray enable
     corner_radius 12
 }
 
