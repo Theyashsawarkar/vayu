@@ -5,6 +5,59 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (nvim: jk-to-escape, real measured startup fix, Catppuccin to match the rest of the desktop)
+
+Three changes, asked for together: a jk-escape insert-mode mapping, and
+a look at LazyVim performance/aesthetics.
+
+**`jk` -> `<Esc>` in insert mode** (`lua/config/keymaps.lua`) -- a plain
+two-character `vim.keymap.set("i", "jk", "<Esc>", ...)`. Relies on
+`timeoutlen` (confirmed live: 300ms, LazyVim's own default) to tell a
+fast "jk" apart from typing "j" then pausing or continuing with
+something else -- only the fast combo fires it.
+
+**Colorscheme: onedark.nvim -> Catppuccin Mocha**, matching every other
+themed app on this desktop (waybar, mako, wofi, kitty, tmux, rmpc, sway
+borders, swaylock, GTK) -- nvim was the one thing left on an unrelated
+palette. Not a cold install: `catppuccin` was already sitting in
+`lazy-lock.json`, pulled in as a dependency of something else but never
+actually activated -- confirmed on disk too
+(`~/.local/share/nvim/lazy/catppuccin` already existed). Switched via
+the standard LazyVim pattern (`opts.colorscheme` on the `LazyVim/LazyVim`
+spec) instead of onedark's own ad-hoc `require("onedark").load()` call,
+with real integrations enabled for what's actually installed (blink.cmp,
+noice, which-key, treesitter, mini) rather than left to fall back to
+each plugin's own default highlighting. `transparent_background = true`
+to match kitty/tmux/rmpc's own real transparency elsewhere.
+
+**Real, measured performance fix, not just a style swap**: `nvim
+--startuptime` showed onedark's ad-hoc loading path (`setup()` then
+`load()` in its own `config` function, not LazyVim's colorscheme
+mechanism) costing ~6ms on its own -- sourcing its `colors/onedark.lua`
+file alone was the single most expensive individual line in the whole
+startup log after lazy.nvim's own bootstrap. Also removed
+`lua/plugins/example.lua`, LazyVim's own inert starter-template file
+(guarded by `if true then return {} end`, never actually loaded
+anything) -- dead weight, not a real spec.
+
+Running `:Lazy! clean` to remove the now-orphaned `onedark.nvim` also
+swept up several other plugins that had no corresponding spec file
+anywhere in this repo's history (`harpoon`, `vim-dadbod` +
+`vim-dadbod-completion` + `vim-dadbod-ui`, `markdown-preview.nvim`,
+`render-markdown.nvim`, `SchemaStore.nvim`) -- installed on disk from
+some ad-hoc `:Lazy install` at some point, never actually part of the
+tracked, reproducible config. Flagged directly rather than assumed
+safe to lose silently: if any of these were genuinely still in daily
+use, they're one `lua/plugins/*.lua` file away from being properly
+tracked instead of living as untracked local state again.
+
+Verified with real before/after numbers, not just theory: `nvim
+--startuptime`, three runs each side, before averaging ~59ms, after
+consistently 33-40ms -- confirmed the drop holds up, not a one-off
+measurement. Then opened nvim in a real kitty window and screenshotted
+it: Catppuccin Mocha renders correctly, lualine picked up the new
+colorscheme automatically with no extra config needed.
+
 ## 2026-09-14 (docs site: hero no longer lets the next section peek in on a real 1080p screen)
 
 Reported directly on a screenshot: the very top of "What's in it" (the
