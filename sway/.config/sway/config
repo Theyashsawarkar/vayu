@@ -124,6 +124,13 @@ bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar
 # free -- checked against both literal binds and every $left/$down/$up/
 # $right variable expansion this time -- and "a" for "Awake" fits the
 # feature at least as well as "k" ever did.
+#
+# keybind-search.py only ever takes the single comment line immediately
+# above a bindsym as its description (see that script's own parsing
+# logic) -- the bug post-mortem above was that line until now, so this
+# binding searched as unrecognizable noise instead of "caffeine". This
+# line is what actually shows up there.
+# Toggle caffeine mode: keep the screen awake, don't auto-lock/suspend
 bindsym $mod+Shift+a exec ~/.local/bin/caffeine-toggle.sh
 
 # rmpc -- terminal music player, replacing termusic entirely (removed:
