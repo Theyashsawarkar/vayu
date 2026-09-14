@@ -16,12 +16,20 @@
 # routinely needed.
 #
 # `@{u}` (the configured upstream for the checked-out branch) rather
-# than a hardcoded branch name -- this machine's own `develop` tracks
-# `origin/develop`, but hardcoding that would silently stop checking
-# the right thing the moment `main` (or any other branch) is checked
-# out instead. A branch with no upstream configured (a throwaway local
-# branch, say) has nothing meaningful to compare against -- skipped
-# cleanly, not an error.
+# than a hardcoded branch name -- this machine's own `development`
+# tracks `origin/development`, but hardcoding that would silently stop
+# checking the right thing the moment `main` (or any other branch) is
+# checked out instead. A branch with no upstream configured (a
+# throwaway local branch, say) has nothing meaningful to compare
+# against -- skipped cleanly, not an error.
+#
+# "Stable"/"Nightly" in the notification/prompt below are derived
+# straight from the branch name (main -> Stable, development ->
+# Nightly), not read from a separate channel-preference file --
+# install.sh's own channel prompt only ever decides which branch gets
+# checked out in the first place (see docs/VERSIONING.md's "Update
+# channels" section), so the branch actually on disk already *is* the
+# persisted choice. Nothing else needs to remember it separately.
 set -uo pipefail
 
 DOTFILES_DIR="$HOME/dotfiles"
@@ -57,14 +65,21 @@ fi
 # today's session), that count is 0 and this correctly stays quiet
 # rather than prompting to "update" onto something older.
 LATEST_SUBJECT=$(git log -1 --format=%s "@{u}")
-log "$COUNT new commit(s) on $UPSTREAM, latest: $LATEST_SUBJECT"
+
+case "$BRANCH" in
+    main) CHANNEL="Stable" ;;
+    development) CHANNEL="Nightly" ;;
+    *) CHANNEL="$BRANCH" ;;
+esac
+
+log "$COUNT new commit(s) on $BRANCH ($CHANNEL), latest: $LATEST_SUBJECT"
 
 PLURAL_S=""
 [ "$COUNT" -ne 1 ] && PLURAL_S="s"
 
 notify-send -u normal \
     -i /usr/share/icons/Papirus/48x48/apps/system-software-update.svg \
-    "Desktop update available" \
-    "$COUNT new commit$PLURAL_S on $BRANCH -- latest: \"$LATEST_SUBJECT\""
+    "Desktop update available ($CHANNEL)" \
+    "$COUNT new commit$PLURAL_S -- latest: \"$LATEST_SUBJECT\""
 
 nwg-bar -t "$HOME/.config/nwg-bar/update-bar.json" -s "$HOME/.config/nwg-bar/update-bar-style.css" -i 40

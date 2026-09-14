@@ -24,11 +24,40 @@ fi
 log "Installing prerequisites (git, stow, base-devel)"
 sudo pacman -Sy --needed --noconfirm git stow base-devel
 
-log "Cloning dotfiles repo"
 if [ -d "$DOTFILES_DIR/.git" ]; then
+  log "Pulling latest dotfiles"
   git -C "$DOTFILES_DIR" pull --ff-only
 else
-  git clone "$REPO_URL" "$DOTFILES_DIR"
+  # Update channel, asked once here at first install -- not re-asked on
+  # idempotent re-runs above, since the branch is already decided by
+  # then. See docs/VERSIONING.md's "Update channels" section: this is
+  # the only place the choice is ever made -- scripts/.local/bin/
+  # update-check.sh (runs once per login from here on) just reads
+  # whichever branch actually ends up checked out, no separate
+  # preference file to keep in sync with this one.
+  #
+  # Explicit /dev/tty, not plain stdin: documented usage is
+  # `bash <(curl -fsSL ...)` (process substitution, real terminal stdin
+  # already), but reading from /dev/tty directly means this still
+  # prompts correctly even for someone who runs it as `curl ... | bash`
+  # instead, where stdin is genuinely the pipe -- rather than silently
+  # skipping straight to the default with no chance to ask. `|| true`
+  # + the empty-string fallthrough below cover the case where no
+  # controlling terminal exists at all (fully non-interactive/CI-style
+  # invocation): falls through to Stable, the same as just pressing
+  # Enter, never hangs waiting for input that can't come.
+  echo
+  echo "Which update channel?"
+  echo "  1) Stable  (main -- tagged releases only) [default]"
+  echo "  2) Nightly (development -- day-to-day work, may break)"
+  CHANNEL_CHOICE=""
+  read -r -p "Choice [1]: " CHANNEL_CHOICE </dev/tty || true
+  case "$CHANNEL_CHOICE" in
+    2) BRANCH="development" ;;
+    *) BRANCH="main" ;;
+  esac
+  log "Cloning dotfiles repo ($BRANCH)"
+  git clone -b "$BRANCH" "$REPO_URL" "$DOTFILES_DIR"
 fi
 cd "$DOTFILES_DIR"
 

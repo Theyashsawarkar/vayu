@@ -5,6 +5,57 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (`develop` renamed to `development`; install.sh asks Stable or Nightly)
+
+Two related changes to the branch model itself, on top of yesterday's
+update-checker feature:
+
+**`develop` renamed to `development`, both locally and on GitHub** --
+via GitHub's own branch-rename API (`gh api -X POST .../branches/develop/rename`),
+not a manual delete-and-recreate: preserves the branch's real identity
+(the two historical PRs against it, both already closed/merged, still
+resolve correctly) rather than just faking the same result with a new
+ref at the same commit. Confirmed no branch protection and no open PRs
+first, and confirmed GitHub Pages builds from `main` (untouched by this
+either way), before touching anything. Local side: `git branch -m
+develop development`, then `git fetch origin --prune` cleanly removed
+the now-dangling `origin/develop` remote-tracking ref and picked up
+`origin/development`, then explicitly re-pointed the local branch's
+upstream (`git branch -u origin/development development`) rather than
+assuming the rename alone carried it over. Verified end to end: fresh
+test clones of both `main` and `development` by name against the real
+remote, confirmed each correctly tracks its own `origin/<branch>`.
+
+**`install.sh` now asks Stable or Nightly at first install, Stable
+default** -- previously always cloned whatever GitHub's default branch
+was (`main`) with no choice offered at all. Only asked once, at first
+clone (not on idempotent re-runs, where the branch is already decided).
+Reads from `/dev/tty` explicitly rather than plain stdin: the documented
+install command is `bash <(curl -fsSL ...)` (process substitution, real
+terminal stdin already), but this way it still prompts correctly even
+for `curl ... | bash` instead (stdin genuinely replaced), and falls
+through cleanly to the Stable default rather than hanging if no
+controlling terminal exists at all (fully non-interactive/CI-style
+invocation) -- confirmed this exact fallback path directly, not assumed:
+`/dev/tty` doesn't exist in this sandboxed environment either, and the
+prompt correctly defaulted to Stable rather than erroring out.
+
+No separate channel-preference file anywhere -- `scripts/.local/bin/
+update-check.sh` (yesterday's entry) already derived everything from
+whatever's actually checked out, so it needed only a small addition:
+show "Stable"/"Nightly" in its notification instead of the raw branch
+name (`main` -> Stable, `development` -> Nightly), derived the same way,
+not read from anywhere new. The branch on disk already *is* the
+persisted choice; see `docs/VERSIONING.md`'s new "Update channels"
+section for the full picture.
+
+`docs/VERSIONING.md` and `docs/ARCHITECTURE.md` updated throughout to
+say `development` instead of `develop` -- CHANGELOG.md's own existing
+historical entries that mention `develop` by name are deliberately left
+exactly as they were: they're narrating what was actually true at the
+time, not describing current reality, the same reasoning every other
+entry here has always followed for not rewriting history.
+
 ## 2026-09-14 (new feature: check GitHub for updates on every boot, ask before applying)
 
 Asked directly: check for updates automatically on every boot, and if

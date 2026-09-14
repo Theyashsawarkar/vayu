@@ -10,26 +10,44 @@ this repo follows a real release pattern.
 ## Branch model
 
 - **`main`** -- always the last known-good, tagged release. Nothing lands here
-  directly. The only things that ever touch `main` are merges from `develop`
-  (each one tagged) and, rarely, a hotfix branched straight off `main` for
-  something urgent that can't wait for `develop` to be ready.
-- **`develop`** -- the active branch. All day-to-day work happens here:
-  every feature, fix, and tweak, committed the same way this repo always has
-  (detailed messages, real bugs found and how they were verified, no
-  shortcuts). This is the branch to be on for anything that isn't "cut a
-  release".
-- Feature branches off `develop` are optional, not mandatory -- fine to work
-  directly on `develop` for most changes, matching how this repo has always
-  worked; branch off it only for something big/risky enough to want isolated
-  review before it touches `develop` itself.
+  directly. The only things that ever touch `main` are merges from
+  `development` (each one tagged) and, rarely, a hotfix branched straight off
+  `main` for something urgent that can't wait for `development` to be ready.
+  This is also the **Stable** update channel (see below) -- `install.sh`
+  checks this out by default.
+- **`development`** -- the active branch (renamed from `develop` -- both the
+  local and GitHub remote branch were renamed together via GitHub's own
+  branch-rename API, not a manual delete+recreate, so history/references
+  stayed intact). All day-to-day work happens here: every feature, fix, and
+  tweak, committed the same way this repo always has (detailed messages,
+  real bugs found and how they were verified, no shortcuts). This is the
+  branch to be on for anything that isn't "cut a release", and it's also the
+  **Nightly** update channel -- day-to-day work, may break.
+- Feature branches off `development` are optional, not mandatory -- fine to
+  work directly on `development` for most changes, matching how this repo
+  has always worked; branch off it only for something big/risky enough to
+  want isolated review before it touches `development` itself.
+
+## Update channels (Stable vs Nightly)
+
+`install.sh` asks once, at first install, which of these two branches to
+track -- **Stable** (`main`, default) or **Nightly** (`development`).
+Whichever is chosen is just what ends up checked out in `~/dotfiles`; nothing
+else is channel-aware beyond that. `scripts/.local/bin/update-check.sh` (runs
+once per login, see its own comments and `docs/ARCHITECTURE.md`'s package
+card for the full mechanism) reads whatever branch is actually checked out
+and its real upstream, deriving the "Stable"/"Nightly" label it shows in its
+notification/prompt straight from the branch name (`main` -> Stable,
+`development` -> Nightly) -- there's no separate channel-preference file to
+drift out of sync with what's genuinely on disk.
 
 ## Cutting a release
 
-1. Make sure `develop` is in a state that's actually been tested live on the
-   real system, not just written and assumed correct -- same standard this
-   repo has always held changes to, just applied at the branch level now
+1. Make sure `development` is in a state that's actually been tested live on
+   the real system, not just written and assumed correct -- same standard
+   this repo has always held changes to, just applied at the branch level
    too.
-2. Merge `develop` into `main` (fast-forward if possible, no rebasing
+2. Merge `development` into `main` (fast-forward if possible, no rebasing
    history that's already been pushed).
 3. Tag the merge commit: `git tag -a vX.Y.Z -m "..."` -- annotated, not
    lightweight, so the tag itself carries a real message about what the
