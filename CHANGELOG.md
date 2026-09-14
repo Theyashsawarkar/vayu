@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: one glass card, not glass-behind-glass)
+
+Rejected directly, on sight, the moment it was live: "this is exactly
+what i dont want... make that toast glass like not the background of the
+whole toast." The previous entry's mistake, in hindsight: it copied
+wofi's window+`#input` duality literally, but that duality exists in
+wofi because the input field is a real, separate interactive widget
+sitting on top of the window -- a toast's text isn't a second widget,
+it's just the toast's own content. Layering a second, separately-tinted
+panel behind the text on top of an already-glass card gave two
+translucent layers competing on one small surface, which read as messy,
+not glass.
+
+Dropped the `<span background=...>` text-panel wrapper entirely,
+reverting mako/config's `format=` back to plain `%s`/`%b`. Left
+everything else from the previous entry untouched -- `layer_effects
+"notifications"`'s blur/blur_xray, and background-color/border-color at
+wofi's own 0.85/0.55 alpha -- since the card itself being glass was
+never the part that was wrong, only the extra layer on top of it.
+Verified live: `makoctl reload` clean, grim screenshot of two real
+stacked toasts confirming one unified glass surface with text sitting
+directly on it, no second panel.
+
 ## 2026-09-14 (notifications: replicate wofi's actual glass recipe instead of guessing)
 
 Pointed directly at `wofi/style.css` as the reference after two rounds of
