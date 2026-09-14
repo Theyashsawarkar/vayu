@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: time module recolored, cyan to fuchsia)
+
+Sixth same-day tmux revision. Asked to change the time color with no
+target given -- rather than guess, offered three considered options
+(fuchsia, a neutral white/silver, or teal) and let the choice be made
+directly. Fuchsia-400 (`#E879F9`) picked.
+
+Cyan sat only ~28 degrees from session's Blue on the hue wheel -- close
+enough to read as nearly the same color at a glance in a small font.
+Fuchsia is the one hue in the current six-color set that doesn't neighbor
+anything else already in use (Blue/Violet/Emerald/Amber/Rose each keep
+their own lane), so it reads as a genuinely distinct signal rather than a
+near-repeat of session's color.
+
+Verified live in the actual tmux tab.
+
 ## 2026-09-14 (tmux: icons throughout, tighter date format -- fifth same-day pass)
 
 Asked directly to bring more design sense to the bar rather than tweak
