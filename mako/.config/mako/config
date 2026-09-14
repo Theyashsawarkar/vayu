@@ -24,7 +24,32 @@ padding=15
 # --- Typography ---
 font=JetBrainsMono Nerd Font 12
 markup=1
-format=<b>%s</b>\n%b
+#
+# Real request: a glass panel behind the *text specifically*, with the
+# toast card itself staying a plain solid color -- the opposite of the
+# compositor-level blur tried earlier (see sway/config's own comment on
+# that), which made the whole card translucent instead. mako has no
+# per-region background of its own, but its `format` is real Pango
+# markup (markup=1, confirmed in `man mako(5)`'s own FORMAT SPECIFIERS
+# section) -- a `<span background=...>` wrapped around %s/%b gives the
+# text its own tinted backing distinct from background-color above,
+# confirmed live via grim screenshots showing a real lighter chip sitting
+# behind each line, not the whole card.
+#
+# `bgalpha="18%"` (Pango's own documented attribute for span background
+# transparency) does NOT work here -- confirmed directly: it makes
+# `makoctl reload` fail outright with "Unable to parse configuration
+# file", while the exact same span with only `background=` and no
+# `bgalpha` reloads fine. Whatever Pango/markup version mako links
+# against here doesn't accept it. Worked around with an 8-digit RGBA hex
+# directly in `background` itself (`#CDD6F42E` = Lavender at ~18% alpha,
+# `#CDD6F41A` at ~10% for the quieter body line) -- confirmed this
+# parses AND actually renders translucent, not just accepted syntax that
+# renders opaque. Leading/trailing spaces inside each span are
+# deliberate padding: Pango's span background hugs the glyph bounding
+# box exactly with none of its own, so the chip would otherwise clip
+# tight to the letters.
+format=<span background="#CDD6F42E"><b> %s </b></span>\n<span background="#CDD6F41A"> %b </span>
 
 # --- Icons ---
 # Every notify-send call across this desktop's own scripts now passes a
