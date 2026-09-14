@@ -68,6 +68,7 @@ sudo
 swaybg
 swayidle
 swayimg
+terraform
 thunar
 tmux
 tree

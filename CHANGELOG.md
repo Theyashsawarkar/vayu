@@ -5,6 +5,90 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (nvim: full MERN/DevOps/GenAI LazyVim extras, real reproducible harpoon+dadbod, detailed icons)
+
+Follow-up to the same day's earlier nvim entry -- asked directly for a
+LazyVim setup built for "MERN + DevOps + GenAI + Next.js, and we're
+going with turborepo" specifically, with harpoon and the dadbod trio
+back (this time properly tracked, not ad-hoc installs), and more
+detailed file icons. Read LazyVim's actual extras directory
+(`~/.local/share/nvim/lazy/LazyVim/lua/lazyvim/plugins/extras/`)
+directly rather than guessing extra names or what each one does, and
+checked `lazyvim.json`'s own consumption code
+(`lazyvim/config/init.lua`) to confirm the exact format it expects
+(full `lazyvim.plugins.extras.*` module paths) before writing anything.
+
+**16 extras enabled** in `lazyvim.json` (this is the *only* config file
+that changed for this -- LazyVim extras are the entire mechanism, no
+custom plugin specs needed):
+
+- `lang.typescript` -- JS/TS/React/Next.js (vtsls by default) + real
+  Node.js debugging (js-debug-adapter, launch/attach configs) bundled
+  in, confirmed by reading the file directly.
+- `lang.tailwind`, `lang.json`, `lang.yaml`, `lang.docker`,
+  `lang.terraform`, `lang.markdown`, `lang.git` -- the rest of a
+  MERN+Next.js+monorepo+DevOps file surface (package.json/tsconfig
+  schemas, k8s/compose YAML, Dockerfiles, Terraform, docs, commit
+  messages).
+- `lang.sql` -- **this is what actually brings vim-dadbod/
+  vim-dadbod-ui/vim-dadbod-completion back**, properly wired into
+  blink.cmp (confirmed reading the file: it has a real blink.cmp
+  integration block, not just nvim-cmp) rather than as three
+  hand-rolled specs. MongoDB itself needs a real connection string this
+  repo will never hold -- set `vim.g.dbs` in a project-local `.lazy.lua`
+  file (LazyVim's own documented mechanism for this, see the extra's
+  own doc comment), gitignored, same pattern this repo already uses for
+  `~/.zshrc.local` and other real secrets.
+- `formatting.prettier`, `linting.eslint` -- standard JS/TS tooling.
+- `dap.core` -- the actual debugger UI/keybindings `lang.typescript`'s
+  own DAP config depends on (marked `optional = true` in that file,
+  confirmed it only activates once this is present).
+- `editor.harpoon2` -- **the real, current LazyVim-maintained way harpoon
+  comes back**, branch `harpoon2` (the modern rewrite, matching what was
+  actually orphaned before, not the old v1).
+- `util.rest` -- `kulala.nvim`, an in-editor HTTP/GraphQL client for
+  hitting Express endpoints directly from a `.http` file, alongside
+  Bruno rather than replacing it.
+- `ai.claudecode` -- `coder/claudecode.nvim`, chosen specifically over
+  the many other `ai.*` extras (copilot, codeium, avante, tabnine, …)
+  because it's real in-editor integration with the actual tool already
+  in daily use for this whole setup, not a guess at which AI assistant
+  to wire up.
+- `ui.treesitter-context` -- sticky enclosing-scope bar, genuinely
+  useful for deeply-nested JSX/YAML, not just decorative.
+
+**Also fixes "icons aren't detailed"**, without switching icon
+providers (would have undone real work from the earlier entry --
+`mini.icons` stays): several of the extras above ship their own
+`mini.icons` overrides for exactly the files a JS/TS project has
+constantly open. Confirmed directly, before and after enabling them:
+`tsconfig.json` went from a generic settings glyph to its own dedicated
+one; same for `package.json`, `.eslintrc.js`, `yarn.lock`, and others.
+
+**`terraform` added to `packages/pacman.txt`** -- `lang.terraform`'s own
+formatting/linting wiring shells out to the real `terraform` CLI (Mason
+only manages `terraform-ls`, the LSP server, and `tflint`), which
+wasn't installed on this machine. Not installed here yet either --
+`packages/*.txt` are the reproducible manifest, actually running
+`sudo pacman -S terraform` on this machine is a separate manual step,
+same "flagged, not silently skipped" treatment this repo already gives
+anything needing root.
+
+Verified thoroughly, not just written and assumed correct: ran the
+actual `:Lazy sync` + Mason installs for real (headless, backgrounded
+across a couple of retries since several packages -- prettier,
+eslint-lsp, terraform-ls, tflint, yaml-language-server -- needed more
+than one wait window to finish downloading), then confirmed all 16
+Mason-managed tools report `is_installed() == true` and every expected
+plugin appears in `lazy-lock.json`. Startup time re-measured with
+everything active: ~53-58ms across three runs -- essentially the same
+as the *original* onedark-only baseline from before any of today's nvim
+work (~59ms), despite now having the full language/DAP/formatting/
+linting/AI stack instead of just a colorscheme. Opened a real `.tsx`
+file in a fresh kitty window afterward and screenshotted it: rich,
+correctly-scoped Catppuccin syntax highlighting on real JSX/TypeScript,
+not just a solid-color placeholder.
+
 ## 2026-09-14 (nvim: jk-to-escape, real measured startup fix, Catppuccin to match the rest of the desktop)
 
 Three changes, asked for together: a jk-escape insert-mode mapping, and
