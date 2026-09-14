@@ -5,6 +5,32 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: Tailwind-400 palette, one considered shift instead of six ad-hoc hues)
+
+Fourth same-day tmux revision, asked directly to make the color choices
+more aesthetic. The six colors so far (session Blue, active-window Purple,
+inactive-window Green, docker Amber, date Rose, time Cyan) were each
+individually pulled from Tailwind's exact hex spec at its "500" weight --
+never actually chosen as one family. Two concrete problems with that:
+inconsistent luminance made some read duller than others next to each
+other, and the two warm hues (Amber, Rose) sit directly on this desktop's
+own warm-orange wallpaper, hurting their contrast specifically here (a cool
+palette holds up against a warm background; warm-on-warm doesn't).
+
+**Shifted the whole set to Tailwind's "400" weight uniformly** rather than
+re-picking hues ad hoc: blue-400 `#60A5FA`, violet-400 `#A78BFA`,
+emerald-400 `#34D399`, amber-400 `#FBBF24`, rose-400 `#FB7185`, cyan-400
+`#22D3EE`. Same hue identity per role as before, only the shade moved --
+one deliberate lightness/chroma step applied consistently is the same
+principle Catppuccin's own accent colors use internally (one shared
+formula generating the whole set, not independently chosen swatches), and
+400 specifically reads as a genuine glow against a dark/transparent
+background rather than the flatter "brand logo" register 500 is designed
+for.
+
+Verified live in the actual tmux tab, not assumed from the hex values
+alone -- screenshotted the reloaded bar directly.
+
 ## 2026-09-14 (tmux: dropped the per-module fill, active window back to text-only)
 
 Third same-day tmux revision. Two direct asks, both applied:
