@@ -5,6 +5,45 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (nvim: transparency bug #3 -- floating windows have their own separate toggle)
+
+Reported directly again, with a screenshot: the file explorer sidebar still
+showed a solid box after the previous entry's fix, wallpaper visible
+everywhere else. First checked what was actually rendering it rather than
+guessing -- **neo-tree.nvim isn't even installed** (confirmed: no match in
+`lazy-lock.json`, and grepping LazyVim's own `config/init.lua` shows
+`explorer = { { name = "snacks", extra = "editor.snacks_explorer" } }` --
+`Snacks.explorer()` is this LazyVim's actual default), so time wasn't spent
+adding a `neotree` integration key that would have been a silent no-op.
+
+Root cause: `transparent_background` only ever conditions `Normal`/`NormalNC`
+(`catppuccin/groups/editor.lua`). Every floating-window surface --
+`NormalFloat`, and anything that links to it -- is gated by a **separate**
+option, `float.transparent` (`types.lua`: `CtpFloatOpts`), default `false`.
+Snacks' own integration (`groups/integrations/snacks.lua`) links
+`SnacksPicker` (what the explorer actually renders through) straight to
+`NormalFloat` -- so the first fix never touched it. Added
+`float = { transparent = true }` alongside `transparent_background` in
+`lua/plugins/catppuccin.lua`. This one option covers every floating surface
+at once, not just the file tree -- LSP hover/signature, noice popups,
+which-key's popup, any picker.
+
+(Also checked catppuccin's separate `kitty` option, a documented workaround
+for a real kitty quirk (kovidgoyal/kitty#2917: kitty can make a cell
+transparent if its color happens to exactly match kitty's own configured
+background). Not enabled -- it addresses the opposite problem, something
+unintentionally going see-through, and nothing here was exhibiting that.)
+
+Verified live, not just headless: `nvim_get_hl(0, {name="NormalFloat"})`
+now reports no `bg`, and a fresh kitty window with a real `Snacks.explorer()`
+open shows the desktop wallpaper through the sidebar, matching the dashboard.
+Also traced why a *different* already-open nvim window (a long-running
+session on an unrelated project, started 16:53 -- before either transparency
+fix existed) still looked solid in the screenshot: lazy.nvim resolves plugin
+priority/config once at startup, so an already-running session can't pick up
+a colorscheme/plugin-loading change without a restart. Not a bug, just a
+stale process.
+
 ## 2026-09-14 (nvim: Catppuccin transparency actually root-caused -- two separate lazy.nvim bugs, not one)
 
 Reported directly: "i want the theme to be transparent and its not" -- despite

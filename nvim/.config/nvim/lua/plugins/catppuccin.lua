@@ -51,6 +51,22 @@ return {
       -- transparency elsewhere on this desktop, not just nvim's own
       -- background left unset -- same "glass" language throughout.
       transparent_background = true,
+      -- transparent_background above only ever covered Normal/NormalNC --
+      -- a SEPARATE option gates every floating-window surface
+      -- (NormalFloat, and anything that links to it). Root-caused after
+      -- seeing the file explorer (Snacks.explorer, this LazyVim's actual
+      -- default -- neo-tree isn't even installed here, confirmed by
+      -- checking lazy-lock.json before chasing the wrong integration)
+      -- still show a solid mantle-colored box while the rest of the UI
+      -- had already gone transparent: catppuccin/groups/editor.lua
+      -- conditions `NormalFloat`'s bg on `O.float.transparent`, not
+      -- `O.transparent_background`, and Snacks' own integration
+      -- (groups/integrations/snacks.lua) links `SnacksPicker` straight to
+      -- `NormalFloat` -- so the explorer/picker chrome was never touched
+      -- by the first fix at all. This one option covers every floating
+      -- surface at once (LSP hover/signature, noice popups, which-key,
+      -- the explorer/picker), not just the file tree.
+      float = { transparent = true },
       -- Explicit integrations for exactly what's actually installed
       -- (checked lazy-lock.json first, not enabled speculatively) --
       -- an unlisted integration just means that plugin keeps its own
