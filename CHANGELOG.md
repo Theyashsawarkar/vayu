@@ -5,6 +5,36 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: replicate wofi's actual glass recipe instead of guessing)
+
+Pointed directly at `wofi/style.css` as the reference after two rounds of
+guessing hadn't landed: "that glass like background and text combination
+is good and iconic, i would love to replicate that." Read it as ground
+truth instead of eyeballing more screenshots -- wofi's glass is three
+concrete, already-tuned numbers, not a vibe:
+
+1. Real compositor blur (`blur`/`blur_xray` via `layer_effects`).
+2. Window background at 0.85 alpha -- wofi's own history records trying
+   0.62 first and finding blurred-wallpaper brightness washed out text,
+   landing on 0.85 as the tuned fix.
+3. A second panel (`#input`) layered on top at Surface0/0.45 alpha, not
+   a flat solid box -- the actual source of the "text combination" look.
+
+Applied the same three numbers to mako, not new ones: `layer_effects
+"notifications"` gets `blur`/`blur_xray` back (shadows still
+deliberately left off -- separate real finding, see the entry below: two
+stacked toasts blend their shadows into one shared halo, which wofi
+never hits showing only one window at a time); mako's
+`background-color`/`border-color` moved to the exact same 0.85/0.55
+alpha as wofi's window/border; the text-panel span from the previous
+entry recolored from an arbitrary Lavender tint to Surface0 at wofi's
+own 0.45, matching its `#input` by color, not just by being translucent.
+
+Verified live at every step: both `swaymsg reload` and `makoctl reload`
+clean, and grim screenshots of two real stacked toasts over both the
+terminal and Zen, confirmed against `wofi/style.css`'s literal values
+rather than judged by eye alone.
+
 ## 2026-09-14 (notifications: glass belongs behind the text, not the whole card; dropped the shared shadow halo)
 
 Two more real problems reported live after the previous blur revert
