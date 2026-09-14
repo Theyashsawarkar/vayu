@@ -25,37 +25,18 @@ padding=15
 font=JetBrainsMono Nerd Font 12
 markup=1
 #
-# Real ask: replicate wofi's actual glass recipe (wofi/style.css), not
-# just "translucent somewhere" -- wofi gets its look from THREE things
-# together: (1) real compositor blur behind the whole window
-# (layer_effects "wofi" in sway/config), (2) that window's own
-# background at 0.85 alpha, tuned specifically so blurred-wallpaper
-# brightness doesn't wash out text (wofi/style.css's own comment on
-# raising it from 0.62), and (3) its #input field layered on top with
-# its OWN distinct tint (Surface0 at 0.45 alpha) -- a second glass layer
-# sitting on the first, not a flat solid box. mako can do (1) and (2)
-# exactly the same way (see layer_effects "notifications" in
-# sway/config) since both are compositor/background-color mechanics, but
-# (3) has no real equivalent: mako's `format` is Pango markup
-# (markup=1), which can tint a `<span background=...>` behind text, but
-# that's a flat fill with no blur of its own -- the closest available
-# approximation of a second glass layer, not the real thing GTK CSS
-# gives wofi.
-#
-# `bgalpha="45%"` (Pango's own documented attribute for span background
-# transparency) does NOT work here -- confirmed directly: it makes
-# `makoctl reload` fail outright with "Unable to parse configuration
-# file", while the exact same span with only `background=` and no
-# `bgalpha` reloads fine. Worked around with an 8-digit RGBA hex directly
-# in `background` itself instead -- confirmed this parses AND actually
-# renders translucent. `#313244` (Surface0) at the same 0.45 alpha as
-# wofi's own #input, rather than the Lavender tint tried initially, so
-# the text panel's color matches wofi's layered-input look, not just its
-# opacity. Leading/trailing spaces inside each span are deliberate
-# padding: Pango's span background hugs the glyph bounding box exactly
-# with none of its own, so the chip would otherwise clip tight to the
-# letters.
-format=<span background="#31324473"><b> %s </b></span>\n<span background="#31324473"> %b </span>
+# Plain again, no span/background wrapping -- explicitly reverted. Two
+# rounds tried layering a second tinted panel behind the text specifically
+# (first Lavender, then Surface0 matching wofi's #input) on top of a
+# glass card -- rejected directly, on sight, as "exactly what i dont
+# want": a card that's already blurred/translucent (layer_effects
+# "notifications" + background-color below) doesn't also need a second,
+# separate solid-ish layer competing with it behind the text. wofi's
+# #input is a genuinely separate interactive widget on top of its window
+# that earns its own distinct panel; a toast's text isn't a second
+# widget, it's just the toast's own content -- one glass surface, text
+# sitting directly on it, not glass-behind-glass.
+format=<b>%s</b>\n%b
 
 # --- Icons ---
 # Every notify-send call across this desktop's own scripts now passes a
