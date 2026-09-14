@@ -6,6 +6,20 @@
 #
 #   bash <(curl -fsSL https://raw.githubusercontent.com/Theyashsawarkar/vayu/main/install.sh)
 #
+# Prompts once for an update channel (Stable/Nightly, Stable default) unless
+# one is passed directly as the first argument -- `stable` or `nightly`,
+# case-insensitive -- which skips the prompt entirely:
+#
+#   bash <(curl -fsSL .../main/install.sh) stable
+#   bash <(curl -fsSL .../main/install.sh) nightly
+#
+# This is what the docs site's own two download buttons hand you -- the
+# installer script itself always comes from `main` either way (the
+# best-tested copy of install.sh), only which branch of the *dotfiles* gets
+# cloned differs. Anything else passed as the argument is a hard error, not
+# a silent fallback to Stable -- a typo here should be caught immediately,
+# not quietly install the wrong channel.
+#
 # Idempotent: safe to re-run (e.g. after adding a package to packages/*.txt).
 
 set -euo pipefail
@@ -28,34 +42,47 @@ if [ -d "$DOTFILES_DIR/.git" ]; then
   log "Pulling latest dotfiles"
   git -C "$DOTFILES_DIR" pull --ff-only
 else
-  # Update channel, asked once here at first install -- not re-asked on
-  # idempotent re-runs above, since the branch is already decided by
-  # then. See docs/VERSIONING.md's "Update channels" section: this is
-  # the only place the choice is ever made -- scripts/.local/bin/
-  # update-check.sh (runs once per login from here on) just reads
-  # whichever branch actually ends up checked out, no separate
-  # preference file to keep in sync with this one.
-  #
-  # Explicit /dev/tty, not plain stdin: documented usage is
-  # `bash <(curl -fsSL ...)` (process substitution, real terminal stdin
-  # already), but reading from /dev/tty directly means this still
-  # prompts correctly even for someone who runs it as `curl ... | bash`
-  # instead, where stdin is genuinely the pipe -- rather than silently
-  # skipping straight to the default with no chance to ask. `|| true`
-  # + the empty-string fallthrough below cover the case where no
-  # controlling terminal exists at all (fully non-interactive/CI-style
-  # invocation): falls through to Stable, the same as just pressing
-  # Enter, never hangs waiting for input that can't come.
-  echo
-  echo "Which update channel?"
-  echo "  1) Stable  (main -- tagged releases only) [default]"
-  echo "  2) Nightly (development -- day-to-day work, may break)"
-  CHANNEL_CHOICE=""
-  read -r -p "Choice [1]: " CHANNEL_CHOICE </dev/tty || true
-  case "$CHANNEL_CHOICE" in
-    2) BRANCH="development" ;;
-    *) BRANCH="main" ;;
-  esac
+  # Update channel: either handed directly as $1 (what the docs site's
+  # own download buttons pass), or asked interactively here at first
+  # install if not -- not re-asked on idempotent re-runs above, since
+  # the branch is already decided by then. See docs/VERSIONING.md's
+  # "Update channels" section: this is the only place the choice is
+  # ever made -- scripts/.local/bin/update-check.sh (runs once per
+  # login from here on) just reads whichever branch actually ends up
+  # checked out, no separate preference file to keep in sync with this
+  # one.
+  if [ "${1:-}" != "" ]; then
+    case "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" in
+      stable) BRANCH="main" ;;
+      nightly) BRANCH="development" ;;
+      *)
+        echo "Unknown channel '$1' -- expected 'stable' or 'nightly'." >&2
+        exit 1
+        ;;
+    esac
+  else
+    # Explicit /dev/tty, not plain stdin: documented usage is
+    # `bash <(curl -fsSL ...)` (process substitution, real terminal
+    # stdin already), but reading from /dev/tty directly means this
+    # still prompts correctly even for someone who runs it as
+    # `curl ... | bash` instead, where stdin is genuinely the pipe --
+    # rather than silently skipping straight to the default with no
+    # chance to ask. `|| true` + the empty-string fallthrough below
+    # cover the case where no controlling terminal exists at all
+    # (fully non-interactive/CI-style invocation): falls through to
+    # Stable, the same as just pressing Enter, never hangs waiting for
+    # input that can't come.
+    echo
+    echo "Which update channel?"
+    echo "  1) Stable  (main -- tagged releases only) [default]"
+    echo "  2) Nightly (development -- day-to-day work, may break)"
+    CHANNEL_CHOICE=""
+    read -r -p "Choice [1]: " CHANNEL_CHOICE </dev/tty || true
+    case "$CHANNEL_CHOICE" in
+      2) BRANCH="development" ;;
+      *) BRANCH="main" ;;
+    esac
+  fi
   log "Cloning dotfiles repo ($BRANCH)"
   git clone -b "$BRANCH" "$REPO_URL" "$DOTFILES_DIR"
 fi
