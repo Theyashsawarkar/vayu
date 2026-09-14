@@ -308,24 +308,24 @@ layer_effects "wofi" {
     shadows enable
 }
 
-# Tried real compositor blur here (same layer_effects treatment as
-# wofi above, namespace confirmed live via `swaymsg -t get_outputs`) --
-# reverted after seeing it live: blur_xray makes the *entire* toast
-# translucent, showing the blurred wallpaper straight through the whole
-# card behind the text. That reads as "the toast has a see-through glass
-# background", not the intended look -- a solid, legible card is what's
-# wanted here, glass only immediately behind the text itself (see
-# mako/config's own format= for how that part is actually done, via a
-# Pango markup span, not a compositor effect at all).
+# History on this block: went blur+blur_xray+shadows -> reverted to
+# corner_radius-only (read as "a window into the wallpaper" without
+# wofi's supporting alpha/border tuning) -> back to blur+blur_xray now,
+# explicitly matching wofi's own working recipe above (same blur
+# mechanism, mako/config's background-color/border-color now at the same
+# 0.85/0.55 alpha wofi uses, not a from-scratch guess this time).
 #
-# shadows enable was also here and got reverted too -- with two
-# notifications stacked directly against each other (mako has no
-# between-notification gap setting), their individual soft shadows blend
-# into one continuous dark halo behind the whole stack, reported
-# directly as "a translucent container behind all the toasts". Plain
-# corner_radius alone still gets real rounded corners with a clean edge,
-# no shared halo.
+# shadows still left off, unlike wofi's block above -- that part's a
+# real, unrelated finding, not tuning to taste: with two notifications
+# stacked directly against each other (mako has no between-notification
+# gap setting), their individual soft shadows blend into one continuous
+# dark halo behind the whole stack, reported directly as "a translucent
+# container behind all the toasts". wofi only ever shows one window at a
+# time, so its own shadow never hits this. corner_radius alone still
+# gets real rounded corners with a clean edge, no shared halo.
 layer_effects "notifications" {
+    blur enable
+    blur_xray enable
     corner_radius 12
 }
 

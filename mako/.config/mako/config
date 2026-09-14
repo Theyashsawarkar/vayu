@@ -25,31 +25,37 @@ padding=15
 font=JetBrainsMono Nerd Font 12
 markup=1
 #
-# Real request: a glass panel behind the *text specifically*, with the
-# toast card itself staying a plain solid color -- the opposite of the
-# compositor-level blur tried earlier (see sway/config's own comment on
-# that), which made the whole card translucent instead. mako has no
-# per-region background of its own, but its `format` is real Pango
-# markup (markup=1, confirmed in `man mako(5)`'s own FORMAT SPECIFIERS
-# section) -- a `<span background=...>` wrapped around %s/%b gives the
-# text its own tinted backing distinct from background-color above,
-# confirmed live via grim screenshots showing a real lighter chip sitting
-# behind each line, not the whole card.
+# Real ask: replicate wofi's actual glass recipe (wofi/style.css), not
+# just "translucent somewhere" -- wofi gets its look from THREE things
+# together: (1) real compositor blur behind the whole window
+# (layer_effects "wofi" in sway/config), (2) that window's own
+# background at 0.85 alpha, tuned specifically so blurred-wallpaper
+# brightness doesn't wash out text (wofi/style.css's own comment on
+# raising it from 0.62), and (3) its #input field layered on top with
+# its OWN distinct tint (Surface0 at 0.45 alpha) -- a second glass layer
+# sitting on the first, not a flat solid box. mako can do (1) and (2)
+# exactly the same way (see layer_effects "notifications" in
+# sway/config) since both are compositor/background-color mechanics, but
+# (3) has no real equivalent: mako's `format` is Pango markup
+# (markup=1), which can tint a `<span background=...>` behind text, but
+# that's a flat fill with no blur of its own -- the closest available
+# approximation of a second glass layer, not the real thing GTK CSS
+# gives wofi.
 #
-# `bgalpha="18%"` (Pango's own documented attribute for span background
+# `bgalpha="45%"` (Pango's own documented attribute for span background
 # transparency) does NOT work here -- confirmed directly: it makes
 # `makoctl reload` fail outright with "Unable to parse configuration
 # file", while the exact same span with only `background=` and no
-# `bgalpha` reloads fine. Whatever Pango/markup version mako links
-# against here doesn't accept it. Worked around with an 8-digit RGBA hex
-# directly in `background` itself (`#CDD6F42E` = Lavender at ~18% alpha,
-# `#CDD6F41A` at ~10% for the quieter body line) -- confirmed this
-# parses AND actually renders translucent, not just accepted syntax that
-# renders opaque. Leading/trailing spaces inside each span are
-# deliberate padding: Pango's span background hugs the glyph bounding
-# box exactly with none of its own, so the chip would otherwise clip
-# tight to the letters.
-format=<span background="#CDD6F42E"><b> %s </b></span>\n<span background="#CDD6F41A"> %b </span>
+# `bgalpha` reloads fine. Worked around with an 8-digit RGBA hex directly
+# in `background` itself instead -- confirmed this parses AND actually
+# renders translucent. `#313244` (Surface0) at the same 0.45 alpha as
+# wofi's own #input, rather than the Lavender tint tried initially, so
+# the text panel's color matches wofi's layered-input look, not just its
+# opacity. Leading/trailing spaces inside each span are deliberate
+# padding: Pango's span background hugs the glyph bounding box exactly
+# with none of its own, so the chip would otherwise clip tight to the
+# letters.
+format=<span background="#31324473"><b> %s </b></span>\n<span background="#31324473"> %b </span>
 
 # --- Icons ---
 # Every notify-send call across this desktop's own scripts now passes a
@@ -89,19 +95,22 @@ icon-border-radius=8
 icon-path=/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus:/usr/share/icons/Adwaita
 
 # --- Elegant Colors ---
-# Deep Midnight background. Was dropped to 0xd9 (~85%) alongside a real
-# compositor blur in sway/config's layer_effects, matching wofi's glass
-# panel -- reverted, along with that blur, after seeing it live: the
-# whole toast read as a window into the blurred wallpaper rather than a
-# solid card, not the intended look. Back to 0xfa (~98%, still has a
-# hint of the desktop behind it without being genuinely see-through) now
-# that nothing's blurring what would otherwise show raw and unblurred
-# through a more transparent value.
-background-color=#11111Bfa
+# Deep Midnight background at 0.85 alpha (0xd9) -- the exact value
+# wofi/style.css uses for this same base color, restored again alongside
+# real compositor blur (layer_effects "notifications" in sway/config).
+# The earlier attempt at this exact combination read as "a window into
+# the wallpaper" rather than glass; going back to it deliberately this
+# time specifically BECAUSE it's wofi's own real, working recipe, not
+# guessed independently -- if it still doesn't read as glass at this
+# card's small size, that's a genuine finding worth reporting back, not
+# a reason to quietly water it down again.
+background-color=#11111Bd9
 # Clean silver text for easy readability
 text-color=#CDD6F4
-# Royal Mauve border outline for standard notifications
-border-color=#CBA6F7
+# Royal Mauve border, also matching wofi's own alpha (0.55) rather than
+# fully solid -- a glass pane's edge reads as part of the glass, not a
+# hard opaque frame around it.
+border-color=#CBA6F78C
 # Subtle tracking background for progress bars (like volume adjustments)
 progress-color=over #313244
 
