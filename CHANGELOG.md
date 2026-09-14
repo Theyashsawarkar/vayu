@@ -5,6 +5,32 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: max-visible=1 -- multiple stacked toasts can't each get an independent glass card)
+
+Same "remove that external container" report as the entry below, but
+this time with 5 notifications stacked instead of 1 -- and this time the
+actual cause was architectural, not another color/margin value to tune.
+Confirmed directly via `swaymsg -t get_outputs`: 3 simultaneously-visible
+notifications reported as a *single* 276px-tall layer-shell surface
+(3x92), not three separate ones. mako renders every currently-visible
+notification as rows inside one shared surface -- SwayFX's
+`corner_radius`/`blur` apply to that whole surface, with no way to round
+or glass each row independently, since the compositor has no concept of
+mako's internal row boundaries. Only the true outer edge of the shared
+panel ever gets the glass treatment, no matter what.
+
+Fixed by sidestepping the shared-surface case entirely: `max-visible=1`
+means at most one row ever exists in that surface, so it always IS the
+single glass card. Confirmed queuing still works correctly rather than
+dropping notifications (`makoctl list -j` after firing three in a row
+showed all three retained). Also had to suppress mako's own "(N more)"
+overflow placeholder (`[hidden]` criteria, `invisible=1`) -- without
+that, the placeholder becomes a permanent second row the moment
+anything queues behind the first, recreating the identical shared-panel
+problem one row later. Verified live: three rapid notifications now show
+as one clean independent card at a time, no placeholder, no shared
+container.
+
 ## 2026-09-14 (notifications: root-caused "the external container" -- mako bakes its margin into the surface)
 
 Reported directly on an annotated screenshot of the real toast: a
