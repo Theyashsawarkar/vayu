@@ -195,6 +195,15 @@ code {
   display: flex;
   align-items: center;
   gap: 4rem;
+  /* width: 100% -- real regression from making .hero a flex container
+     above: .hero-card was relying on plain block-element behavior
+     (fill the parent's width) for this the whole time, never an
+     explicit rule of its own. As a flex item on .hero's row axis, its
+     default sizing is shrink-to-fit-content instead, which is exactly
+     what narrowed it -- confirmed directly, reported back immediately
+     once seen live. min-height alone controls the OTHER axis (already
+     correct); this is the one that was actually missing. */
+  width: 100%;
   min-height: 72vh;
   padding: 3.5rem;
   border-radius: 28px;
