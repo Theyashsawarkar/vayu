@@ -5,6 +5,41 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: root-caused "the external container" -- mako bakes its margin into the surface)
+
+Reported directly on an annotated screenshot of the real toast: a
+visible sharp-cornered rectangle surrounding the rounded/bordered card
+itself, distinct from it -- "remove the external container". Several
+of this session's own remote reproductions had actually been catching
+the terminal window's own focused border by mistake (same corner_radius,
+overlapping screen position) before this got isolated cleanly on an
+empty workspace with no other windows at all.
+
+Root cause, confirmed via IPC rather than guessed at colors again:
+`swaymsg -t get_outputs` while a real notification was up reported this
+layer surface's own extent as 440px wide -- 20px wider than the
+configured `width=420`, exactly matching the old `margin=10,20,0,0`
+right value. mako bakes its margin into the surface's own pixel buffer
+rather than requesting true empty space outside a tightly-sized surface
+via the layer-shell protocol's own margin fields. SwayFX's
+`corner_radius`/`blur` operate on that full rectangular surface, so they
+were rounding and blurring a 440-wide rectangle while mako's own
+rounded, tinted, bordered card only actually draws across the left 420
+of it -- the other 20px sat there as a plain sharp-cornered strip
+showing raw blurred background with none of the card's own treatment.
+That strip was the reported "external container".
+
+Fixed by dropping the right margin to 2 (confirmed the reported extent
+drop to 422 matches proportionally). Also dropped `blur_xray` -- ruled
+out by direct isolation testing as this bug's cause, and not worth
+keeping regardless since plain `blur` (blurring whatever's genuinely
+behind the notification) is more honest for a popup that can appear over
+any window than blur_xray's always-blur-the-wallpaper behavior, which
+wofi specifically wants but a notification doesn't need. Verified live
+at every step -- extent measurements before/after, clean reloads, and
+screenshots on an empty workspace confirming a single glass card with no
+separate container, on both single and stacked notifications.
+
 ## 2026-09-14 (notifications: 0.85 alpha read as opaque at this card's size, not glass)
 
 Several rounds of remote guessing (pixel sampling, testing over wallpaper
