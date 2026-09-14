@@ -1,0 +1,11 @@
+[Unit]
+Description=Silently dismiss a stuck batsignal warning when AC power is restored
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/battery-warning-dismiss.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

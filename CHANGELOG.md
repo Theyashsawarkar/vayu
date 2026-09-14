@@ -5,6 +5,40 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-13 (battery: dismiss stuck warnings on AC restore; auto-poweroff if the lid stays closed)
+
+Two related battery/power-lifecycle fixes, committed together since both
+touch batsignal/suspend behavior:
+
+**Stuck low-battery notification on AC restore.** Reported: plugging in
+during an active low-battery warning left the toast on screen, needing a
+manual dismiss. batsignal's own `-p` flag was tried first and reverted --
+confirmed directly in its source (`main.c`) that `-p` is one shared toggle
+gating both charging *and* discharging announcements together, so it also
+fired an unwanted "Discharging: 40%" toast on every unplug regardless of
+level. The real fix adds zero notifications of its own instead:
+battery-warning-dismiss.service watches `udevadm monitor` for the kernel's
+own `power_supply` change uevent on ACAD, checks
+`/sys/class/power_supply/ACAD/online` directly (same interface batsignal
+itself polls, no upower dependency), and silently `makoctl dismiss`es any
+currently-shown batsignal toast the moment AC actually comes back. Verified
+running live (`systemctl --user status` -- active, enabled).
+
+**Auto-poweroff after 30 minutes of the lid staying closed.** logind
+already suspends on lid close (`HandleLidSwitch=suspend`); this hook
+(`/etc/systemd/system-sleep/lid-timeout-poweroff`, root-owned, NOT
+stow-managed -- system-sleep hooks only run from `/etc`, the repo copy
+here is reference-only) rides on top rather than replacing it. On the
+`pre` suspend hook it arms a real hardware RTC wake alarm
+(`rtcwake -m no -s 1800`) -- a plain suspend halts the CPU, so only a
+genuine RTC interrupt can wake truly-suspended hardware with nobody
+touching it. On `post` (resume, for any reason) it checks whether the lid
+is *still* physically closed; if so, nothing woke it on purpose, so it
+powers off for real. If the lid's open, a person woke it and the pending
+alarm is simply superseded. `DRY_RUN=1` in the config swaps the real
+poweroff for a notification so the whole close/wait/resume/detect
+pipeline can be verified without losing a session.
+
 ## 2026-09-07 (mako: wider notification toasts, less square)
 
 Reported: notification popups read as more square than the config's own

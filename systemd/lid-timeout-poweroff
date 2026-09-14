@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Installed as /etc/systemd/system-sleep/lid-timeout-poweroff (root-owned,
+# executable, NOT stow-managed -- system-sleep hooks only work from /etc,
+# see install instructions).
+#
+# Auto-poweroff if the lid stays closed for 30+ minutes straight.
+#
+# logind already suspends immediately on lid close
+# (HandleLidSwitch=suspend, /etc/systemd/logind.conf) -- this hook rides
+# on top of that instead of replacing it. Right before suspending
+# ("pre"), it arms a hardware RTC wake alarm for TIMEOUT_SECONDS out: a
+# plain suspend halts the CPU entirely, so a software timer
+# (systemd-run --on-active, a cron job, anything userspace) would never
+# fire on its own -- only a real RTC interrupt can wake genuinely-
+# suspended hardware with nobody touching it.
+#
+# Right after resuming ("post") -- for ANY reason: lid reopened, power
+# button, or the RTC alarm itself -- it checks whether the lid is STILL
+# physically closed (/proc/acpi/button/lid/LID0/state, confirmed
+# present and correctly reporting "open"/"closed" on this hardware).
+# If it's still closed, nothing woke it on purpose -- it must have been
+# the RTC alarm -- so it powers off for real. If the lid is open, a
+# person woke it; the pending alarm is simply superseded (rtcwake -s
+# always sets a fresh absolute wake time, it doesn't stack) and normal
+# resume proceeds untouched.
+#
+# rtcwake -m no specifically: that mode only ARMS the wake alarm and
+# returns immediately -- it does not itself put anything to sleep.
+# logind is already independently handling the actual suspend
+# transition; this hook just needs to set the alarm and get out of the
+# way before the pre-hook's blocking window annoyingly delays sleep.
+set -euo pipefail
+
+CONF=/etc/lid-timeout-poweroff.conf
+TIMEOUT_SECONDS=1800
+DRY_RUN=0
+# shellcheck source=/dev/null
+[ -f "$CONF" ] && source "$CONF"
+
+LID_STATE_FILE=/proc/acpi/button/lid/LID0/state
+
+case "$1/$2" in
+  pre/suspend)
+    rtcwake -m no -s "$TIMEOUT_SECONDS"
+    ;;
+  post/suspend)
+    if grep -q closed "$LID_STATE_FILE" 2>/dev/null; then
+      # logger (journal), not notify-send, is the reliable signal here:
+      # systemd's own docs for this hook mechanism state user.slice is
+      # frozen for the whole time these scripts run, and warn against
+      # talking to user services that expect a reply -- exactly what a
+      # D-Bus notify-send call to mako is. A journal entry has no such
+      # dependency and always lands, dry run or real.
+      logger -t lid-timeout-poweroff "lid closed for ${TIMEOUT_SECONDS}s straight -- $([ "$DRY_RUN" = "1" ] && echo "DRY RUN, not powering off" || echo "powering off")"
+
+      if [ "$DRY_RUN" = "1" ]; then
+        # Best-effort only -- may not land if user.slice is still frozen
+        # at this exact instant (see comment above). The logger line
+        # above is the one guaranteed to work; check that if this
+        # doesn't show up.
+        sudo -u yash DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus" \
+          notify-send -u critical -a "lid-timeout-poweroff" \
+          -i /usr/share/icons/Papirus/48x48/status/dialog-warning.svg \
+          "DRY RUN: would power off" \
+          "Lid was closed for ${TIMEOUT_SECONDS}s straight -- this would be a real poweroff with DRY_RUN=0." \
+          2>/dev/null || true
+      else
+        systemctl poweroff
+      fi
+    fi
+    ;;
+esac
