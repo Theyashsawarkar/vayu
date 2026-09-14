@@ -76,16 +76,21 @@ icon-border-radius=8
 icon-path=/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus:/usr/share/icons/Adwaita
 
 # --- Elegant Colors ---
-# Deep Midnight background at 0.85 alpha (0xd9) -- the exact value
-# wofi/style.css uses for this same base color, restored again alongside
-# real compositor blur (layer_effects "notifications" in sway/config).
-# The earlier attempt at this exact combination read as "a window into
-# the wallpaper" rather than glass; going back to it deliberately this
-# time specifically BECAUSE it's wofi's own real, working recipe, not
-# guessed independently -- if it still doesn't read as glass at this
-# card's small size, that's a genuine finding worth reporting back, not
-# a reason to quietly water it down again.
-background-color=#11111Bd9
+# Deep Midnight background at 0.35 alpha (0x59). wofi's own 0.85 was
+# tried here first, matching its recipe exactly -- genuine finding,
+# reported back rather than assumed: at wofi's alpha, an annotated
+# zoomed screenshot showed the flat card body reading as a plain dark
+# box, with the blur only visibly doing anything right at the rounded
+# corner's edge antialiasing -- "dark background" (bad) vs "glass like
+# background" (good, but only in that one corner) called out directly
+# on the same real screenshot. At 420x~90px, this card is roughly 1/10th
+# wofi's window's area -- 0.85 alpha leaves so little of the blur
+# visible against that much less background area that it reads as
+# basically opaque instead of glass. 0.35 lets the blur actually
+# dominate the fill across the whole body, not just its edge, confirmed
+# live over both the raw wallpaper and the dark terminal with text still
+# legible in both.
+background-color=#11111B59
 # Clean silver text for easy readability
 text-color=#CDD6F4
 # Royal Mauve border, also matching wofi's own alpha (0.55) rather than
