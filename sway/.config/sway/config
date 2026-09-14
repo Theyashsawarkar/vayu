@@ -337,8 +337,22 @@ layer_effects "wofi" {
 # behind" -- wofi wants that specifically since it's meant to look the
 # same regardless of context; a notification appearing over whatever
 # you're actually doing doesn't need that same guarantee.
+#
+# blur_ignore_transparent enable is the actual, complete fix for the
+# margin-bleed bug mako/config's own comment describes in full -- mako
+# leaves its margin area transparent (unfilled) in its own surface
+# buffer, but without this flag SwayFX blurred that transparent area
+# anyway, producing a visible sharp-cornered rectangle of blurred-but-
+# untreated background outside the rounded card. This tells it to skip
+# blurring transparent regions instead, so that area now shows the real,
+# untouched background straight through -- confirmed directly at 700%
+# zoom, at mako's original full 10/20 margin (restored from the smaller
+# values tried as a stopgap before this flag was found): the rounded
+# card's border is the true edge at any margin size, nothing bleeds past
+# it.
 layer_effects "notifications" {
     blur enable
+    blur_ignore_transparent enable
     corner_radius 12
 }
 

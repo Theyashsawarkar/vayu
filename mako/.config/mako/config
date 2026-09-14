@@ -4,46 +4,34 @@
 # Anchors alerts to the top right corner, perfectly clear of the Waybar pills
 anchor=top-right
 #
-# Right margin dropped from 20 to 2 -- real bug, found from an annotated
-# screenshot of the actual live toast calling out "the external
-# container" as its own visible rectangle, distinct from the toast's own
-# rounded/bordered card. Root-caused rather than guessed at the color
-# values again: `swaymsg -t get_outputs` while a real notification was
-# up reported this layer surface's own extent as 440px wide -- 20px
-# wider than the configured `width=420` below, exactly matching the old
-# right margin value. mako bakes its margin INTO the surface's own pixel
-# buffer rather than requesting true empty space outside a tightly-sized
-# surface via the layer-shell protocol's own margin fields -- so
-# SwayFX's `corner_radius`/`blur` in sway/config's layer_effects, which
-# operate on the FULL rectangular surface, were rounding and blurring a
-# 440-wide rectangle while mako's own rounded/tinted/bordered card only
-# actually draws across the left 420 of it, leaving that other 20px as a
-# plain sharp-cornered strip showing raw blurred background with none of
-# the card's own rounding, border, or tint -- exactly the separate
-# "container" rectangle reported. Confirmed the fix the same way: with
-# margin=10,2,0,0, the reported extent dropped to 422 (420+2), and a
-# fresh screenshot showed the rounded card's own edge as the true edge,
-# no separate rectangle beyond it.
+# margin real bug, found and properly root-caused across several
+# reports ("the external container" on the right, then again on top,
+# then background "overflowing from the right" once margin was widened
+# back out): mako bakes its margin INTO the surface's own pixel buffer
+# rather than requesting true empty space outside a tightly-sized
+# surface via the layer-shell protocol's own margin fields -- confirmed
+# directly via `swaymsg -t get_outputs`, e.g. a configured `width=420`
+# with margin-right 20 reported a real surface extent of 440. SwayFX's
+# `corner_radius`/`blur` in sway/config's layer_effects operate on that
+# FULL rectangular surface, so without the fix below they were rounding
+# and blurring a 440-wide rectangle while mako's own rounded/tinted/
+# bordered card only actually draws across the left 420 -- the other
+# 20px sat there as a plain sharp-cornered strip of blurred-but-
+# untreated background, the reported "container"/"overflow".
 #
-# Top margin dropped from 10 to 2 for the exact same reason, found the
-# same way -- reported directly as "the top background goes out of the
-# top border": a zoomed screenshot of the real toast's top edge showed
-# the identical pattern, a flat-topped blurred rectangle sitting above
-# the actual rounded/bordered card, same as the right-edge bug above but
-# on the top side of the same baked-in-margin surface. Same fix, same
-# reasoning -- see the comment above in full.
-#
-# Right margin back up to 10 (from the 2 above) after being asked for
-# some real breathing room from the screen edge -- genuine trade-off,
-# not a free fix: ANY nonzero margin here bakes proportionally into the
-# bleed described above, there's no value that gets both a visible gap
-# and zero bleed. 10 does still show a faint sliver at 400% zoom
-# (checked directly, not assumed fixed), but reads completely clean at
-# actual viewing scale -- confirmed via a normal, unzoomed screenshot.
-# If a wider gap is ever wanted, re-check at real scale first, not just
-# by the extent number, since this is exactly the kind of thing that
-# looks fine in a quick glance and wrong under scrutiny.
-margin=2,10,0,0
+# The real fix is `blur_ignore_transparent enable` in sway/config's
+# `layer_effects "notifications"` block, not a smaller margin number --
+# tried shrinking margin first (down to 2/10, whatever value made the
+# bleed small enough to not be visible at normal scale) before finding
+# that option, and it was a real trade-off every time: less bleed always
+# meant less actual gap from the screen edge, never both. With
+# `blur_ignore_transparent` telling SwayFX to skip blurring mako's own
+# transparent (unfilled) margin area instead of blurring it anyway, that
+# area now shows the real, sharp, untouched background -- confirmed
+# directly, zoomed to 700%, at this full 10/20 margin (back to the
+# original comfortable values): the rounded card's own border is the
+# true edge, nothing bleeds past it regardless of margin size.
+margin=10,20,0,0
 # width is a fixed value (mako's own docs: no shrink-to-fit); height is
 # a *maximum*, shrunk to fit shorter text -- confirmed directly (man
 # mako(5)). That combination is exactly why these looked square-ish:
