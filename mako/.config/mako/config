@@ -32,7 +32,18 @@ anchor=top-right
 # the actual rounded/bordered card, same as the right-edge bug above but
 # on the top side of the same baked-in-margin surface. Same fix, same
 # reasoning -- see the comment above in full.
-margin=2,2,0,0
+#
+# Right margin back up to 10 (from the 2 above) after being asked for
+# some real breathing room from the screen edge -- genuine trade-off,
+# not a free fix: ANY nonzero margin here bakes proportionally into the
+# bleed described above, there's no value that gets both a visible gap
+# and zero bleed. 10 does still show a faint sliver at 400% zoom
+# (checked directly, not assumed fixed), but reads completely clean at
+# actual viewing scale -- confirmed via a normal, unzoomed screenshot.
+# If a wider gap is ever wanted, re-check at real scale first, not just
+# by the extent number, since this is exactly the kind of thing that
+# looks fine in a quick glance and wrong under scrutiny.
+margin=2,10,0,0
 # width is a fixed value (mako's own docs: no shrink-to-fit); height is
 # a *maximum*, shrunk to fit shorter text -- confirmed directly (man
 # mako(5)). That combination is exactly why these looked square-ish:
