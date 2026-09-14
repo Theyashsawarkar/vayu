@@ -5,6 +5,57 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: hollow-pill status bar to an exact spec, replacing the earlier restyle)
+
+The prior same-day tmux restyle (solid pills, bookend outline only on the
+session/time ends) missed the actual ask entirely -- given an exact,
+complete design spec instead (deep slate base `#0F172A`, every module
+"transparent" to it with a 1px border whose color matches its text exactly,
+Nerd Font hollow half-circles standing in for CSS borders since tmux can't
+draw those) and asked directly why the middle modules still had rounded
+solid fills. Rebuilt the whole status bar against the spec instead of
+patching the previous pass.
+
+**Couldn't read the spec's own separator characters** -- private-use Nerd
+Font glyphs the user typed came through as invisible in the text itself
+(the same issue hit mid-session on `catppuccin.lua`'s pre-existing icon).
+Rendered the full U+E0B0-E0C1 powerline-extra range at 72pt in a real kitty
+window and looked directly rather than guessing from memory: confirmed
+E0B7 is the hollow LEFT half circle, E0B5 the hollow RIGHT half circle
+(E0B6/E0B4 are their filled counterparts -- what the old design already
+used for solid caps).
+
+**Every module now shares one background** (`status-style bg=#0F172A`) and
+never switches `bg=` again anywhere in `status-left`/`window-status-format`/
+`status-right` -- the old design's per-module `bg=` swaps are gone
+entirely, since a uniform base is what makes the hollow-outline illusion
+read as one consistent bar instead of six separate colored blocks.
+
+**`docker_status.sh` no longer embeds its own colors.** Its old
+`#[fg=#2496ED]`/dark-text escapes were tuned for sitting on a light solid
+fill; under a uniform single-hue-per-module design they'd fight the
+wrapping Amber Gold instead of matching it. Icon (still the real docker
+whale, not a coffee cup -- reverted a wrong guess earlier the same day)
+and the real running-container count are untouched, only the hardcoded
+color codes were removed so the surrounding tmux.conf module's one color
+applies to the whole segment.
+
+**Exact hex colors from the spec, not Catppuccin equivalents**: session
+Sapphire `#3B82F6`, active window Emerald `#10B981`, inactive window
+Amethyst `#8B5CF6`, docker Amber `#F59E0B`, date Ruby `#F43F5E`, time Cyan
+`#06B6D4` -- a deliberately different palette from the rest of this desktop,
+used as given rather than mapped onto Mocha's nearest accents.
+
+Verified against the actual live session, not just re-read after editing --
+first screenshotted the wrong kitty tab entirely (this Claude Code session
+runs in its own tab, tab 1 is the real "tmux" one) before catching it via
+`kitty @ ls` and switching focus there for real. One known, unavoidable
+side effect flagged rather than hidden: kitty's `background_opacity 0.85`
+applies uniformly to every pixel it renders, so `#0F172A` reads with a
+faint wallpaper tint blended in rather than as a literally flat, fully
+opaque slate -- same real constraint every other "glass" surface on this
+desktop already lives with.
+
 ## 2026-09-14 (tmux: restyled the status bar against a mockup, cross-checked with waybar)
 
 Shown a Gemini-generated mockup of a rounded-pill status bar and asked to

@@ -18,12 +18,10 @@ fi
 
 count=$(docker ps -q 2>/dev/null | wc -l)
 
-# Segment background is Catppuccin Mocha teal (#94e2d5, light/pastel), so text
-# needs dark, saturated colors to stay readable against it.
-if [ "$count" -gt 0 ]; then
-    count_color="#1b8a5a"   # dark saturated green: containers running
-else
-    count_color="#1e1e2e"   # base: idle/neutral
-fi
-
-printf '#[fg=#2496ED]%s  #[fg=#1e1e2e]x#[fg=%s] %s' "$icon" "$count_color" "$count"
+# Plain text, no embedded #[fg=...] escapes -- those existed for the old
+# solid-fill pill design (dark text needed on a light background). The
+# "hollow pill" design (tmux.conf) gives every module exactly one uniform
+# color for its border and text together, applied by the wrapping module
+# in tmux.conf, not per-script -- icon and the real running-container
+# count logic above are unchanged.
+printf '%s  x %s' "$icon" "$count"
