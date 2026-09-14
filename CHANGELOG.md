@@ -5,6 +5,28 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (fix: caffeine keybind's own reload broke sway with "There are errors in your config file")
+
+The $mod+Shift+k caffeine binding added earlier today (see the
+notifications/caffeine entry below) turned out to break sway's own
+config on reload -- the red swaynag error bar, reported directly with a
+screenshot. Root-caused by bisection rather than reading the message
+(swaynag's actual detailed text isn't recoverable after the fact -- it's
+piped to swaynag's stdin once and never logged anywhere else, confirmed
+checking both `journalctl` and sway's own stderr log with nothing
+there): `$up` is set to `"k"` up top (the vim-style h/j/k/l direction
+variables), and `bindsym $mod+Shift+$up move up` further down the file
+resolves to that exact same combination after variable substitution --
+sway treats that as a genuine duplicate binding and throws the same
+error swaynag for it as any other config problem. A literal grep for
+`+k` never would have caught this (the collision only exists after
+variable expansion); confirmed the real cause by testing $mod+Shift+j
+next (same class of collision, with `$down`/move down) before landing on
+$mod+Shift+a, checked against every one of $left/$down/$up/$right's
+expansions this time, not just a literal-text grep. Verified live:
+killed the stale swaynag, reloaded, confirmed a fresh one doesn't
+respawn.
+
 ## 2026-09-14 (lid-timeout-poweroff: root-caused why it never actually fired; idle-lock bumped to 15 minutes)
 
 Reported: the laptop died from battery drain overnight instead of cleanly
