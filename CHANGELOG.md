@@ -5,6 +5,37 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: found the real fix for margin bleed -- blur_ignore_transparent, not smaller margins)
+
+Supersedes the previous two entries' approach entirely. Reported again:
+"the background is overflowing from the right, make sure that the
+background never overflows" -- after widening margin back out for
+breathing room, the same bleed from the original "external container"
+reports was back, just smaller. Every fix up to this point had been
+shrinking `margin` to make the bleed small enough not to notice at
+normal viewing scale, which is a trade-off (less bleed always meant less
+actual gap from the edge), not a real fix -- and this report is exactly
+that trade-off failing to hold up once margin was widened again.
+
+Found the actual fix instead of shrinking the number a third time:
+`blur_ignore_transparent enable` in sway/config's `layer_effects
+"notifications"` block. mako leaves its margin area transparent
+(unfilled) in its own surface buffer, but without this flag SwayFX
+blurred that transparent area anyway -- producing the sharp-cornered
+rectangle of blurred-but-untreated background outside the rounded card
+every previous report was actually about. This tells SwayFX to skip
+blurring transparent regions instead, so that area now shows the real,
+untouched background straight through, with nothing rendered there at
+all.
+
+Confirmed this is unconditional, not just "better at this margin":
+deliberately put `margin` back to its original full `10,20` (the exact
+values that caused the very first "external container" report) specifically
+to prove the fix isn't margin-size-dependent, then zoomed to 700% on
+both the top and right edges -- nothing bleeds past the rounded card's
+own border at any margin size now. Margin restored to `10,20`
+accordingly; no more trade-off between breathing room and bleed.
+
 ## 2026-09-14 (notifications: right margin 2 -> 10, a real trade-off not a free fix)
 
 Asked for "some margin from the right" -- the earlier fix for the
