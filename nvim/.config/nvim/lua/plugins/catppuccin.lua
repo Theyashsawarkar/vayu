@@ -21,7 +21,30 @@ return {
   {
     "catppuccin/nvim",
     name = "catppuccin",
-    priority = 1000,
+    -- lazy=false explicitly, not just implied by defaults.lazy=false in
+    -- lazy.lua -- real bug #1, root-caused: LazyVim's own core spec
+    -- (lazyvim/plugins/colorscheme.lua) declares catppuccin with
+    -- `lazy = true`, which won over this file's implied default, so
+    -- this spec's own config/opts never actually ran (confirmed
+    -- directly: a debug write at the top of a temporary `config`
+    -- function never fired).
+    --
+    -- priority = 10001, not the original 1000 -- real bug #2, found
+    -- right after fixing #1 alone didn't change anything: LazyVim's OWN
+    -- plugin entry (lazyvim/plugins/init.lua) is
+    -- `{ "LazyVim/LazyVim", priority = 10000, lazy = false, ... }`.
+    -- lazy.nvim loads eager plugins in descending priority order, and
+    -- LazyVim's own `config` is what actually runs `vim.cmd.colorscheme(...)`
+    -- (from `opts.colorscheme` below) -- at priority 1000, that command
+    -- ran a full 9000-priority-levels before catppuccin's own `setup()`
+    -- ever got called, so it sourced `colors/catppuccin.lua` and hit
+    -- the exact same `M.setup()` empty-args fallback as the lazy=true
+    -- bug did, on catppuccin's bare defaults again. One priority level
+    -- above LazyVim's own 10000 guarantees this plugin's real `setup(opts)`
+    -- runs first every time, regardless of how LazyVim's own core specs
+    -- are ever reordered in a future update.
+    lazy = false,
+    priority = 10001,
     opts = {
       flavour = "mocha",
       -- Matches kitty/tmux/rmpc's own real compositor-level

@@ -5,6 +5,47 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (nvim: Catppuccin transparency actually root-caused -- two separate lazy.nvim bugs, not one)
+
+Reported directly: "i want the theme to be transparent and its not" -- despite
+`transparent_background = true` already being set (see the entry below) and
+kitty already running `background_opacity 0.85`, `:hi Normal` kept showing a
+solid `guibg=#1e1e2e`. Two independent bugs stacked, confirmed one at a time
+by headless introspection rather than guessed at:
+
+**Bug #1 -- `lazy = true` losing the merge.** LazyVim ships its own built-in
+catppuccin spec (`lazyvim/plugins/colorscheme.lua`) with `lazy = true` and no
+`transparent_background` option. That won over this repo's own spec (which
+only had an *implied* default, not an explicit `lazy = false`), so this
+file's `opts` never reached `setup()` at all -- confirmed by a temporary debug
+write inside `config()` that never fired. Fixed with an explicit
+`lazy = false` in `lua/plugins/catppuccin.lua`.
+
+**Bug #2 -- priority ordering, found because fixing #1 alone changed nothing.**
+Re-tested after the `lazy = false` fix: the spec now correctly resolved
+(`lazy == false`, plugin shows loaded) but `:hi Normal` was *still* solid.
+Traced it to `lazy.nvim` loading eager (`lazy = false`) plugins in descending
+`priority` order: `LazyVim/LazyVim` itself declares
+`priority = 10000` (`lazyvim/plugins/init.lua`), and its own `config()` is
+what actually runs `vim.cmd.colorscheme(...)`. This repo's catppuccin spec
+was still sitting at the default `priority = 1000` -- nine thousand levels
+below -- so LazyVim's colorscheme command fired, sourced
+`colors/catppuccin.lua` directly off the runtimepath, and hit catppuccin's own
+bare-defaults fallback (`if not did_setup then M.setup() end`) before this
+repo's real `setup(opts)` call ever ran. Fixed by raising this spec's
+`priority` to `10001` -- one level above LazyVim's own -- so its `setup(opts)`
+is guaranteed to run first regardless of how LazyVim orders its own core
+specs in a future update. (Caught a self-inflicted duplicate `priority` key
+from the edit itself via the editor's own Lua diagnostics before committing
+-- Lua silently takes the last value for a duplicate table key, so it
+happened to still work, but it was cleaned up rather than left in.)
+
+Verified live, not just via spec introspection: headless
+`nvim_get_hl(0, {name="Normal"})` now reports no `bg` at all (transparent)
+instead of `#1e1e2e`, and a real kitty window opened afterward visually shows
+the desktop wallpaper through the buffer -- the same glass look kitty/tmux/
+rmpc already have.
+
 ## 2026-09-14 (nvim: full MERN/DevOps/GenAI LazyVim extras, real reproducible harpoon+dadbod, detailed icons)
 
 Follow-up to the same day's earlier nvim entry -- asked directly for a
