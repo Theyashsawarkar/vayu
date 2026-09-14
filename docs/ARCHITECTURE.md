@@ -599,7 +599,10 @@ the package's file list on the Arch package page before trusting this,
 rather than assuming) -- a clean, standard setup, not a security-loose
 workaround.
 
-**Not yet installed on the live machine** -- needs:
+**Installed and active on the live machine** -- confirmed directly
+(`which ydotool`, `systemctl --user is-enabled/is-active ydotool.service`
+both report enabled/active), not assumed from this having been written
+once. On a fresh install this still needs:
 
 ```bash
 sudo pacman -S ydotool
@@ -3241,34 +3244,22 @@ the tmux/waybar glyph debugging tractable in the first place.
 ## Known gaps that need root, not left silently unfixed
 
 Two things identified during an optimization pass that this environment could not
-apply itself (no `sudo` access here) — flagged explicitly rather than either faking a
-fix or silently skipping them:
+apply itself at the time (no `sudo` access in that session) — flagged explicitly
+rather than either faking a fix or silently skipping them. Both since confirmed
+closed on the live machine, checked directly rather than assumed fixed just because
+time has passed:
 
-- **Unused display managers still installed on the live machine.** `packages/pacman.txt`
-  no longer lists `greetd`, `greetd-tuigreet`, or `ly` (pruned so a *fresh* install
-  won't carry them forward), but they're still actually installed on this machine.
-  To remove them here too:
+- ~~Unused display managers still installed on the live machine~~ -- **resolved**.
+  `packages/pacman.txt` no longer lists `greetd`, `greetd-tuigreet`, or `ly`, and
+  `pacman -Qi` for all three now reports "package not found" on the live machine too
+  -- actually removed, not just pruned from the fresh-install list.
+- ~~`systemd-networkd-wait-online.service`/`iwd.service` running unused~~ --
+  **resolved**. Both `iwd.service` and `systemd-networkd-wait-online.service` (plus
+  `systemd-networkd.service`) now report `disabled`/`inactive` via `systemctl`.
+  `systemd-resolved` is still enabled and in genuine use, untouched by this cleanup.
 
-```bash
-sudo systemctl disable greetd ly 2>/dev/null
-sudo pacman -R greetd greetd-tuigreet ly
-```
+The remaining item is a deliberate opt-in, not a pending fix:
 
-- **`systemd-networkd-wait-online.service` was eating ~2 minutes of every boot**,
-  waiting for `wlan0` to become "routable" through `systemd-networkd` — which can
-  never happen, because `NetworkManager` already owns that interface. Separately,
-  `iwd.service` was enabled and running unused (NetworkManager's real wifi backend is
-  `wpa_supplicant`). Fixed in `install.sh` (no longer enables `iwd` as a service — the
-  package stays, for `iwctl`'s use bootstrapping Wi-Fi from a bare TTY). **Not yet
-  fixed on the live machine** — needs `sudo`:
-
-```bash
-sudo systemctl disable --now iwd.service
-sudo systemctl disable --now systemd-networkd-wait-online.service systemd-networkd.service
-```
-
-  `systemd-resolved` is genuinely in use (confirmed via `resolvectl status`) and
-  should stay enabled — don't touch it while cleaning this up.
 - **Docker can bypass UFW.** Docker manipulates `iptables` directly for published
   container ports (`-p`), which UFW's rules don't see. See
   **[docs/DOCKER_SECURITY.md](DOCKER_SECURITY.md)** for the full mechanism, what was
