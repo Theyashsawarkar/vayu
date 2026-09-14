@@ -5,6 +5,41 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: dropped the per-module fill, active window back to text-only)
+
+Third same-day tmux revision. Two direct asks, both applied:
+
+**Removed the `#11111b` per-module background entirely** -- reported as
+not looking good. Every module (session, windows, docker, date, time) and
+the bar itself are `bg=default` again, so colored corners + text sit
+straight on the real terminal background (wallpaper through kitty's own
+opacity) rather than each having its own dark fill.
+
+**Active window: Purple text, not a filled Purple pill.** The previous
+pass gave the active window a solid background specifically to mirror
+waybar's `.focused` workspace treatment -- asked directly to undo that:
+active and inactive windows now use the *exact same* hollow-cap style,
+distinguished only by color (Purple active, Green inactive), not by a
+different visual treatment.
+
+**Declined, with reasoning given rather than attempted anyway**: a full
+top+bottom box border around each pill, not just the left/right rounded
+corners. tmux's status bar is fundamentally one character row (or a few
+independent rows via `status-format[n]`, each evaluated as its own
+separate format string with no shared layout grid across rows) -- there's
+no mechanism for a "bottom border" row to know where a pill above it
+starts and ends, and every module here is dynamically sized (date text
+changes length by day name, docker's count changes digit-width, session
+name is arbitrary). A hand-aligned box-drawing attempt would only stay
+lined up until the next time any of that content changed width, then
+silently drift out of alignment -- the honest answer was to explain the
+constraint rather than ship something that looks right once and breaks on
+its own the next day.
+
+Verified live in the actual tmux tab (not the Claude Code CLI's own
+separate kitty tab, a mistake caught earlier the same day) with two real
+windows open so both active and inactive states were visible together.
+
 ## 2026-09-14 (tmux: per-module black pills, waybar's own real pattern this time)
 
 Second same-day tmux revision, flagged directly as more important than the
