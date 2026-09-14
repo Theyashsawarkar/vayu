@@ -26,6 +26,19 @@ they read as one consistent family rather than a patchwork:
 | Reboot   | `rotate-cw` | a circular refresh/restart arrow |
 | Shutdown | `power`     | the real ISO power/standby symbol (ring + vertical line), same concept as before, now in the same lean stroke style as the rest |
 
+`download.svg`/`clock.svg` added later for the update-prompt bar
+(`update-bar.json`/`update-bar-style.css`, see `scripts/.local/bin/
+update-check.sh`) -- same source, same exact wrapper template
+(`stroke-width="1.5"`, `#CDD6F4`, 24x24), pulled from the same
+already-vendored `lucide-react` copy rather than fetched fresh, so
+every icon across every nwg-bar prompt in this desktop stays one
+consistent family:
+
+| Action     | Lucide icon | Shape |
+| ---------- | ----------- | ----- |
+| Update Now | `download`  | a downward arrow into a tray -- the standard "fetch/install" symbol |
+| Later      | `clock`     | a plain clock face -- "remind me", not a dismissive X |
+
 Lucide's own default is `stroke="currentColor"` -- swapped for a
 hardcoded `#CDD6F4` (Clean Silver, this bar's own text color) instead,
 same reasoning as every other icon fix in this repo: these load as raw

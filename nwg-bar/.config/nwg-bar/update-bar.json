@@ -1,0 +1,12 @@
+[
+  {
+    "label": "Update Now",
+    "exec": "/home/yash/.local/bin/update-apply.sh",
+    "icon": "/home/yash/.config/nwg-bar/icons/download.svg"
+  },
+  {
+    "label": "Later",
+    "exec": "true",
+    "icon": "/home/yash/.config/nwg-bar/icons/clock.svg"
+  }
+]

@@ -1,0 +1,16 @@
+[Unit]
+Description=Check for Vayu dotfiles updates on GitHub, prompt to apply
+# Genuinely needs the network up, not just "started" -- a git fetch
+# attempted before the interface is actually routable would just look
+# like "offline" and skip silently (see update-check.sh's own handling
+# of that), quietly missing an update every boot instead of just being
+# delayed a few seconds until this target is reached.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/update-check.sh
+
+[Install]
+WantedBy=default.target

@@ -56,6 +56,22 @@ Docker picker for waybar's `docker` module -- replaced `nwg-bar`'s static docker
 </div>
 
 <div class="pkg-card" markdown="1">
+<h4><code>update-check.sh</code> <span class="pkg-path"><code>~/.local/bin/update-check.sh</code> (<code>scripts/</code> package)</span></h4>
+<p>Checks GitHub for new commits once per login, prompts Update Now/Later via nwg-bar if any are found.</p>
+<details markdown="1"><summary>Full details</summary>
+
+Asked directly for auto-update-checking on every boot with a permission prompt, not a silent auto-update. Runs once per login via `systemd/.config/systemd/user/update-check.service` (`Type=oneshot`, `WantedBy=default.target`, `After=`/`Wants=network-online.target` -- a fetch attempted before the interface is actually routable would just look identically "offline" and skip silently, so this waits for that target rather than racing it) -- deliberately not a sway `exec`/`exec_always` line, since `exec_always` would re-run this on every `swaymsg reload` (several times an hour during normal config editing), not just once per boot.
+
+Compares `HEAD` against `@{u}` (whatever the checked-out branch's own configured upstream is -- `develop`'s is `origin/develop` on this machine) rather than a hardcoded branch name, so it keeps checking the right thing if `main` or any other branch is ever checked out instead; a branch with no upstream configured (a throwaway local/feature branch) has nothing to compare against and is skipped cleanly, not treated as an error. `git fetch`/`pull` both pinned to `ssh -o BatchMode=yes -o ConnectTimeout=8` -- this runs headless with no TTY to prompt on, so an SSH agent that isn't up yet must fail fast rather than hang the whole login on a passphrase prompt nothing will ever answer; confirmed live that the real auth path (gpg-agent's SSH support, already running as its own user service) works fine non-interactively, so this is a safety net for an edge case, not routinely needed.
+
+If `@{u}` is ahead, sends a `notify-send` with the real commit count and the latest subject line, then opens `nwg-bar/.config/nwg-bar/update-bar.json` (Update Now / Later, its own `update-bar-style.css` -- same glass-card recipe as the power menu, Green/Overlay0 accents rather than the power menu's five-color severity scale, since neither action here is remotely destructive). "Update Now" runs `update-apply.sh`: `git pull --ff-only` (refuses and notifies on any real conflict/divergence rather than merging or rebasing on your behalf), `stow -R` over the same package list `install.sh` itself discovers (every top-level dir except `packages`/`docs`/hidden ones, so a newly-added or removed package is handled the same as an existing one), then `swaymsg reload`/`makoctl reload`/`systemctl --user daemon-reload` for whatever can hot-reload -- deliberately does NOT guess which systemd services to restart afterward (too easy to bounce something disruptively mid-notification or mid-suspend-hook); the final success notification says as much, pointing at a re-login/reboot for any unit-file changes to fully take effect. "Later" is a no-op (`exec: "true"`) -- nwg-bar closes on any click regardless, and the check simply runs again next login.
+
+Verified without ever touching the real `~/dotfiles` checkout's git state: cloned it into a scratch directory, rolled that clone's `HEAD` back two real commits, and ran the actual detection logic, the real `git pull --ff-only`, and a real `stow -R` against a scratch fake `$HOME` -- confirmed the pull fast-forwarded correctly and the resulting symlinks (`readlink` on the scratch `.config/sway`) pointed exactly where the real ones do. The nwg-bar prompt and its paired notification were both fired for real and screenshotted together. Also confirmed live in `nwg-bar`'s own package card above (`~` breaks silently there, no shell in its exec chain) that both `update-bar.json` exec fields use either an absolute path or a bare PATH-resolvable command, never `~`.
+
+</details>
+</div>
+
+<div class="pkg-card" markdown="1">
 <h4><code>bluetooth-picker.py</code> <span class="pkg-path"><code>~/.local/bin/bluetooth-picker.py</code> (<code>scripts/</code> package)</span></h4>
 <p>Bluetooth device picker for waybar's bluetooth module -- self-contained on bluetoothctl, no third-party wofi/rofi tool depended on.</p>
 <details markdown="1"><summary>Full details</summary>

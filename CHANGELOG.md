@@ -5,6 +5,67 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (new feature: check GitHub for updates on every boot, ask before applying)
+
+Asked directly: check for updates automatically on every boot, and if
+any are found, ask permission before applying rather than silently
+auto-updating. Built entirely on tools already installed -- no new
+package for this:
+
+- `systemd/.config/systemd/user/update-check.service` -- `Type=oneshot`,
+  `WantedBy=default.target`, runs once per login (not a sway
+  `exec_always`, which would re-fire on every `swaymsg reload` instead
+  of once per boot). Waits on `network-online.target` first so an early
+  fetch attempt doesn't look identically "offline" and skip silently.
+- `scripts/.local/bin/update-check.sh` -- fetches, compares `HEAD`
+  against `@{u}` (whichever branch is actually checked out, not a
+  hardcoded one), and if behind, fires a notification with the real
+  commit count and latest subject line, then opens the prompt below.
+  Both `fetch` and the apply script's `pull` are pinned to
+  `ssh -o BatchMode=yes -o ConnectTimeout=8` -- this runs headless at
+  login with no TTY, so an SSH agent that isn't up yet must fail fast
+  rather than hang the whole check on a passphrase prompt nothing will
+  ever answer (confirmed the real auth path, gpg-agent's SSH support,
+  already works fine non-interactively -- this is a safety net, not
+  routinely needed).
+- `nwg-bar/.config/nwg-bar/update-bar.json` +
+  `update-bar-style.css` -- reused `nwg-bar` (already installed for the
+  power menu) rather than inventing a new mechanism for the actual
+  Update Now/Later prompt: same glass-card recipe, Green/Overlay0
+  accents instead of the power menu's five-color severity scale since
+  neither action here is destructive. Two new Lucide icons
+  (`download`/`clock`) added to match the power menu's existing icon
+  set exactly -- same source, same stroke weight, same hardcoded
+  `#CDD6F4` (see `nwg-bar/.config/nwg-bar/icons/README.md`).
+- `scripts/.local/bin/update-apply.sh` -- only what "Update Now"
+  actually runs. `git pull --ff-only` (refuses and notifies on any real
+  conflict or divergence, never merges/rebases on your behalf), then
+  `stow -R` over the same package list `install.sh` itself discovers,
+  then reloads whatever can hot-reload (`swaymsg reload`, `makoctl
+  reload`, `systemctl --user daemon-reload`). Deliberately does not
+  guess which systemd services to restart afterward -- the success
+  notification says a re-login/reboot may be needed for any unit-file
+  changes to fully apply, rather than risking bouncing something
+  disruptive automatically.
+
+Also closed two real gaps found while wiring this in: `install.sh`'s
+"Enabling user services" line was missing both this new service and
+`battery-warning-dismiss.service` (from an earlier entry this session --
+written and already running live, but never actually added to the
+fresh-install enable list). Both added.
+
+Verified without ever touching the real `~/dotfiles` checkout's git
+state: cloned it into a scratch directory, rolled that clone's `HEAD`
+back two real commits, and ran the actual detection logic, a real `git
+pull --ff-only`, and a real `stow -R` against a scratch fake `$HOME` --
+confirmed the pull fast-forwarded correctly and the resulting symlinks
+pointed exactly where the real ones do. The nwg-bar prompt and its
+paired notification were fired for real and screenshotted together on
+this machine. Also specifically checked `update-bar.json`'s two `exec`
+fields against `nwg-bar`'s own documented gotcha (`docs/ARCHITECTURE.md`
+-- no shell in its invocation chain, a bare `~` breaks silently): both
+use an absolute path or a bare PATH-resolvable command, never `~`.
+
 ## 2026-09-14 (notifications: found the real fix for margin bleed -- blur_ignore_transparent, not smaller margins)
 
 Supersedes the previous two entries' approach entirely. Reported again:
