@@ -5,6 +5,56 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (tmux: restyled the status bar against a mockup, cross-checked with waybar)
+
+Shown a Gemini-generated mockup of a rounded-pill status bar and asked to
+match it. Turned out to be closer to home than it first looked: this
+tmux.conf already used the exact same rounded-powerline-cap technique
+(`@sep_left`/`@sep_right`, U+E0B6/U+E0B4) with Catppuccin Mocha colors --
+this was a restyle of existing `status-left`/`window-status-format`/
+`status-right` format strings, not new infrastructure. Also turned out the
+mockup's own layout (session pill, window list, a docker-ish icon pill,
+date, time) was modeled on this exact bar to begin with -- every screenshot
+taken all session already had it visible at the top of the terminal pane,
+just not identified as tmux's own status bar until this task's live check
+(`tmux list-clients`) confirmed it directly instead of assuming.
+
+**Session pill** (`status-left`) -- switched from a solid Mauve fill to an
+outline/"bookend" treatment (`bg=default` throughout, only the caps and
+text-adjacent color stay Mauve), matching the mockup's first and last pills
+both reading as recessed rather than a bright block -- same glass language
+already used by kitty/mako elsewhere, not a new visual idea. Pre-existing
+icon (U+F489) left untouched.
+
+**Inactive windows** (`window-status-format`) -- flat gray (`#45475a`) to
+Lavender (`#b4befe`); read as "disabled" rather than "not focused right
+now". Active windows unchanged (Green) -- the active/inactive distinction
+itself needs to survive a restyle, not just this pass's color choices.
+
+**Docker pill** -- recolored Yellow to Peach only. Directly tried swapping
+its icon to a coffee cup first (misread "the status bar... uses docker icon
+only now the coffe icon" as an instruction rather than the user flagging
+what had just changed) -- reverted immediately once corrected: icon and the
+real running-container-count logic in `docker_status.sh` are back to
+exactly what they were, this segment stays docker-and-only-docker.
+
+**Date/time** -- date Peach to Maroon, time stays Blue but gets the same
+outline treatment as the session pill. Maroon/Blue specifically (not picked
+independently) to match waybar's own real per-purpose colors
+(`waybar/.config/waybar/style.css`: "date is Maroon... Time is Blue") --
+checked directly rather than assumed, so the two bars agree on what each
+hue means instead of coincidentally clashing. Also checked waybar's actual
+caffeine module (`caffeine-status.sh`) before touching anything: it's a
+plain on/off icon with no counter, so the mockup's "x 0" wasn't a caffeine
+convention to copy -- it's this repo's own existing docker segment's
+"icon + x + count" format, confirming the peach pill was always the docker
+segment, never a new caffeine module.
+
+Verified live against the real, already-attached tmux session (not just
+re-read after editing): `tmux source-file` reloaded clean, then a real
+screenshot + a tight crop on the docker pill specifically confirmed the
+whale icon and true `docker ps` count, not a leftover coffee glyph.
+
 ## 2026-09-14 (nvim: transparency bug #3 -- floating windows have their own separate toggle)
 
 Reported directly again, with a screenshot: the file explorer sidebar still
