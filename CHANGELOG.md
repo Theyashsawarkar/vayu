@@ -5,6 +5,64 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-15 (tmux: status bar filled in -- real pills, design/color-psychology pass)
+
+Asked directly to put real background color behind each tmux status module
+and make the bar more aesthetic, with actual design/color-psychology
+thinking behind it, not just recoloring text on the transparent bar the
+way every tmux pass before this one had.
+
+**Why it was "hollow" and not just unfilled**: the separator glyphs
+(`@sep_left`/`@sep_right`) were U+E0B7/U+E0B5, the Powerline Extra
+Symbols "half circle, THIN/outline" pair -- literally an outline ring
+shape. Setting `bg=` on the content between two outline rings was never
+going to look like a filled pill regardless of what color went there;
+the caps themselves had to change. Swapped to U+E0B6/U+E0B4 (the
+"THICK/filled" pair, same left/right orientation) -- confirmed both
+exist in this terminal's actual font (JetBrainsMono Nerd Font,
+`kitty/.config/kitty/kitty.conf`) via a charset-coverage check first,
+same discipline as every other glyph fix in this repo. A filled
+half-circle cap plus a matching solid fill in between now reads as one
+continuous rounded pill.
+
+**The fill**: each module's content gets `bg=<role color>,fg=#1E1E2E`
+(Catppuccin Mocha's own Base -- this repo's established dark-ink-on-a-
+filled-pill convention from an earlier tmux redesign, revived here), the
+caps stay `fg=<role color>` on the default/transparent bg so they taper
+the ends instead of squaring them off, and an explicit `bg=default`
+right after each right cap resets the fill before the inter-module gap
+-- without it the trailing space would have inherited the fill color
+too. Contrast checked, not assumed: computed WCAG relative-luminance
+contrast for `#1E1E2E` against all six fills -- lowest (Violet) 6.03:1,
+highest (Amber) 9.83:1, every one clears the 4.5:1 AA minimum with real
+margin, most clear the stricter 7:1 AAA bar.
+
+**Color psychology pass on the existing six-hue Tailwind-400 palette**
+(re-examined for role-fit, not re-picked from scratch): Blue for session
+reads as identity/stability; Violet for the active window signals
+focus/importance without tipping into an alarm color; Emerald for
+inactive windows is the calmest hue in the set, fitting "not where your
+attention is right now"; Amber for docker borrows the universal
+machinery/infrastructure-alert association (the same reason hazard
+lighting defaults to amber); Rose for the date is warm and human,
+distinct from the "system status" hues around it; Fuchsia for time is
+deliberately the most visually assertive hue, since it's also the module
+glanced at most often. All six stay at Tailwind's "400" weight -- one
+consistent lightness/chroma step so they read as one family, and bright
+enough to hold the contrast numbers above on a solid fill rather than
+just glow acceptably as text-only color the way the previous design used
+them.
+
+`tmux/.tmux/scripts/docker_status.sh`'s own comment updated to match --
+still plain text with no embedded `#[fg=...]` escapes, the fill is
+applied once, centrally, by the wrapping module in tmux.conf.
+
+Verified live, not just parsed without error: `tmux source-file` reloaded
+clean, then `grim`-captured a real screenshot of this exact session's own
+status bar -- all three pill types (session, window-list, status-right)
+render as solid rounded fills with dark, legible text, distinct from
+each other and from the bar behind them.
+
 ## 2026-09-15 (icon theme: Papirus removed, replaced system-wide with candy-icons)
 
 Asked directly to swap the icon theme for Candy, dark, and remove Papirus

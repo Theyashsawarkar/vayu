@@ -18,10 +18,10 @@ fi
 
 count=$(docker ps -q 2>/dev/null | wc -l)
 
-# Plain text, no embedded #[fg=...] escapes -- those existed for the old
-# solid-fill pill design (dark text needed on a light background). The
-# "hollow pill" design (tmux.conf) gives every module exactly one uniform
-# color for its border and text together, applied by the wrapping module
-# in tmux.conf, not per-script -- icon and the real running-container
-# count logic above are unchanged.
+# Plain text, no embedded #[fg=...] escapes -- the filled-pill design
+# (tmux.conf) wraps this whole module in bg=<role color>,fg=#1E1E2E
+# itself, so the color (dark ink on a solid Amber fill) is applied once,
+# centrally, by the wrapping module in tmux.conf, not per-script. Same
+# reasoning held even through the earlier "hollow pill" design in between
+# -- icon and the real running-container count logic above are unchanged.
 printf '%s  x %s' "$icon" "$count"
