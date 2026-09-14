@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.7.0-nightly -- 2026-09-14
+
+Everything from here down to `v1.6.3` above, on `development` (Nightly
+channel) only -- not merged to `main`/Stable yet. MINOR bump: several
+genuinely new features, not just fixes -- the battery-warning-dismiss/
+lid-timeout-poweroff pair, the whole notification glass-effect rework,
+a caffeine keybind, the GitHub update-checker itself (new nwg-bar
+prompt, new systemd service, new scripts), and the Stable/Nightly
+channel choice in `install.sh` -- alongside real bug fixes (the
+duplicate-binding config error, several margin/blur rendering bugs, two
+stale-doc corrections). `-nightly` rather than a plain `v1.7.0` tag:
+this marks where `development` currently stands, not a cut, tagged
+release -- see `docs/VERSIONING.md`'s "Update channels" section for why
+the two branches version separately now.
+
 ## 2026-09-14 (`develop` renamed to `development`; install.sh asks Stable or Nightly)
 
 Two related changes to the branch model itself, on top of yesterday's
