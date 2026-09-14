@@ -125,6 +125,24 @@ progress-color=over #313244
 default-timeout=5000
 ignore-timeout=0
 
+# max-visible=1 -- real architectural limit, not a style choice: mako
+# renders every simultaneously-visible notification as rows inside ONE
+# shared layer-shell surface, confirmed directly via `swaymsg -t
+# get_outputs` (3 stacked notifications reported as a single surface,
+# 276px tall = 3x92, not three separate 92px ones). SwayFX's
+# `corner_radius`/`blur` in sway/config's layer_effects apply to that
+# one surface as a whole -- there's no way for the compositor to round
+# or glass each entry independently, since it has no concept of mako's
+# internal row boundaries; only the true outer edge of the whole shared
+# panel ever gets the glass treatment, reported directly as "remove that
+# external common container" once two-plus notifications piled up.
+# max-visible=1 sidesteps this by construction: only ever one row exists
+# in that surface at a time (mako's own default is 5, queuing the rest
+# to appear after older ones expire/dismiss, not dropping them), so it's
+# always the single, fully independent glass card this whole config is
+# actually built for.
+max-visible=1
+
 # Keep dismissed/expired notifications so scripts/.local/bin/
 # notification-history.py (the waybar bell icon, left of the clock) has
 # something real to show -- off by default, mako drops notifications
@@ -174,6 +192,24 @@ default-timeout=0
 # than reusing an accent color there too.
 [urgency=low]
 border-color=#585B70
+
+# --- Overflow placeholder ---
+# With max-visible=1 above, this is real: any 2nd+ notification arriving
+# while one's already showing means there's always at least one more
+# queued, so mako's own "(N more)" placeholder row would show
+# permanently -- and that row is a second entry in the same shared
+# surface as the real notification, recreating the exact "external
+# container" problem max-visible=1 was added to fix in the first place
+# (one shared rounded/glass panel with two flat-divided rows inside it,
+# instead of one independent card). `hidden` is mako's own documented
+# criteria field specifically for styling this placeholder (`man
+# mako(5)`'s CRITERIA section) -- invisible=1 suppresses the row
+# entirely rather than fixing its style, which is what's actually wanted
+# here: the queued count was never something this desktop's own
+# notifications needed to announce, only that the current one is real
+# and unobstructed.
+[hidden]
+invisible=1
 
 # --- Notification modes ---
 # scripts/.local/bin/notification-mode.sh switches between these three
