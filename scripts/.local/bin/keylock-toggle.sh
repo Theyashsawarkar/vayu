@@ -28,11 +28,11 @@ case "$KEY" in
 esac
 
 # Absolute path, not a theme name -- mako has no GTK-style theme
-# resolution, and Papirus's dialog-error-symbolic uses `fill:currentColor`,
-# near-invisible on this desktop's dark notification background (see
-# brightness_osd.sh / mako/config for the full story). Papirus's `status`
-# category ships a real red-filled dialog-error instead.
-ICON_ERROR=/usr/share/icons/Papirus/48x48/status/dialog-error.svg
+# resolution. candy-icons (Papirus's replacement) ships no dialog-error
+# icon at all (confirmed with `find` -- see mako/config for the full
+# story), so this falls back to AdwaitaLegacy's real red-filled
+# dialog-error.png instead.
+ICON_ERROR=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png
 
 if ! command -v ydotool >/dev/null 2>&1; then
     notify-send -u critical -i "$ICON_ERROR" "$LABEL" "ydotool isn't installed -- run: sudo pacman -S ydotool"

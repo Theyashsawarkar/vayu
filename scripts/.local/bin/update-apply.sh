@@ -20,8 +20,8 @@ mkdir -p "$LOG_DIR"
 
 log() { printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$LOG_FILE"; }
 
-ICON_ERROR=/usr/share/icons/Papirus/48x48/status/dialog-error.svg
-ICON_OK=/usr/share/icons/Papirus/48x48/apps/system-software-update.svg
+ICON_ERROR=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png
+ICON_OK=/usr/share/icons/candy-icons/apps/scalable/system-software-update.svg
 
 cd "$DOTFILES_DIR" || {
     notify-send -u critical -i "$ICON_ERROR" "Update failed" "$DOTFILES_DIR not found"

@@ -49,7 +49,7 @@ def resolve_icon(name):
     cannot be loaded", not assumed from docs). Resolved through the same
     GTK icon theme lookup every themed icon on this system already goes
     through, so it always matches whatever theme is actually configured
-    (Papirus-Dark by default) instead of a hardcoded guess at a path."""
+    (candy-icons by default) instead of a hardcoded guess at a path."""
     if not name:
         return None
     if name in _icon_cache:
@@ -109,13 +109,12 @@ def main():
     if not history:
         subprocess.run([
             # Absolute path, not a theme name -- mako has no GTK-style
-            # theme resolution, and Papirus's "-symbolic" icons use
-            # `fill:currentColor`, near-invisible on this desktop's dark
-            # notification background (see brightness_osd.sh / mako/config
-            # for the full story). Papirus's `status` category ships a
-            # real blue-filled dialog-information instead.
+            # theme resolution (see brightness_osd.sh / mako/config for
+            # the full story). candy-icons ships no dialog-information
+            # icon at all, so this is AdwaitaLegacy's real blue-filled
+            # equivalent.
             "notify-send", "-u", "low",
-            "-i", "/usr/share/icons/Papirus/48x48/status/dialog-information.svg",
+            "-i", "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-information.png",
             "Notifications", "No notification history yet",
         ])
         return
@@ -152,9 +151,10 @@ def main():
         # this dark notification background (this exact notify-send call
         # is what was reported as "shows the text but not the clipboard
         # icon" -- see brightness_osd.sh / mako/config for the full story
-        # on why bare theme names don't work here).
+        # on why bare theme names don't work here). candy-icons ships
+        # this exact icon under the same name.
         "notify-send", "-u", "low",
-        "-i", "/usr/share/icons/Papirus/48x48/apps/org.kde.plasma.clipboard.svg",
+        "-i", "/usr/share/icons/candy-icons/apps/scalable/org.kde.plasma.clipboard.svg",
         "Notification (copied)", n.get("summary") or "",
     ])
 

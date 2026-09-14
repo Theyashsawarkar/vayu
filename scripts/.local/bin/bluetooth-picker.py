@@ -62,15 +62,16 @@ def notify(message, urgency="low"):
     # not just a mako-internal detail.
     #
     # Absolute paths, not theme names -- mako has no GTK-style theme
-    # resolution, and Papirus's "-symbolic" icons use `fill:currentColor`,
-    # near-invisible on this desktop's dark notification background (see
-    # brightness_osd.sh / mako/config for the full story). Papirus's
-    # `status` category ships real-fill versions of both under the plain
-    # (non-symbolic) name.
+    # resolution (see brightness_osd.sh / mako/config for the full story).
+    # candy-icons (Papirus's replacement) ships no dialog-error or
+    # bluetooth-active icon under those exact names (confirmed with
+    # `find`) -- AdwaitaLegacy's real-fill dialog-error.png covers the
+    # first, and candy-icons' own network-bluetooth-activated.svg (real
+    # fill, active state) is the closest real equivalent for the second.
     icon = (
-        "/usr/share/icons/Papirus/48x48/status/dialog-error.svg"
+        "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png"
         if urgency == "critical"
-        else "/usr/share/icons/Papirus/48x48/status/bluetooth-active.svg"
+        else "/usr/share/icons/candy-icons/status/scalable/network-bluetooth-activated.svg"
     )
     subprocess.run(
         ["notify-send", "-u", urgency, "-i", icon, "Bluetooth", message],

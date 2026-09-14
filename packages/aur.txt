@@ -1,13 +1,13 @@
 beekeeper-studio-bin
 brave-bin
 bruno-bin
+candy-icons-git
 catppuccin-gtk-theme-latte
 catppuccin-gtk-theme-mocha
 claude-code
 google-chrome
 mongosh-bin
 opencode-bin
-papirus-folders-catppuccin-git
 scenefx0.4
 sddm-sugar-dark
 sway-audio-idle-inhibit-git

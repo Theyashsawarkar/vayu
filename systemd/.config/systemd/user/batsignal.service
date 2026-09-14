@@ -24,7 +24,7 @@ Type=simple
 # low-battery warning at heart (-p/full/-f are unused here, see above),
 # so one icon fits all of them -- battery-caution-symbolic is the
 # freedesktop icon-naming-spec name for exactly that state, confirmed
-# present under /usr/share/icons/Papirus (mako's icon-path).
+# present under /usr/share/icons/candy-icons (mako's icon-path).
 ExecStart=/usr/bin/batsignal -w 20 -c 10 -d 5 -D "systemctl suspend" -I battery-caution-symbolic
 Restart=on-failure
 RestartSec=2

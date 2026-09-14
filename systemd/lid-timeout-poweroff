@@ -60,7 +60,7 @@ case "$1/$2" in
         # doesn't show up.
         sudo -u yash DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/1000/bus" \
           notify-send -u critical -a "lid-timeout-poweroff" \
-          -i /usr/share/icons/Papirus/48x48/status/dialog-warning.svg \
+          -i /usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png \
           "DRY RUN: would power off" \
           "Lid was closed for ${TIMEOUT_SECONDS}s straight -- this would be a real poweroff with DRY_RUN=0." \
           2>/dev/null || true

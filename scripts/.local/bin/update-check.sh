@@ -78,7 +78,7 @@ PLURAL_S=""
 [ "$COUNT" -ne 1 ] && PLURAL_S="s"
 
 notify-send -u normal \
-    -i /usr/share/icons/Papirus/48x48/apps/system-software-update.svg \
+    -i /usr/share/icons/candy-icons/apps/scalable/system-software-update.svg \
     "Desktop update available ($CHANNEL)" \
     "$COUNT new commit$PLURAL_S -- latest: \"$LATEST_SUBJECT\""
 

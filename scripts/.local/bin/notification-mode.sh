@@ -64,23 +64,22 @@ echo "$new" > "$STATE_FILE"
 makoctl mode -s "$new"
 
 # Absolute paths, not theme names -- mako has no GTK-style theme
-# resolution, and Papirus's "-symbolic" icons all use `fill:currentColor`,
-# near-invisible on this desktop's dark notification background (see
-# brightness_osd.sh / mako/config for the full story). Papirus's `apps`/
-# `status` categories ship real-fill versions of all three.
+# resolution (see brightness_osd.sh / mako/config for the full story).
+# candy-icons (Papirus's replacement) ships real-fill versions of all
+# three under the same names.
 case "$new" in
     normal)
-        icon="/usr/share/icons/Papirus/48x48/apps/preferences-system-notifications.svg"
+        icon="/usr/share/icons/candy-icons/preferences/scalable/preferences-system-notifications.svg"
         label="Normal"
         desc="Popups and sound for every notification"
         ;;
     silent)
-        icon="/usr/share/icons/Papirus/32x32/status/audio-volume-muted.svg"
+        icon="/usr/share/icons/candy-icons/status/scalable/audio-volume-muted.svg"
         label="Silent"
         desc="Popups still show, sound is off"
         ;;
     dnd)
-        icon="/usr/share/icons/Papirus/48x48/status/notification-disabled.svg"
+        icon="/usr/share/icons/candy-icons/status/scalable/notification-disabled.svg"
         label="Do Not Disturb"
         desc="No popups, no sound -- still saved to history"
         ;;

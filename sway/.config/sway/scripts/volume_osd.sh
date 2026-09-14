@@ -18,25 +18,22 @@ LOCK="/tmp/volume_osd.lock"
 # desktop (different icon per range, not one static speaker glyph).
 #
 # Absolute paths, not theme names -- see brightness_osd.sh for the full
-# story: mako has no GTK-style theme resolution, and Papirus's
-# "-symbolic"/`actions` names all use `fill:currentColor` (defaults to a
-# near-invisible dark #444444 on this desktop's near-black notification
-# background). Papirus's `status` category ships these same four as real,
-# hardcoded-fill icons instead (confirmed `grep -c currentColor` is 0 on
-# all four before using them) -- only at 32x32 though, no 48x48 status
-# variant exists for these specifically, so they render a bit smaller
-# than this repo's other 48x48 notification icons. Real and slightly
-# small beats invisible and technically full-size.
+# story: mako has no GTK-style theme resolution. candy-icons (Papirus's
+# replacement) ships these same four under `status/scalable`, real,
+# hardcoded-fill (confirmed `grep -c currentColor` is 0 on all four
+# before using them) -- scalable SVGs this time rather than a fixed
+# 32x32 raster, so no size tradeoff versus this repo's other 48x48
+# notification icons.
 volume_icon() {
     local pct="$1"
     if [ "$pct" -eq 0 ]; then
-        echo "/usr/share/icons/Papirus/32x32/status/audio-volume-muted.svg"
+        echo "/usr/share/icons/candy-icons/status/scalable/audio-volume-muted.svg"
     elif [ "$pct" -lt 34 ]; then
-        echo "/usr/share/icons/Papirus/32x32/status/audio-volume-low.svg"
+        echo "/usr/share/icons/candy-icons/status/scalable/audio-volume-low.svg"
     elif [ "$pct" -lt 67 ]; then
-        echo "/usr/share/icons/Papirus/32x32/status/audio-volume-medium.svg"
+        echo "/usr/share/icons/candy-icons/status/scalable/audio-volume-medium.svg"
     else
-        echo "/usr/share/icons/Papirus/32x32/status/audio-volume-high.svg"
+        echo "/usr/share/icons/candy-icons/status/scalable/audio-volume-high.svg"
     fi
 }
 

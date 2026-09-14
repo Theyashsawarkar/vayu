@@ -183,20 +183,7 @@ log "Applying GTK/dconf theme (gtk-3.0/gtk-4.0 settings.ini already stowed)"
 if command -v dconf >/dev/null 2>&1; then
   dconf write /org/gnome/desktop/interface/gtk-theme "'catppuccin-mocha-mauve-standard+default'"
   dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
-  dconf write /org/gnome/desktop/interface/icon-theme "'Papirus-Dark'"
-fi
-
-log "Recoloring Papirus folders to match the GTK theme's mauve accent"
-# papirus-folders (from papirus-folders-catppuccin-git) needs root to write
-# into /usr/share/icons/Papirus/ -- it re-execs itself via sudo internally
-# when not already root, confirmed by reading its own source before relying
-# on that behavior. Run once here for both palettes so switching
-# Papirus-Dark/-Light later (scripts/.local/bin/theme-toggle.sh, a plain
-# dconf icon-theme flip, no root needed at toggle-time) never has
-# unmatched folder colors -- both variants are ready in advance.
-if command -v papirus-folders >/dev/null 2>&1; then
-  sudo papirus-folders -C cat-mocha-mauve --theme Papirus-Dark
-  sudo papirus-folders -C cat-latte-mauve --theme Papirus-Light
+  dconf write /org/gnome/desktop/interface/icon-theme "'candy-icons'"
 fi
 
 log "Done."

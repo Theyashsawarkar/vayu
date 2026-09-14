@@ -81,27 +81,24 @@ icon-border-radius=8
 # enough: mako only ever searches /usr/share/icons/hicolor and
 # /usr/share/pixmaps by default (its own docs say so explicitly) -- it
 # does NOT do GTK-style icon-theme resolution or theme inheritance the
-# way GTK apps do. This desktop's actual icon theme is Papirus-Dark
+# way GTK apps do. This desktop's actual icon theme is candy-icons
 # (`gsettings get org.gnome.desktop.interface icon-theme`), and NONE of
 # the icon names used anywhere in this repo's scripts exist in hicolor --
-# confirmed directly with `find`, e.g. docker-desktop.svg,
-# edit-copy-symbolic.svg, dialog-error-symbolic.svg all live only under
-# Papirus. Net effect before this fix: every single notification's icon
-# silently failed to resolve and the popup fell back to no icon at all,
-# regardless of how correct the icon name passed to notify-send was --
-# this is almost certainly what "notifications don't show icons" was
-# actually seeing, not a per-icon naming problem.
+# confirmed directly with `find`, e.g. docker-desktop.svg and
+# battery-caution-symbolic.svg live only under candy-icons.
 #
-# Papirus-Dark itself is nearly empty (3972 files, mostly dark-tinted
-# folder/places variants) and declares `Inherits=breeze-dark,hicolor` in
-# its own index.theme -- but mako doesn't follow that either, and
-# breeze-dark isn't even installed here. So Papirus-Dark alone isn't
-# enough -- the full Papirus theme (65991 files) is what actually has
-# every icon this repo's scripts reference, confirmed directly: every
-# name from every notify-send/-i call across this repo resolves under
-# Papirus. Adwaita listed last as a broad fallback for anything future
-# scripts reach for that Papirus doesn't ship.
-icon-path=/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus:/usr/share/icons/Adwaita
+# candy-icons (Papirus's replacement as of the Candy migration) has no
+# `status` icons for generic dialogs at all (no dialog-error/-warning/
+# -information anywhere in the theme, confirmed with `find`) and no
+# weather icons either -- gaps Papirus didn't have. AdwaitaLegacy (the
+# old full-color, non-symbolic Adwaita icon set, `adwaita-icon-theme-legacy`)
+# fills those specifically: real dialog-*/weather-clear* PNGs, still
+# real-fill (not `fill:currentColor` like modern Adwaita's symbolic-only
+# set, which would go near-invisible on this desktop's dark notification
+# background the same way Papirus's `-symbolic` names once did). Adwaita
+# itself listed last as a broad fallback for anything future scripts reach
+# for that neither ships.
+icon-path=/usr/share/icons/candy-icons:/usr/share/icons/AdwaitaLegacy:/usr/share/icons/Adwaita
 
 # --- Elegant Colors ---
 # Deep Midnight background at 0.35 alpha (0x59). wofi's own 0.85 was

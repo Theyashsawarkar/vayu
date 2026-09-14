@@ -18,11 +18,10 @@
 #
 # Real bug found and fixed here: this used to write gtk-theme/icon-theme
 # names unconditionally, including for the light palette
-# (catppuccin-latte-mauve-standard+default, Papirus-Light) before those
-# packages were actually confirmed installed on this machine (checked:
-# `pacman -Q catppuccin-gtk-theme-latte papirus-icon-theme
-# papirus-folders-catppuccin-git` all failed -- packages/aur.txt lists
-# them, but the handed-off install command hadn't been run yet). Writing
+# (catppuccin-latte-mauve-standard+default) before those packages were
+# actually confirmed installed on this machine (checked:
+# `pacman -Q catppuccin-gtk-theme-latte` failed -- packages/aur.txt lists
+# it, but the handed-off install command hadn't been run yet). Writing
 # a theme/icon-theme name that doesn't resolve to anything installed
 # doesn't fail loudly -- native GTK apps just silently keep rendering
 # whatever they last successfully loaded, which looks exactly like "the
@@ -90,21 +89,26 @@ missing=""
 if [ "$scheme" = "prefer-light" ]; then
     dconf write "$DCONF_IFACE/color-scheme" "'prefer-dark'"
     apply_gtk_theme "catppuccin-mocha-mauve-standard+default" || missing="${missing}GTK theme, "
-    apply_icon_theme "Papirus-Dark" || missing="${missing}icon theme, "
+    # candy-icons (Papirus's replacement) has no separate light/dark
+    # variant -- unlike Papirus-Dark/-Light, one icon-theme name covers
+    # both palettes, so this call is really just a re-confirmation that
+    # it's still installed, not an actual switch.
+    apply_icon_theme "candy-icons" || missing="${missing}icon theme, "
     label="dark"
     # Absolute path, not a theme name -- mako has no GTK-style theme
-    # resolution, and Papirus's "-symbolic" weather icons use
-    # `fill:currentColor`, near-invisible on this desktop's dark
+    # resolution. candy-icons ships no weather icons at all (confirmed
+    # with `find`), so this falls back to AdwaitaLegacy's real-fill
+    # weather-clear-night.png instead of a `fill:currentColor` symbolic
+    # icon, which would go near-invisible on this desktop's dark
     # notification background (see brightness_osd.sh / mako/config for
-    # the full story). Papirus's `status` category ships real-fill
-    # versions of both under the plain (non-symbolic) name.
-    icon="/usr/share/icons/Papirus/48x48/status/weather-clear-night.svg"
+    # the full story).
+    icon="/usr/share/icons/AdwaitaLegacy/48x48/legacy/weather-clear-night.png"
 else
     dconf write "$DCONF_IFACE/color-scheme" "'prefer-light'"
     apply_gtk_theme "catppuccin-latte-mauve-standard+default" || missing="${missing}GTK theme, "
-    apply_icon_theme "Papirus-Light" || missing="${missing}icon theme, "
+    apply_icon_theme "candy-icons" || missing="${missing}icon theme, "
     label="light"
-    icon="/usr/share/icons/Papirus/48x48/status/weather-clear.svg"
+    icon="/usr/share/icons/AdwaitaLegacy/48x48/legacy/weather-clear.png"
 fi
 
 if [ -n "$missing" ]; then

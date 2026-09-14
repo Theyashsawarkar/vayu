@@ -45,20 +45,20 @@ def notify(message, urgency="low"):
     # Was "utilities-terminal" for the non-critical case -- a generic
     # terminal glyph with no connection to Docker at all, reported
     # directly: "if the notification is about docker then it only has
-    # the docker name in it not the icon of it". Papirus (installed since
-    # this repo's icon-pack pass) ships a real docker-desktop icon --
-    # confirmed it actually resolves via the same GTK icon theme lookup
-    # every other themed icon on this system goes through, not assumed
-    # from the filename alone (a bare "docker" name doesn't resolve to
-    # anything in this theme, "docker-desktop" does).
-    # dialog-error-symbolic used `fill:currentColor`, near-invisible on
-    # this desktop's dark notification background (see brightness_osd.sh
-    # / mako/config for the full story) -- Papirus's `status` category
-    # ships a real red-filled dialog-error instead. docker-desktop is
-    # unaffected (only exists in Papirus's `apps` category, real fill,
-    # already confirmed rendering live via a Docker-blue pixel check).
+    # the docker name in it not the icon of it". candy-icons (Papirus's
+    # replacement) also ships a real docker-desktop icon under the same
+    # name -- confirmed it still resolves via the same GTK icon theme
+    # lookup every other themed icon on this system goes through, not
+    # assumed from the filename alone (a bare "docker" name doesn't
+    # resolve to anything in this theme, "docker-desktop" does).
+    # candy-icons has no dialog-error icon at all though (confirmed with
+    # `find` -- see mako/config for the full story), so the critical case
+    # falls back to AdwaitaLegacy's real red-filled dialog-error.png.
+    # docker-desktop is unaffected (real fill, in candy-icons' `apps`
+    # category, re-confirmed rendering live via a Docker-blue pixel
+    # check after the migration).
     icon = (
-        "/usr/share/icons/Papirus/48x48/status/dialog-error.svg"
+        "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png"
         if urgency == "critical"
         else "docker-desktop"
     )

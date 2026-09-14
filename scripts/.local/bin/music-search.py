@@ -87,12 +87,14 @@ import urllib.request
 STATE_DIR = os.path.expanduser("~/.local/state/music-search")
 LOG_PATH = os.path.join(STATE_DIR, "music-search.log")
 
-# Absolute paths, not theme names -- same reasoning as every other icon
-# fix this session: mako has no GTK-style theme resolution, and these
-# are Papirus's real-fill `status` icons, confirmed present before use.
-ICON_INFO = "/usr/share/icons/Papirus/48x48/status/dialog-information.svg"
-ICON_ERROR = "/usr/share/icons/Papirus/48x48/status/dialog-error.svg"
-ICON_WARNING = "/usr/share/icons/Papirus/48x48/status/dialog-warning.svg"
+# Absolute paths, not theme names -- mako has no GTK-style theme
+# resolution. candy-icons (Papirus's replacement) ships no dialog-*
+# icons at all (confirmed with `find` -- see mako/config for the full
+# story), so these are AdwaitaLegacy's real-fill equivalents instead,
+# confirmed present before use.
+ICON_INFO = "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-information.png"
+ICON_ERROR = "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png"
+ICON_WARNING = "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png"
 
 VIDEO_FORMAT = "bestvideo[height<=1080]+bestaudio/best[height<=1080]"
 

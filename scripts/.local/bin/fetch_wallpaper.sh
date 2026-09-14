@@ -47,14 +47,14 @@ FALLBACK_COLOR="1e1e2e"  # Catppuccin Mocha base -- last resort if there is no
                           # machine, first run ever, no network yet)
 
 # Absolute paths, not theme names -- mako has no GTK-style theme
-# resolution, and Papirus's "-symbolic" icons all use `fill:currentColor`,
-# near-invisible on this desktop's dark notification background (see
-# brightness_osd.sh / mako/config for the full story). Papirus's `apps`/
-# `status` categories ship real-fill versions of all three under their
-# plain (non-symbolic) names.
-ICON_WALLPAPER=/usr/share/icons/Papirus/48x48/apps/preferences-desktop-wallpaper.svg
-ICON_WARNING=/usr/share/icons/Papirus/48x48/status/dialog-warning.svg
-ICON_ERROR=/usr/share/icons/Papirus/48x48/status/dialog-error.svg
+# resolution (see brightness_osd.sh / mako/config for the full story).
+# preferences-desktop-wallpaper is candy-icons' own real-fill icon
+# (Papirus's replacement, same name carried over); candy-icons ships no
+# dialog-* icons at all though, so those two fall back to AdwaitaLegacy's
+# real-fill equivalents instead.
+ICON_WALLPAPER=/usr/share/icons/candy-icons/preferences/scalable/preferences-desktop-wallpaper.svg
+ICON_WARNING=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png
+ICON_ERROR=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png
 # Markets confirmed to actually exist for this API; not all of them are
 # guaranteed to differ from each other on any given day (several share the
 # same underlying photo, seen directly while testing), but spreading

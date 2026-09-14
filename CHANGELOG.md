@@ -5,6 +5,97 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-15 (icon theme: Papirus removed, replaced system-wide with candy-icons)
+
+Asked directly to swap the icon theme for Candy, dark, and remove Papirus
+entirely. Checked both real AUR candidates before picking one rather than
+assuming "Candy" meant one specific package: `candy-icons-git`
+(github.com/EliverLara/candy-icons, 16 AUR votes, the well-known one) and
+`neo-candy-icons-git` (a smaller fork, 1 vote). Neither ships a genuine
+`-Dark` variant the way Papirus shipped `Papirus-Dark`/`Papirus-Light` --
+candy-icons is a single theme whose `index.theme` already sets
+`FollowsColorScheme=true` and inherits `breeze-dark` first, i.e. its own
+dark-compatible mode is just using it as-is. Confirmed with the user and
+went with plain `candy-icons-git`, no Sweet-folders pairing.
+
+**Packages**: `candy-icons-git` installed (needed sudo/a real TTY for the
+`makepkg`/`pacman -U` step, handed back to the user to run directly since
+this session can't answer an interactive sudo password prompt). Removed
+both `papirus-icon-theme` and `papirus-folders-catppuccin-git` --
+`papirus-folders`'s Catppuccin recoloring had written custom files
+directly into `/usr/share/icons/Papirus/`, so pacman correctly refused to
+delete that directory on removal (it no longer fully owned the contents);
+cleaned up the orphaned directory by hand afterward. `packages/pacman.txt`
+and `packages/aur.txt` updated to match.
+
+**The real work was the ~15 scripts hardcoding absolute Papirus icon
+paths** for `notify-send -i` (mako has no GTK-style theme resolution or
+inheritance -- see `mako/.config/mako/config`'s own long-standing comment
+on this -- so every one of these uses a real file path, not a theme
+name). candy-icons turned out to have real coverage gaps Papirus didn't:
+no `dialog-error`/`dialog-warning`/`dialog-information` icons anywhere in
+the theme, no weather icons, no caffeine-cup icon, no `display-brightness`,
+no `audio-input-microphone`, no `bluetooth-active` (all confirmed with
+`find`, not assumed). Same discipline as every previous icon fix in this
+repo: nothing swapped in blind.
+
+- **`dialog-*`/weather icons**: no candy-icons equivalent exists at all,
+  so these now fall back to `AdwaitaLegacy` (`adwaita-icon-theme-legacy`,
+  already installed) -- the old full-color, non-symbolic Adwaita icon set,
+  real PNG fills rather than modern Adwaita's symbolic-only
+  `fill:currentColor` set (which would have reintroduced the exact
+  near-invisible-on-dark-background bug this repo already fixed once for
+  Papirus's own symbolic icons). Confirmed present at 48x48 before using
+  any of them. Affects: `update-apply.sh`, `update-check.sh`,
+  `music-search.py`, `keylock-toggle.sh`, `keybind-search.py`,
+  `notification-history.py`, `fetch_wallpaper.sh`, `wf-recorder-toggle.sh`,
+  `bluetooth-picker.py`, `docker-picker.py`, `screenshot.sh`,
+  `lid-timeout-poweroff`, `theme-toggle.sh`'s light/dark notification icon.
+- **Icons candy-icons does ship under the same name** (`docker-desktop`,
+  `org.kde.plasma.clipboard`, `preferences-desktop-wallpaper`,
+  `preferences-system-notifications`, `notification-disabled`, the four
+  `audio-volume-*` tiers, `battery-caution-symbolic`) carried straight
+  over, same names, just under `<theme>/status|apps|preferences/scalable/`
+  instead of Papirus's fixed-size `48x48`/`32x32` dirs -- all confirmed
+  `grep -c currentColor` is 0 before reuse, same as originally.
+- **No real equivalent, swapped for the closest real concept** (matching
+  this repo's own established pattern for exactly this situation):
+  `display-brightness` → `preferences-desktop-display` (brightness_osd.sh);
+  caffeine-cup → `preferences-desktop-screensaver` (caffeine-toggle.sh --
+  the toggle's actual mechanism is stopping/starting swayidle, so this is
+  a legitimate match, not arbitrary); `audio-input-microphone` →
+  `microphone-sensitivity-high` (wf-recorder-toggle.sh); `bluetooth-active`
+  → `network-bluetooth-activated` (bluetooth-picker.py).
+
+**`mako/.config/mako/config`**: `icon-path` updated to
+`candy-icons:AdwaitaLegacy:Adwaita` (was `Papirus-Dark:Papirus:Adwaita`),
+comment rewritten to document candy-icons' actual gaps instead of
+Papirus's near-empty `-Dark` variant.
+
+**`install.sh`**: `dconf write .../icon-theme` now writes `candy-icons`.
+The entire Papirus-folder-recoloring block (`sudo papirus-folders -C
+cat-mocha-mauve --theme Papirus-Dark` / `cat-latte-mauve`/`Papirus-Light`)
+removed outright -- candy-icons has no per-palette folder-color tool, and
+without the `-Dark`/`-Light` split there's nothing left to recolor twice.
+
+**`theme-toggle.sh`**: `apply_icon_theme` now writes `candy-icons` in both
+the light and dark branches (was `Papirus-Dark`/`Papirus-Light`) -- still
+goes through the same installed-check safety path, it just no longer
+actually changes anything between the two, since one theme now covers
+both palettes.
+
+**`gtk/.config/gtk-{3,4}.0/settings.ini`**: `gtk-icon-theme-name` ->
+`candy-icons`.
+
+Applied live on this machine (`dconf`/`gsettings` already reflect
+`candy-icons` from `install.sh`'s dconf write, re-run manually since this
+wasn't a fresh install). `docs/ARCHITECTURE.md`'s icon-pack section
+rewritten to describe the current candy-icons setup and point to this
+entry for the migration; the file's other, older Papirus mentions
+(the nwg-bar power-menu icon provenance, the original notification-icon
+investigation) are left as accurate history of decisions made at the
+time, not live configuration.
+
 ## 2026-09-14 (tmux: time module recolored, cyan to fuchsia)
 
 Sixth same-day tmux revision. Asked to change the time color with no

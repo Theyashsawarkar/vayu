@@ -286,13 +286,11 @@ def main():
     if not entries:
         subprocess.run([
             # Absolute path, not a theme name -- mako has no GTK-style
-            # theme resolution, and Papirus's "-symbolic" icons all use
-            # `fill:currentColor`, near-invisible on this desktop's dark
-            # notification background (see brightness_osd.sh / mako/config
-            # for the full story). Papirus's `status` category ships a
-            # real red-filled dialog-error instead.
+            # theme resolution (see brightness_osd.sh / mako/config for
+            # the full story). candy-icons ships no dialog-error icon at
+            # all, so this is AdwaitaLegacy's real red-filled equivalent.
             "notify-send", "-u", "critical",
-            "-i", "/usr/share/icons/Papirus/48x48/status/dialog-error.svg", "Keybindings",
+            "-i", "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png", "Keybindings",
             "Couldn't parse any keybindings -- check sway/tmux configs are readable",
         ])
         sys.exit(1)
@@ -327,8 +325,9 @@ def main():
         # org.kde.plasma.clipboard's own app icon -- a real, light-filled
         # clipboard illustration, not a theme name (see the note on the
         # dialog-error notify-send above for why bare names don't work).
+        # candy-icons ships this exact icon under the same name.
         "notify-send", "-u", "low",
-        "-i", "/usr/share/icons/Papirus/48x48/apps/org.kde.plasma.clipboard.svg",
+        "-i", "/usr/share/icons/candy-icons/apps/scalable/org.kde.plasma.clipboard.svg",
         "Keybinding (copied)", selection,
     ])
 

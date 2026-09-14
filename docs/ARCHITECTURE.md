@@ -651,7 +651,7 @@ documented elsewhere in this file -- that one is wofi's own dmenu list
 never requesting a cursor-shape change at all, which is unrelated to how
 waybar's own pill modules behave.
 
-## System-wide dark mode, a waybar toggle, and Papirus (+ Catppuccin folders)
+## System-wide dark mode, a waybar toggle, and an icon pack (Candy, formerly Papirus)
 
 Asked to make sure the desktop is dark by default, add a waybar toggle for
 light/dark, and add a well-regarded icon pack. Checked before building
@@ -663,32 +663,27 @@ What was actually missing: no icon theme was ever set at all (falls back
 to whatever the system default resolves to), and there was no way to
 switch modes without hand-running `dconf write` commands.
 
-**Icon pack**: `papirus-icon-theme` (`packages/pacman.txt`, official
-`extra` repo -- genuinely the most widely-used general-purpose Linux icon
-theme, not just an assumption; it's the one most distros that ship a
-curated icon set default to). Paired with `papirus-folders-catppuccin-git`
-(`packages/aur.txt`) to recolor its folder icons to match this desktop's
-existing Mauve accent -- verified this is the real package name and a
-legitimate, actively-maintained one before adding it: an earlier guess
-("catppuccin-papirus-folders") doesn't exist on the AUR at all, found by
-querying the AUR RPC API directly (`aur.archlinux.org/rpc/v5/search/...`)
-rather than trusting memory; the real package
-(`papirus-folders-catppuccin-git`) is maintained by the official
-`catppuccin` AUR account, matching the upstream
-`github.com/catppuccin/papirus-folders` project.
+**Icon pack**: originally `papirus-icon-theme` + `papirus-folders-catppuccin-git`
+(the most widely-used general-purpose Linux icon theme, folder-recolored
+to this desktop's Mauve accent) -- later replaced system-wide with
+**`candy-icons-git`** (`packages/aur.txt`, github.com/EliverLara/candy-icons)
+on request, with Papirus removed entirely (see the 2026-09-15 CHANGELOG
+entry for the full migration). Unlike Papirus, candy-icons ships no
+official light/dark variant pair -- one theme name
+(`gtk-icon-theme-name=candy-icons` in `gtk/.config/gtk-{3,4}.0/
+settings.ini`) covers both palettes, and its symbolic icons already carry
+real fills rather than Papirus's `fill:currentColor` convention. It also
+has real coverage gaps Papirus didn't (no `dialog-*`/weather/caffeine/
+brightness icons at all) -- every script that needed one of those now
+falls back to `AdwaitaLegacy` (`adwaita-icon-theme-legacy`, real-fill,
+non-symbolic PNGs) or the closest real candy-icons concept instead; see
+`mako/.config/mako/config`'s icon-path comment and each affected script
+for the specific substitution and why.
 
-`papirus-folders`'s actual color-switch command needs root *every time it
-runs* -- confirmed by reading its own source (`_is_root_user`, re-execs
-itself via `sudo` when not already root) before assuming it'd work as a
-casual click-to-toggle action. So folder recoloring happens once, for
-both palettes, in `install.sh` (`sudo papirus-folders -C cat-mocha-mauve
---theme Papirus-Dark` and the `cat-latte-mauve`/`Papirus-Light`
-equivalent), right where `sudo` is already in use for other steps --
-never at runtime. `catppuccin-gtk-theme-latte` also added to
-`packages/aur.txt`, the light-flavor counterpart to the already-installed
-`-mocha` package -- without it, "Papirus-Light"/`prefer-light` would have
-nothing but Adwaita to fall back to, and the toggle below would be real in
-name only.
+`catppuccin-gtk-theme-latte` remains in `packages/aur.txt`, the
+light-flavor counterpart to the already-installed `-mocha` GTK theme
+package -- unrelated to the icon theme itself, still needed so
+`prefer-light` has something other than Adwaita to fall back to.
 
 **The toggle**: `scripts/.local/bin/theme-status.sh` (waybar `custom/
 theme` module, positioned left of the wallpaper button in
@@ -700,11 +695,12 @@ just be one more thing that could silently drift from the truth, the
 same reasoning already applied to `keybind-search.py`'s live-parsed
 config over a maintained list. Verified the actual toggle, not just that
 it runs without error: ran it, confirmed via `dconf read` that
-`color-scheme`/`gtk-theme`/`icon-theme` all flipped to the light-mode
-values, screenshotted and found the waybar icon's color actually changed
-(Sapphire moon -> Yellow sun), then toggled back and confirmed dark
-again -- left the real system in dark mode (the intended default)
-afterward, not mid-test.
+`color-scheme`/`gtk-theme` both flipped to the light-mode values
+(`icon-theme` stays `candy-icons` either way now -- see the icon pack
+section above for why), screenshotted and found the waybar icon's color
+actually changed (Sapphire moon -> Yellow sun), then toggled back and
+confirmed dark again -- left the real system in dark mode (the intended
+default) afterward, not mid-test.
 
 **Scope, stated plainly rather than left implicit**: this covers every
 app that reads the standard GNOME/GTK dconf keys automatically -- file

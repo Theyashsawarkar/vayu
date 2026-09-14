@@ -14,18 +14,16 @@ PIDFILE="/tmp/wf-recorder.pid"
 mkdir -p "$RECORDINGS_DIR"
 
 # Absolute paths, not theme names -- mako has no GTK-style theme
-# resolution, and Papirus's media-record/process-stop are both only
-# defined in its `actions` category, `fill:currentColor` only, no
-# real-fill variant anywhere in the theme (confirmed: `find` turns up
-# nothing outside `actions` for either name) -- near-invisible on this
-# desktop's dark notification background otherwise (see brightness_osd.sh
-# / mako/config for the full story). audio-input-microphone (Papirus's
-# `devices` category, real fill) stands in for "recording" -- a
-# microphone reads as close enough to the concept, and unlike
-# media-record it's actually visible. dialog-warning (real amber fill)
-# stands in for "cancelled", same reasoning as screenshot.sh.
-ICON_RECORD=/usr/share/icons/Papirus/48x48/devices/audio-input-microphone.svg
-ICON_CANCELLED=/usr/share/icons/Papirus/48x48/status/dialog-warning.svg
+# resolution (see brightness_osd.sh / mako/config for the full story).
+# Neither media-record, process-stop, nor audio-input-microphone exists
+# in candy-icons (confirmed with `find`) -- microphone-sensitivity-high
+# (real fill, `status` category) stands in for "recording" instead, same
+# reasoning as before: a microphone reads as close enough to the concept.
+# dialog-warning (AdwaitaLegacy, real amber fill -- candy-icons ships no
+# dialog-* icons at all) stands in for "cancelled", same reasoning as
+# screenshot.sh.
+ICON_RECORD=/usr/share/icons/candy-icons/status/scalable/microphone-sensitivity-high.svg
+ICON_CANCELLED=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png
 
 # --- Stop if already recording ---
 if [[ -f "$PIDFILE" ]]; then
