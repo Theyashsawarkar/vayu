@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (docs site: hero no longer lets the next section peek in on a real 1080p screen)
+
+Reported directly on a screenshot: the very top of "What's in it" (the
+Features section heading) was visible peeking up at the bottom edge on
+first load, not a clean single-screen hero. Root cause: `.hero-card`'s
+own `72vh` min-height was the only thing sizing the hero, with no
+accounting for the sticky nav (`.topnav-wrap`, `position: sticky` --
+real space in normal flow, not pulled out of it) sitting above it, so
+the hero's actual content had less room below it than a plain-`72vh`
+assumption implied.
+
+Fixed on `.hero` itself: `min-height: calc(100vh - 6rem)` (6rem is a
+deliberately generous estimate of the real nav height, not an exact
+measurement -- overshooting just centers the card with a little extra
+top/bottom breathing room, undershooting is the actual bug, so the safe
+direction to round is up) plus `display:flex; align-items:center` so
+`.hero-card`'s own `72vh` floor centers within whatever space that
+leaves, rather than needing the two numbers to match exactly. Verified
+by serving the site locally and loading a fresh tab (no interaction
+needed -- this is a first-load layout issue, reproducible on page load
+alone): confirmed clean empty space below the card down to the actual
+bottom edge, nothing from the next section visible.
+
 ## 2026-09-14 (docs site: Stable/Nightly channel toggle in the Install section)
 
 Asked directly for the site itself to let a visitor pick Stable or
