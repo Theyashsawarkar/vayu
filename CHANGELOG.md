@@ -5,6 +5,37 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (notifications: top-edge bleed, same margin bug; caffeine icon collided with theme icons)
+
+Two more real reports on the same notification work:
+
+**"The notification toasts top background goes out of top border"** --
+the identical margin-baked-into-surface bug as the earlier right-edge
+"external container" fix (see that entry below), just on the top side of
+the same surface. A zoomed screenshot of the real toast's top edge
+showed a flat-topped blurred rectangle sitting above the actual
+rounded/bordered card -- `margin`'s top value (10) was still baked into
+the surface the same way its right value was. Dropped to 2, same fix,
+same mechanism. Confirmed via `swaymsg -t get_outputs`: extent height
+dropped from 92 to 84, exactly the 8px reduction, and a fresh screenshot
+showed the rounded top border as the true top edge, still clearing the
+waybar with a small gap.
+
+**"Shows the icons of the dark and light mode"** -- caffeine-toggle.sh's
+on/off notification icons (weather clouds-night/clear-day) are visually
+identical to the actual sun/moon icons theme-toggle.sh uses for its own
+light/dark mode notifications, so the caffeine notification read as
+"another theme toggle" at a glance. Papirus's dedicated
+caffeine-cup-full/empty icons looked like the obvious fix but turned out
+to use `fill:currentColor` internally (confirmed directly, not assumed
+from the "panel" category the way this repo usually shorthands
+"symbolic = currentColor") -- the same near-invisible-on-dark-background
+problem already hit and documented elsewhere in this repo. Switched to
+`apps/caffeine.svg`, the real Caffeine app's own icon (confirmed no
+currentColor) -- no real-fill on/off pair exists, so both states share
+one icon, and the notification's own title text ("Caffeine on"/"Caffeine
+off") is what actually distinguishes them.
+
 ## 2026-09-14 (notifications: max-visible=1 -- multiple stacked toasts can't each get an independent glass card)
 
 Same "remove that external container" report as the entry below, but
