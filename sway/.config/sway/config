@@ -109,10 +109,22 @@ bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar
 # exec straight to caffeine-toggle.sh, not toggle-popup.sh -- there's no
 # picker window here to show/hide, just an instant on/off flip, same
 # shape as $mod+Shift+q/kill or $mod+Shift+c/reload above rather than the
-# wofi-popup bindings. $mod+Shift+k free and unused elsewhere in this
-# file; "k" for "keep awake", the same phrase caffeine-toggle.sh's own
-# notification text already uses.
-bindsym $mod+Shift+k exec ~/.local/bin/caffeine-toggle.sh
+# wofi-popup bindings.
+#
+# Real bug, caught live: originally bound to $mod+Shift+k, which reads
+# free from a plain grep for literal "+k" in this file -- but $up is set
+# to "k" up top (vim-style h/j/k/l direction variables), and
+# `bindsym $mod+Shift+$up move up` further down resolves to the exact
+# same combination after variable substitution. Sway treats that as a
+# real duplicate binding and threw up the red "There are errors in your
+# config file" swaynag on every reload -- confirmed by bisecting (moving
+# this line to $mod+Shift+j collided with $down's `move down` the same
+# way; a grep for the literal keysym alone can't catch a
+# variable-expanded collision like this). $mod+Shift+a is genuinely
+# free -- checked against both literal binds and every $left/$down/$up/
+# $right variable expansion this time -- and "a" for "Awake" fits the
+# feature at least as well as "k" ever did.
+bindsym $mod+Shift+a exec ~/.local/bin/caffeine-toggle.sh
 
 # rmpc -- terminal music player, replacing termusic entirely (removed:
 # its own search was the only thing ever broken, but the whole tool got
