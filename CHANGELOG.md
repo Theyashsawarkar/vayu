@@ -5,6 +5,30 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (fix: notification "glass" made the whole toast see-through, not just tinted)
+
+Reported directly, with a screenshot, as real visual damage: the
+compositor blur added in the notifications entry below made mako's
+entire toast translucent, showing the blurred wallpaper straight through
+the whole card behind the text -- not a subtle glass tint, a literal
+window into the desktop where a solid notification card should be.
+Verified live with real screenshots (grim, not just `swaymsg -t
+get_outputs`'s effects flags) over both the terminal and Zen before and
+after to confirm the actual visual difference, not just the IPC state.
+
+Root cause: mako's config format has no way to give only the text/icon a
+glass panel while keeping the card's own background opaque -- no
+per-region backgrounds, no image layers, unlike wofi's real GTK CSS
+(which achieves its glass look with an actual layered sheen gradient).
+`blur`/`blur_xray` in sway/config's `layer_effects "notifications"`
+block apply to the *entire* layer surface, so there's no way to scope
+that pair to just a portion of the toast within mako's plain
+flat-color config. Removed both, keeping `corner_radius`/`shadows` (a
+real, uncontroversial improvement, confirmed live) and reverting
+mako/config's background-color from 0xd9 back to the original 0xfa
+opacity -- needed once nothing is blurring what would otherwise show
+raw and unblurred through a more transparent value.
+
 ## 2026-09-14 (fix: caffeine keybind's own reload broke sway with "There are errors in your config file")
 
 The $mod+Shift+k caffeine binding added earlier today (see the
