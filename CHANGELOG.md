@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-14 (fix: caffeine keybind was unsearchable in keybind-search.py)
+
+Reported: searching for the caffeine keybind in `$mod+Shift+slash`'s
+picker returned nothing recognizable. Root cause: `keybind-search.py`
+only ever takes the single comment line immediately above a `bindsym` as
+its description (documented in its own module docstring, an existing
+convention this whole file already follows for every other binding) --
+the line directly above this one was the tail end of the
+duplicate-binding bug post-mortem from the entry below
+("free -- checked against both literal binds and every $left/$down/$up/"),
+never meant as a description at all. Added an actual one-line
+description immediately before the bindsym; verified by running
+`parse_sway()` directly and confirming the real parsed entry, not just
+assuming the fix would work from reading the script.
+
 ## 2026-09-14 (fix: notification "glass" made the whole toast see-through, not just tinted)
 
 Reported directly, with a screenshot, as real visual damage: the
