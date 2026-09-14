@@ -64,15 +64,15 @@ icon-border-radius=8
 icon-path=/usr/share/icons/Papirus-Dark:/usr/share/icons/Papirus:/usr/share/icons/Adwaita
 
 # --- Elegant Colors ---
-# Deep Midnight background. Alpha dropped from the old 0xfa (~98%,
-# essentially opaque) to 0xd9 (~85%) -- the exact value wofi/style.css
-# already settled on for this same base color, after that file's own
-# comments record trying 0.95 first and finding it too opaque to read
-# as glass once blurred. Paired with the new `layer_effects
-# "notifications"` block in sway/config (blur+blur_xray+shadows,
-# same mechanism wofi's glass look depends on) rather than tint alone --
-# an opaque box behind a blur has nothing real to blur.
-background-color=#11111Bd9
+# Deep Midnight background. Was dropped to 0xd9 (~85%) alongside a real
+# compositor blur in sway/config's layer_effects, matching wofi's glass
+# panel -- reverted, along with that blur, after seeing it live: the
+# whole toast read as a window into the blurred wallpaper rather than a
+# solid card, not the intended look. Back to 0xfa (~98%, still has a
+# hint of the desktop behind it without being genuinely see-through) now
+# that nothing's blurring what would otherwise show raw and unblurred
+# through a more transparent value.
+background-color=#11111Bfa
 # Clean silver text for easy readability
 text-color=#CDD6F4
 # Royal Mauve border outline for standard notifications

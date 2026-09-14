@@ -301,19 +301,19 @@ layer_effects "wofi" {
     shadows enable
 }
 
-# Same glass treatment for mako's toasts -- namespace confirmed live the
-# same way wofi's was, not guessed: `swaymsg -t get_outputs` while a real
-# notification was on screen lists it as "notifications" (mako doesn't
-# hold a layer-shell surface at all when idle, only while something's
-# actually showing). Before this, mako/config's own background-color
-# alpha had nothing real behind it to blur, the same gap wofi's rule
-# above already fixed once. corner_radius 12 matches mako's own
-# border-radius=12 exactly, same reasoning as wofi's 16 above: the
-# blurred/shadowed shape has to line up with the toast's actual rounded
-# corners.
+# Tried real compositor blur here (same layer_effects treatment as
+# wofi above, namespace confirmed live via `swaymsg -t get_outputs`) --
+# reverted after seeing it live: blur_xray makes the *entire* toast
+# translucent, showing the blurred wallpaper straight through the whole
+# card behind the text. That reads as "the toast has a see-through glass
+# background", not the intended look -- a solid, legible card is what's
+# wanted here, not a window into the wallpaper. mako's own config format
+# has no way to layer a glass panel behind just the text/icon and keep
+# the card itself opaque (no per-region backgrounds, no image layers,
+# unlike wofi's real GTK CSS) -- shadows alone (no blur/blur_xray) still
+# gets a soft, separated-from-the-wallpaper look without making the card
+# translucent.
 layer_effects "notifications" {
-    blur enable
-    blur_xray enable
     corner_radius 12
     shadows enable
 }
