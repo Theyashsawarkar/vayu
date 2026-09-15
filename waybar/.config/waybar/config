@@ -154,7 +154,8 @@
 		"format-icons": {
 			"charging": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
 			"default": ["󰁺", "󰁽", "󰁿", "󰂁", "󰁹"]
-		}
+		},
+		"on-click": "/home/yash/.local/bin/battery-limit-picker.py"
 	},
 
 	"pulseaudio": {

@@ -5,6 +5,69 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-15 (battery charge-limit reminder -- software nudge only, real hardware not touched)
+
+Asked directly for a waybar battery-icon click to offer a battery
+charge-limit picker, suggesting 70% as a safe default, "so they have a
+better battery life". Checked whether this laptop (Acer Aspire A315-23)
+can actually enforce a hardware charge limit before writing any code,
+rather than assuming a `charge_control_end_threshold`-style sysfs knob
+exists the way it does on many ThinkPads/Framework machines:
+
+**It can't, safely.** `/sys/class/power_supply/BAT1/` has no
+`charge_control_end_threshold` at all -- confirmed directly on this
+machine, the firmware doesn't expose one to Linux. The only real
+workaround is a community out-of-tree kernel module,
+[`acer-wmi-battery`](https://github.com/frederik-h/acer-wmi-battery),
+and it's a worse fit than what was asked for either way: a fixed 80%
+on/off toggle, not a selectable range, manual `insmod` (no DKMS), and
+its own `MODELS.md` lists several other Aspire A315 variants as
+confirmed working/not-working -- **A315-23 is in neither list, tested
+by no one**. More importantly: searching Acer's own Community forum
+turned up another A315-23 owner whose laptop wouldn't boot with the
+charger plugged in (crashed in BIOS) after enabling the *exact same
+feature in Acer's own official Windows software* (Care Center) -- not
+a third-party Linux tool, Acer's own first-party implementation, on
+this same model. That's a strong signal this model's EC handling of
+charge-limit mode is unreliable at the firmware level, independent of
+OS. Flagged this to get a real decision rather than either silently
+building a fake control or silently doing nothing: went with a
+software-only reminder, no EC/firmware calls of any kind.
+
+**What actually shipped**: `battery-limit-picker.py` (wofi popup on
+the waybar battery module's `on-click`, matching `docker-picker.py`'s/
+the other pickers' exact style -- Sky for selectable options, Red for
+Off, Green for whatever's currently set) writes a plain percentage (or
+`off`) to `~/.local/state/battery-limit/threshold`, the same
+`~/.local/state/<feature>/` convention `caffeine-toggle.sh`/
+`notification-mode.sh` already use. `battery-limit-watch.sh` is the
+exact same `udevadm monitor --udev --subsystem-match=power_supply`
+pattern `battery-warning-dismiss.service` already runs in production
+(not a polling loop) -- reacts to real `BAT1`/`ACAD` change uevents,
+fires one `notify-send` nudge the first time capacity crosses the
+saved threshold while actually charging, and clears its own
+`.notified` flag on unplug (or if capacity drops back below the
+threshold) so the next real charge session nudges again instead of
+staying silent forever after the first nudge. New
+`battery-limit-watch.service` (`systemd/.config/systemd/user/`), added
+to `install.sh`'s enable list alongside `battery-warning-dismiss.service`.
+
+Verified live, not just read: `battery-limit-picker.py`'s actual
+`set_limit()` was exercised directly (not just the wofi menu shell) --
+confirmed via `makoctl history -j` that both real notifications fired
+with the right icon/text ("Battery reminder set to 70%" and "Battery
+reminder off"), and that the state file's contents matched exactly.
+The watcher's threshold/dedup branching was verified against five
+real scenarios (crossed for the first time, crossed again with the
+flag already set, dropped back below, unplugged, reminder disabled) --
+all five behaved exactly as designed. The service itself was started
+live on this real machine (currently discharging, `ACAD/online` = 0):
+confirmed it correctly stays silent and creates no notified-flag in
+that real state, which is the one live end-to-end negative-path check
+actually available without AC connected in this session -- the
+positive (AC-plugged, crosses threshold) path was verified through the
+branching test above rather than a live charger connection.
+
 ## 2026-09-15 (docs site: channel toggle -- real segmented control, thumb-alignment bug, spacing)
 
 Follow-up to the toggle shipped in `v1.7.0` itself, after actually looking

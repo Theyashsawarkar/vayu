@@ -75,6 +75,22 @@ Verified without ever touching the real `~/dotfiles` checkout's git state: clone
 </div>
 
 <div class="pkg-card" markdown="1">
+<h4><code>battery-limit-picker.py</code> / <code>battery-limit-watch.sh</code> <span class="pkg-path"><code>~/.local/bin/</code> (<code>scripts/</code> package)</span></h4>
+<p>Battery charge-limit reminder on waybar's battery module -- a software nudge only, deliberately not a hardware charge cutoff. See the changelog for the full reasoning.</p>
+<details markdown="1"><summary>Full details</summary>
+
+Asked directly for a waybar battery-icon click to offer a charge-limit picker (70% suggested) for better long-term battery health. Checked the actual hardware first rather than assuming a `charge_control_end_threshold`-style sysfs knob exists: this laptop (Acer Aspire A315-23) has none, and the only Linux workaround -- a community `acer-wmi-battery` kernel module -- is untested on this exact model (its own `MODELS.md` lists several other A315 variants working/not-working, this one's in neither list) and only offers a fixed 80% toggle regardless. Acer's own Community forum also has another A315-23 owner reporting a charger-plug-in boot crash after enabling the equivalent feature in Acer's *own official Windows software*, on this same model -- a strong signal the EC-level feature itself is unreliable here regardless of OS. See the changelog's full entry for the sourcing. Landed on a software-only reminder instead of either silently building a fake control or silently dropping the request.
+
+`battery-limit-picker.py`: wofi popup, same style as `docker-picker.py`/the other pickers (Sky = selectable option, Red = Off, Green = whatever's currently set). Writes a plain percentage or `off` to `~/.local/state/battery-limit/threshold` -- the same `~/.local/state/<feature>/` convention `caffeine-toggle.sh`/`notification-mode.sh` already use, not a new pattern.
+
+`battery-limit-watch.sh` (`battery-limit-watch.service`, `WantedBy=default.target`, added to `install.sh`'s enable list): the exact same `udevadm monitor --udev --subsystem-match=power_supply` pattern `battery-warning-dismiss.service` already runs, reacting to real `BAT1`/`ACAD` change uevents rather than polling. Fires one `notify-send` the first time capacity crosses the saved threshold while actually charging (`ACAD/online` = 1), then sets a `.notified` flag so it doesn't repeat every subsequent uevent at the same capacity; clears that flag on unplug or if capacity drops back below the threshold, so the next real charge session nudges again.
+
+Verified live: `set_limit()` exercised directly (not just the wofi shell), confirmed via `makoctl history -j` that both real notifications fired with the right icon/text and that the state file matched. The threshold/dedup branching was checked against five real scenarios (first crossing, repeat crossing with flag set, dropped back below, unplugged, reminder disabled) -- all five correct. The service was started live on this machine while genuinely discharging (`ACAD/online` = 0) and confirmed it stays silent and creates no notified-flag in that real state -- the one live end-to-end check available without AC connected in-session; the AC-plugged crossing path relies on the branching test above rather than a live charger connection.
+
+</details>
+</div>
+
+<div class="pkg-card" markdown="1">
 <h4><code>bluetooth-picker.py</code> <span class="pkg-path"><code>~/.local/bin/bluetooth-picker.py</code> (<code>scripts/</code> package)</span></h4>
 <p>Bluetooth device picker for waybar's bluetooth module -- self-contained on bluetoothctl, no third-party wofi/rofi tool depended on.</p>
 <details markdown="1"><summary>Full details</summary>

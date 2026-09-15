@@ -1,0 +1,11 @@
+[Unit]
+Description=Nudge to unplug once charging crosses the battery-limit-picker.py threshold
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/battery-limit-watch.sh
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

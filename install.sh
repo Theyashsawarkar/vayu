@@ -177,7 +177,7 @@ sudo usermod -aG docker "$USER"
 
 log "Enabling user services"
 systemctl --user daemon-reload
-systemctl --user enable --now wallpaper.timer swayidle.service sway-audio-idle-inhibit.service batsignal.service battery-warning-dismiss.service update-check.service
+systemctl --user enable --now wallpaper.timer swayidle.service sway-audio-idle-inhibit.service batsignal.service battery-warning-dismiss.service battery-limit-watch.service update-check.service
 
 log "Applying GTK/dconf theme (gtk-3.0/gtk-4.0 settings.ini already stowed)"
 if command -v dconf >/dev/null 2>&1; then
