@@ -417,6 +417,7 @@ code {
    separate buttons, since only one is ever "the" command showing below
    at a time. */
 .channel-toggle {
+  position: relative;
   display: inline-flex;
   gap: 0.35rem;
   padding: 0.3rem;
@@ -425,31 +426,64 @@ code {
   border: 1px solid var(--surface0);
   border-radius: 12px;
 }
+/* The sliding fill itself -- a separate absolutely-positioned layer
+   rather than a background on the active button, so switching channels
+   animates as one pill moving, not an instant color swap. Positioned/
+   sized in px by assets/channel.js (measured via offsetLeft/offsetWidth,
+   not a fixed 50% -- "Stable" and "Nightly" are different widths, more so
+   once their live version text loads). */
+.channel-thumb {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  left: 0.3rem;
+  width: 0;
+  border-radius: 8px;
+  background: var(--mauve);
+  box-shadow: 0 6px 18px rgba(203, 166, 247, 0.3);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  pointer-events: none;
+}
 .channel-btn {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1.1rem;
   border: none;
   border-radius: 8px;
+  /* appearance: none -- without it, Chromium on Linux/GTK themes can
+     keep painting a native button bezel (ignoring border: none) since
+     the element's appearance is still "auto", not actually reset to a
+     plain box; this is what made these render as default system
+     buttons instead of the styled segmented control. */
+  appearance: none;
+  -webkit-appearance: none;
   background: transparent;
   color: var(--subtext);
   font: inherit;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  transition: color 0.2s ease;
 }
 .channel-btn:hover { color: var(--text); }
-/* Active tab reuses .btn-primary's own mauve fill exactly (not a new
-   accent) -- this is a variant of the same "the thing you'll actually
-   run" affordance, not a different kind of control. */
-.channel-btn.active {
-  background: var(--mauve);
-  color: var(--crust);
-  box-shadow: 0 6px 18px rgba(203, 166, 247, 0.3);
+.channel-btn:focus-visible {
+  outline: 2px solid var(--mauve);
+  outline-offset: 2px;
 }
+/* Active tab's text color plays against .channel-thumb's mauve fill
+   sliding underneath it (z-index: 0 vs 1) -- same mauve accent as
+   .btn-primary, just delivered by the thumb layer now instead of the
+   button's own background. */
+.channel-btn.active { color: var(--crust); }
 .channel-btn.active:hover { color: var(--crust); }
+.channel-icon {
+  font-size: 0.95em;
+  line-height: 1;
+}
 .channel-version {
   font-family: "JetBrainsMono Nerd Font", "Fira Code", monospace;
   font-size: 0.75rem;
@@ -461,6 +495,17 @@ code {
   color: var(--subtext);
   font-size: 0.9rem;
   margin: -0.5rem 0 1.5rem;
+}
+/* Quick cross-fade instead of an instant text jump when
+   assets/channel.js swaps the command/description on a channel
+   switch -- toggled briefly, not a permanent state. */
+.channel-desc,
+.install-snippet {
+  transition: opacity 0.15s ease;
+}
+.channel-desc.fade,
+.install-snippet.fade {
+  opacity: 0;
 }
 
 .install-snippet {

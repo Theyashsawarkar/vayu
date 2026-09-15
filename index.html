@@ -90,10 +90,13 @@
     into a TTY as your normal user with networking up, pick a channel:</p>
 
     <div class="channel-toggle" role="tablist" aria-label="Update channel">
-      <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true">
+      <span class="channel-thumb" aria-hidden="true"></span>
+      <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true" tabindex="0">
+        <span class="channel-icon" aria-hidden="true">🛡️</span>
         Stable <span class="channel-version" id="version-stable"></span>
       </button>
-      <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false">
+      <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false" tabindex="-1">
+        <span class="channel-icon" aria-hidden="true">🌙</span>
         Nightly <span class="channel-version" id="version-nightly"></span>
       </button>
     </div>

@@ -23,25 +23,77 @@
 
   const codeEl = document.getElementById("install-cmd");
   const descEl = document.getElementById("channel-desc");
-  const buttons = document.querySelectorAll(".channel-btn");
+  const snippetEl = codeEl ? codeEl.closest(".install-snippet") : null;
+  const toggleEl = document.querySelector(".channel-toggle");
+  const thumbEl = toggleEl ? toggleEl.querySelector(".channel-thumb") : null;
+  const buttons = Array.from(document.querySelectorAll(".channel-btn"));
   if (!codeEl || !buttons.length) return;
 
-  function setChannel(channel) {
-    // textContent, not innerHTML, for the command itself -- it's a
-    // real shell command a real person is about to paste into a real
-    // terminal; nothing here should ever be interpreted as markup.
-    codeEl.textContent = COMMANDS[channel];
-    if (descEl) descEl.innerHTML = DESCRIPTIONS[channel];
-    buttons.forEach((b) => {
-      const active = b.dataset.channel === channel;
-      b.classList.toggle("active", active);
-      b.setAttribute("aria-selected", active ? "true" : "false");
-    });
+  // Sliding pill position -- measured in real px (offsetLeft/
+  // offsetWidth) rather than a fixed 50%, since "Stable" and "Nightly"
+  // are different widths, more so once their live version text below
+  // fills in asynchronously (see the tags fetch further down).
+  function positionThumb(btn) {
+    if (!thumbEl) return;
+    thumbEl.style.width = btn.offsetWidth + "px";
+    thumbEl.style.transform = "translateX(" + btn.offsetLeft + "px)";
   }
 
-  buttons.forEach((b) =>
-    b.addEventListener("click", () => setChannel(b.dataset.channel))
-  );
+  function setChannel(channel, opts) {
+    const focus = opts && opts.focus;
+    const active = buttons.find((b) => b.dataset.channel === channel);
+    if (!active) return;
+
+    // Quick cross-fade rather than an instant text jump -- fade out,
+    // swap the actual content once it's invisible, fade back in.
+    if (descEl) descEl.classList.add("fade");
+    if (snippetEl) snippetEl.classList.add("fade");
+    setTimeout(() => {
+      // textContent, not innerHTML, for the command itself -- it's a
+      // real shell command a real person is about to paste into a real
+      // terminal; nothing here should ever be interpreted as markup.
+      codeEl.textContent = COMMANDS[channel];
+      if (descEl) {
+        descEl.innerHTML = DESCRIPTIONS[channel];
+        descEl.classList.remove("fade");
+      }
+      if (snippetEl) snippetEl.classList.remove("fade");
+    }, 120);
+
+    buttons.forEach((b) => {
+      const isActive = b === active;
+      b.classList.toggle("active", isActive);
+      b.setAttribute("aria-selected", isActive ? "true" : "false");
+      // Roving tabindex -- the real ARIA tab pattern: only the active
+      // tab is in the normal Tab order, arrow keys move between them.
+      b.tabIndex = isActive ? 0 : -1;
+    });
+    positionThumb(active);
+    if (focus) active.focus();
+  }
+
+  buttons.forEach((b, i) => {
+    b.addEventListener("click", () => setChannel(b.dataset.channel));
+    b.addEventListener("keydown", (e) => {
+      let next = null;
+      if (e.key === "ArrowRight") next = buttons[(i + 1) % buttons.length];
+      else if (e.key === "ArrowLeft") next = buttons[(i - 1 + buttons.length) % buttons.length];
+      else if (e.key === "Home") next = buttons[0];
+      else if (e.key === "End") next = buttons[buttons.length - 1];
+      if (next) {
+        e.preventDefault();
+        setChannel(next.dataset.channel, { focus: true });
+      }
+    });
+  });
+
+  // Version text (fetched below) can change each button's width after
+  // the thumb was first positioned -- keep it in sync, plus on resize.
+  window.addEventListener("resize", () => {
+    const active = buttons.find((b) => b.classList.contains("active"));
+    if (active) positionThumb(active);
+  });
+
   setChannel("stable");
 
   // Real current version per channel, fetched live rather than
@@ -89,6 +141,10 @@
       }
       if (bestStable && stableEl) stableEl.textContent = bestStable.name;
       if (bestNightly && nightlyEl) nightlyEl.textContent = bestNightly.name;
+      // Version text just changed each button's width -- the thumb was
+      // already positioned against the old (shorter) width above.
+      const active = buttons.find((b) => b.classList.contains("active"));
+      if (active) positionThumb(active);
     })
     .catch(() => {
       // No network / rate-limited / offline -- leave version labels
