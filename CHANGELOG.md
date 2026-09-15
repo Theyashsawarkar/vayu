@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.7.0 -- 2026-09-15
+
+Cut from `development` to `main`/Stable per `docs/VERSIONING.md`. Everything
+from here down to `v1.6.3` -- the full `v1.7.0-nightly` scope (battery-
+warning-dismiss/lid-timeout-poweroff, the notification glass-effect rework,
+the caffeine keybind, the GitHub update-checker with its Stable/Nightly
+`install.sh` prompt) plus everything `development` picked up afterward:
+the icon theme switch to candy-icons, the tmux status bar rebuilt as real
+filled pills with a measured-contrast color pass, the Terracotta Clay
+theme unification across tmux/kitty/p10k, the full nvim MERN/DevOps/GenAI
+LazyVim rework with a real Catppuccin transparency fix, and several docs-
+site layout fixes. Live-tested before the cut: every shell script (`bash
+-n`) and Python script (`py_compile`) in the repo, `sway -C` config check,
+`systemd-analyze verify` plus live `active`/`success` status on the new
+`battery-warning-dismiss.service` and `update-check.service` units, and a
+clean `tmux`/headless-`nvim` config load -- no failures.
+
 ## 2026-09-15 (tmux: status bar filled in -- real pills, design/color-psychology pass)
 
 Asked directly to put real background color behind each tmux status module
