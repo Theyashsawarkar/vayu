@@ -5,6 +5,60 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-15 (docs site: channel toggle -- real segmented control, thumb-alignment bug, spacing)
+
+Follow-up to the toggle shipped in `v1.7.0` itself, after actually looking
+at it live: a screenshot of the deployed page showed the Stable/Nightly
+buttons rendering as plain default system buttons -- light fill, black
+border, no rounded pill -- not the styled segmented control the CSS
+described at all. Root cause: `.channel-btn` never set `appearance:
+none`/`-webkit-appearance: none`, so Chromium on this Linux/GTK setup kept
+painting its own native button bezel regardless of `border: none` --
+setting `border` doesn't fully detach a `<button>` from its native widget
+rendering path by itself. Confirmed fixed against the real deployed page,
+not just reasoned about.
+
+While actually looking at it, three more real issues, each confirmed
+against the live page before and after:
+
+**Inactive tab had no shape at all** -- `border: none` plus
+`background: transparent` meant the non-active tab was just floating
+text next to an actual button, not two visually equal controls. Both
+tabs now get the same `border: 1px solid var(--surface0)` and a faint
+background at rest; only the *color* of that border/fill changes
+between active/inactive (the active one fades to transparent since
+the sliding `.channel-thumb` underneath already supplies the mauve
+fill), so shape/size stay identical regardless of which tab is
+selected.
+
+**Thumb double-counted the container padding** -- `.channel-thumb` had
+`left: 0.3rem` in CSS *and* `assets/channel.js` added
+`translateX(btn.offsetLeft)` on top of it, but `offsetLeft` already
+measures from the container's padding edge and so already includes
+that same 0.3rem. Net effect: the thumb landed ~0.3rem further right
+than the real button in both states -- overlapping into Nightly's
+space when Stable (the smaller offsetLeft) was active, and leaving a
+matching gap before Nightly's own left edge when Nightly was active.
+Exactly the asymmetric behavior it visibly showed. Fixed by dropping
+the CSS `left` to `0` and letting the JS-measured `offsetLeft` be the
+single source of truth for horizontal position.
+
+**Caption glued to the code block above it** -- `.channel-desc` had a
+leftover `margin: -0.5rem 0 1.5rem` (negative top margin) pulling it up
+against `.install-snippet`'s bottom border with no visible gap. Changed
+to a positive `0.85rem` top margin.
+
+Also widened the gap between the two tabs themselves (`0.35rem` ->
+`0.65rem`) for clearer separation now that both read as real, equally-
+weighted buttons instead of one pill next to bare text.
+
+Both install commands re-verified against what's actually live: the
+`raw.githubusercontent.com/.../main/install.sh` URL both buttons point
+to returns 200 and matches this repo's own `main` `install.sh` byte for
+byte, and its `stable`/`nightly` `$1` case statement (case-insensitive)
+maps to `main`/`development` exactly as the toggle's two commands
+assume.
+
 ## v1.7.0 -- 2026-09-15
 
 Cut from `development` to `main`/Stable per `docs/VERSIONING.md`. Everything

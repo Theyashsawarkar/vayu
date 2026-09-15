@@ -419,7 +419,7 @@ code {
 .channel-toggle {
   position: relative;
   display: inline-flex;
-  gap: 0.35rem;
+  gap: 0.65rem;
   padding: 0.3rem;
   margin: 1rem 0;
   background: var(--mantle);
@@ -436,7 +436,14 @@ code {
   position: absolute;
   top: 0.3rem;
   bottom: 0.3rem;
-  left: 0.3rem;
+  /* left: 0, not 0.3rem -- assets/channel.js's translateX(btn.offsetLeft)
+     already measures from the container's padding edge (offsetLeft
+     bakes that 0.3rem padding in), so a nonzero left here double-counted
+     it: the thumb landed ~0.3rem further right than the real button in
+     both states -- overlapping into the other tab when Stable (the
+     first, smaller offsetLeft) was active, and leaving a matching gap
+     before Nightly's own left edge when Nightly was active. */
+  left: 0;
   width: 0;
   border-radius: 8px;
   background: var(--mauve);
@@ -452,7 +459,12 @@ code {
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1.1rem;
-  border: none;
+  /* A real border/fill at rest, not just transparent -- an inactive
+     tab needs to read as "a button, just not the selected one", not
+     as plain floating text next to an actual button. Only the color
+     of this border/fill changes between states; shape/size never
+     does, so the two tabs stay visually identical as controls. */
+  border: 1px solid var(--surface0);
   border-radius: 8px;
   /* appearance: none -- without it, Chromium on Linux/GTK themes can
      keep painting a native button bezel (ignoring border: none) since
@@ -461,25 +473,31 @@ code {
      buttons instead of the styled segmented control. */
   appearance: none;
   -webkit-appearance: none;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--subtext);
   font: inherit;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
-.channel-btn:hover { color: var(--text); }
+.channel-btn:hover { color: var(--text); border-color: var(--subtext); }
 .channel-btn:focus-visible {
   outline: 2px solid var(--mauve);
   outline-offset: 2px;
 }
-/* Active tab's text color plays against .channel-thumb's mauve fill
-   sliding underneath it (z-index: 0 vs 1) -- same mauve accent as
-   .btn-primary, just delivered by the thumb layer now instead of the
-   button's own background. */
-.channel-btn.active { color: var(--crust); }
-.channel-btn.active:hover { color: var(--crust); }
+/* Active tab's border/fill fade out since .channel-thumb (same shape,
+   same radius) sits directly under it and supplies the mauve fill --
+   this just keeps the active tab's own border from doubling up with
+   the thumb's edge underneath it. Text color plays against that
+   mauve fill, same accent as .btn-primary, delivered by the thumb
+   layer instead of the button's own background. */
+.channel-btn.active {
+  color: var(--crust);
+  border-color: transparent;
+  background: transparent;
+}
+.channel-btn.active:hover { color: var(--crust); border-color: transparent; }
 .channel-icon {
   font-size: 0.95em;
   line-height: 1;
@@ -494,7 +512,7 @@ code {
 .channel-desc {
   color: var(--subtext);
   font-size: 0.9rem;
-  margin: -0.5rem 0 1.5rem;
+  margin: 0.85rem 0 1.5rem;
 }
 /* Quick cross-fade instead of an instant text jump when
    assets/channel.js swaps the command/description on a channel
