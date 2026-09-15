@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.8.0 -- 2026-09-15
+
+Cut from `development` to `main`/Stable per `docs/VERSIONING.md`. Everything
+since `v1.7.0`: MINOR bump for the battery charge-limit reminder (a real new
+capability -- click the waybar battery icon, choose a target %, get a
+notification nudge to unplug once you cross it), alongside the docs site's
+channel-toggle fixes (a thumb-position double-offset bug, the inactive tab
+having no visible shape, cramped caption spacing).
+
+Full stability sweep run against `development`'s tip before this cut, not
+just the new commits: `bash -n`/`py_compile` across every script in the
+repo, `sway -C`, `systemd-analyze verify` on every unit (one pre-existing,
+unrelated failure noted and left alone -- `tmux.service`'s `Documentation=
+man:tmux(1)` can't resolve because `man` itself isn't installed on this
+machine; the file is byte-identical to what already shipped in `v1.7.0`
+and the unit isn't part of `install.sh`'s enable list at all), a clean
+`tmux`/headless-`nvim` config load, and live `systemctl --user status` on
+every service `install.sh` actually enables -- zero failed units system-
+wide. The battery-limit feature specifically was confirmed working through
+real use, not just automated checks: `makoctl history -j` shows an actual
+"Battery reminder set to 70%" notification from genuinely clicking the
+waybar icon and picking a value, not a scripted test.
+
 ## 2026-09-15 (battery charge-limit reminder -- software nudge only, real hardware not touched)
 
 Asked directly for a waybar battery-icon click to offer a battery
