@@ -29,6 +29,20 @@
   </aside>
   <main class="docs-content">
     <article id="docs-article">
+      {% if page.title == "Changelog" %}
+      <div class="channel-toggle" id="changelog-channel-toggle" role="tablist" aria-label="Changelog channel">
+        <span class="channel-thumb" aria-hidden="true"></span>
+        <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true" tabindex="0">
+          <span class="channel-icon" aria-hidden="true">🛡️</span>
+          Stable
+        </button>
+        <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false" tabindex="-1">
+          <span class="channel-icon" aria-hidden="true">🌙</span>
+          Nightly
+        </button>
+      </div>
+      <p class="channel-desc" id="changelog-channel-desc"></p>
+      {% endif %}
       {{ content }}
     </article>
   </main>
@@ -40,5 +54,8 @@
 
 <script src="{{ '/assets/docs.js' | relative_url }}"></script>
 <script src="{{ '/assets/copy.js' | relative_url }}"></script>
+{% if page.title == "Changelog" %}
+<script src="{{ '/assets/changelog-channel.js' | relative_url }}"></script>
+{% endif %}
 </body>
 </html>
