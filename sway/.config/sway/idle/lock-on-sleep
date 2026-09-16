@@ -1,0 +1,6 @@
+# Security: lock the screen immediately before the system enters sleep/
+# suspend, unconditionally -- deliberately its own swayidle instance
+# (run by swaylock-on-sleep.service) so caffeine mode stopping the main
+# idle-timeout instance (see ~/.config/sway/idle/config) never disables
+# this too. Lid-close should lock every time, caffeine or not.
+before-sleep 'swaylock -C ~/.config/sway/lockconfig'

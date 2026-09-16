@@ -23,5 +23,9 @@ timeout 1200 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"'
 # timeout above had, shifted the same way.
 timeout 2400 'systemctl suspend'
 
-# Security: Lock the screen immediately before the system enters sleep/suspend
-before-sleep 'swaylock -C ~/.config/sway/lockconfig'
+# Lock-before-sleep used to live here as a `before-sleep` hook, but that
+# meant caffeine mode (which stops this whole swayidle instance) also
+# disabled the lid-close lock -- confirmed live: suspend fired fine but
+# swaylock never ran. Moved to its own always-on instance instead:
+# ~/.config/sway/idle/lock-on-sleep, run by swaylock-on-sleep.service,
+# which caffeine-toggle.sh never touches.

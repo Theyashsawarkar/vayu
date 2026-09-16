@@ -1,0 +1,11 @@
+[Unit]
+Description=Lock screen before sleep/suspend (always on, independent of caffeine mode)
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/swayidle -w -C %h/.config/sway/idle/lock-on-sleep
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

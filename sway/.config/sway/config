@@ -601,6 +601,13 @@ exec ~/.local/bin/swayidle-startup.sh
 # early at login and never came back (plain exec doesn't restart on crash).
 exec systemctl --user restart sway-audio-idle-inhibit.service
 
+# Lock-before-sleep, split out from swayidle.service above so caffeine mode
+# never disables it (systemd/.config/systemd/user/swaylock-on-sleep.service).
+# reset-failed first for the same reason swayidle-startup.sh needs it above --
+# same swayidle binary, same WAYLAND_DISPLAY-not-ready race at login.
+exec systemctl --user reset-failed swaylock-on-sleep.service
+exec systemctl --user restart swaylock-on-sleep.service
+
 # Prevent idle timeouts when watching fullscreen videos
 for_window [class=".*"] inhibit_idle fullscreen
 for_window [app_id=".*"] inhibit_idle fullscreen

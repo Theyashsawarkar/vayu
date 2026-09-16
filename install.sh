@@ -172,12 +172,36 @@ sudo systemctl enable --now ufw
 # on the reboot the final instructions ask for.
 sudo systemctl enable sddm
 
+# Lid-close must suspend, never hibernate -- confirmed live on this exact
+# machine (Acer Aspire A315-23, Ryzen 3250U/Vega APU) that hibernate resume
+# corrupts the amdgpu firmware reload (RLC_RESTORE_LIST_* ucode fails to
+# load, GPU reset then fails too) badly enough to force a hard power-cycle
+# to recover -- see docs/ARCHITECTURE.md's "Lid-close, suspend vs
+# hibernate" section for the full incident. Deep suspend (`/sys/power/
+# mem_sleep` reports `s2idle [deep]` on this hardware) never hits that
+# firmware-reload path at all, since the GPU state just stays powered in
+# RAM instead of a full teardown/rebuild. Masking every hibernate-capable
+# unit too, not just setting the lid action -- belt and suspenders against
+# anything (a stray keybind, `systemctl hibernate` typed by habit) still
+# reaching it.
+log "Disabling hibernation, lid-close suspends only"
+sudo mkdir -p /etc/systemd/logind.conf.d
+sudo tee /etc/systemd/logind.conf.d/10-suspend-only.conf >/dev/null <<'EOF'
+[Login]
+HandleLidSwitch=suspend
+HandleLidSwitchExternalPower=suspend
+EOF
+sudo systemctl mask systemd-hibernate.service systemd-hybrid-sleep.service \
+  systemd-suspend-then-hibernate.service hibernate.target hybrid-sleep.target \
+  suspend-then-hibernate.target
+sudo systemctl kill -s HUP systemd-logind.service
+
 log "Adding $USER to the docker group"
 sudo usermod -aG docker "$USER"
 
 log "Enabling user services"
 systemctl --user daemon-reload
-systemctl --user enable --now wallpaper.timer swayidle.service sway-audio-idle-inhibit.service batsignal.service battery-warning-dismiss.service battery-limit-watch.service update-check.service
+systemctl --user enable --now wallpaper.timer swayidle.service sway-audio-idle-inhibit.service batsignal.service battery-warning-dismiss.service battery-limit-watch.service update-check.service swaylock-on-sleep.service
 
 log "Applying GTK/dconf theme (gtk-3.0/gtk-4.0 settings.ini already stowed)"
 if command -v dconf >/dev/null 2>&1; then

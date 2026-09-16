@@ -5,6 +5,72 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.8.1-nightly -- 2026-09-16
+
+Everything from here down to `v1.8.0` above, on `development` (Nightly
+channel) only -- not merged to `main`/Stable yet. PATCH bump: two real
+bug fixes, no new features -- lid-close was silently hibernating instead
+of suspending (a manual `logind.conf.d` override, not something
+`install.sh` had written) and hibernate resume was corrupting the
+`amdgpu` firmware reload badly enough to force a hard power-cycle to
+recover from a black screen; separately, caffeine mode being left on
+had been silently disabling the lock-before-sleep security hook for two
+days, since it stopped the whole `swayidle.service` that hook lived in.
+See `docs/ARCHITECTURE.md`'s "Lid-close, suspend vs hibernate" and
+"Caffeine mode was silently disabling the lock-before-sleep security
+hook" sections for both incidents in full, including a still-open,
+unreproduced-since black-screen glitch noted as a known issue rather
+than papered over.
+
+## 2026-09-16 (lid-close: hibernate removed entirely, suspend-only; lock-before-sleep no longer tied to caffeine mode)
+
+Two related incidents from the same debugging session, both walked
+through end-to-end live rather than guessed at from a single log line
+-- full blow-by-blow (exact `journalctl` output, the delay-lock-timeout
+wrinkle, the still-open black-screen glitch) in
+`docs/ARCHITECTURE.md`.
+
+**Hibernate removed, suspend-only.** Lid-close was configured to
+hibernate via a manual `/etc/systemd/logind.conf.d/10-lid-hibernate.conf`
+override, not anything this repo had written. Hibernate resume on this
+machine's Ryzen 3250U/Vega APU corrupts the `amdgpu` firmware reload
+(`RLC_RESTORE_LIST_*` ucode fails to load, then the GPU reset it
+triggers fails too) -- confirmed from `journalctl -b -1`: the rest of
+the OS came back fine, only the display pipeline was dead, matching
+"lid+Enter does nothing, screen stays black" exactly. Confirmed this
+hardware genuinely supports proper deep suspend before relying on it
+(`/sys/power/mem_sleep` -> `s2idle [deep]`) rather than assuming.
+Removed the override, masked every hibernate-capable systemd unit so
+nothing can reach it again, and added the same to `install.sh` so a
+fresh install never has the bug in the first place. Verified across
+several real lid close/open cycles afterward: clean
+`PM: suspend entry (deep)`/`PM: suspend exit` pairs, ~1 second resume
+instead of hibernate's ~3.5-minute image restore.
+
+**Lock-before-sleep decoupled from caffeine mode.** Closed and reopened
+the lid post-fix and the system suspended/resumed correctly but never
+locked. Root cause: `~/.local/state/caffeine/enabled` had been stuck on
+for two days, and `swayidle-startup.sh` stops `swayidle.service`
+entirely whenever that marker exists -- which took the `before-sleep
+'swaylock ...'` hook down with it, since it lived in the same service's
+idle config. That's a real design gap, not just the stale flag: "don't
+auto-lock/dim/suspend while I'm using this" and "lock before the lid
+physically closes" are different triggers that never should have
+shared one on/off switch. Split `before-sleep` out into its own file
+(`sway/idle/lock-on-sleep`) and its own always-on systemd user service
+(`swaylock-on-sleep.service`, added to `install.sh`'s enable list) that
+caffeine mode never touches. Lid-close now locks every time regardless
+of caffeine state; idle-timeout dim/lock/suspend still respects
+caffeine exactly as before.
+
+**Known, unresolved:** one lid close/open (which had also hit a
+5-second delay-lock inhibitor timeout from closing/reopening too fast)
+showed the lock screen render correctly, then go black for a few
+seconds while typing the password, with zero corresponding log entry
+anywhere -- no new suspend, no crash, no coredump. Re-tested live under
+`journalctl -f` afterward with no repeat. Left open rather than guessed
+at, since there's nothing in the logs yet to actually fix.
+
 ## v1.8.0 -- 2026-09-15
 
 Cut from `development` to `main`/Stable per `docs/VERSIONING.md`. Everything

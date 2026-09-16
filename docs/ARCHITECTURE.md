@@ -383,6 +383,106 @@ this reboot), but confirmed currently healthy and running since this exact boot
 with no crash -- not chased further here since it isn't reproducing right now,
 noted for awareness rather than fixed blind.
 
+### Caffeine mode was silently disabling the lock-before-sleep security hook
+
+Real bug, found while investigating the lid-close/hibernate incident below:
+closed and reopened the lid, the system suspended and resumed fine, but
+`swaylock` never ran -- straight back to a logged-in session, no lock
+screen at all. Root cause: `~/.local/state/caffeine/enabled` had been
+stuck present since two days earlier (a forgotten toggle, not a crash),
+and per the "Caffeine mode surviving a reboot" section above,
+`swayidle-startup.sh` stops `swayidle.service` *entirely* whenever that
+marker exists -- which also took the `before-sleep 'swaylock ...'` hook
+in `sway/idle/config` down with it. Confirmed directly:
+`systemctl --user status swayidle.service` showed `inactive (dead)` the
+whole time, so `before-sleep` never had a service to fire from.
+
+This is a real design gap, not just a stale-flag accident: caffeine
+mode's whole point is "don't lock/dim/suspend on idle while I'm using
+this," and that should have nothing to do with "lock the screen before
+the lid physically closes" -- those are different triggers with
+different intent, and they shouldn't have shared one service's on/off
+state. Fixed by splitting `before-sleep` out of `sway/idle/config`
+into its own file, `sway/idle/lock-on-sleep`, run by a second, separate
+systemd user service, `swaylock-on-sleep.service` -- always enabled,
+started unconditionally from `sway/config` right alongside
+`sway-audio-idle-inhibit.service`, and never touched by
+`caffeine-toggle.sh`/`swayidle-startup.sh`. Caffeine mode still stops
+the idle-timeout instance (dim/lock-on-idle/auto-suspend) exactly as
+before; lid-close now locks every time regardless of caffeine state.
+
+Verified live across several real lid close/open cycles after the fix
+(see the hibernate incident below for the first one, which is what
+originally surfaced this): the lock screen came up correctly, and
+`swaylock-on-sleep.service` stayed `active (running)` throughout,
+untouched while `swayidle.service` was separately toggled on and off
+via caffeine mode.
+
+## Lid-close, suspend vs hibernate: a real hibernate/amdgpu resume crash
+
+Reported directly: opened the lid, pressed Enter, nothing happened; the
+power button did nothing visible either; screen stayed black until a
+forced power-cycle. `journalctl -b -1` told the real story --
+`/etc/systemd/logind.conf.d/10-lid-hibernate.conf` (a manual override,
+predating this incident, not something `install.sh` ever wrote) had set
+`HandleLidSwitch=hibernate` instead of the base `logind.conf`'s
+`suspend`. The hibernate cycle itself completed
+(`PM: hibernation: hibernation exit`, `Operation 'hibernate' finished`),
+but seconds into resume the GPU firmware reload failed:
+
+```
+amdgpu 0000:05:00.0: failed to load ucode RLC_RESTORE_LIST_CNTL(0x29)
+amdgpu 0000:05:00.0: psp gfx command LOAD_IP_FW(0x6) failed ...
+amdgpu 0000:05:00.0: ring gfx timeout, signaled seq=10261, emitted seq=10265
+amdgpu 0000:05:00.0: GPU reset begin! ... GPU Recovery Failed: -110
+```
+
+The rest of the OS came back fine (WiFi reconnected, Bluetooth
+re-registered) -- only the display pipeline was dead, which is exactly
+"lid+Enter does nothing, screen stays black" from the outside, with no
+clean way to shut down since the compositor couldn't render a shutdown
+prompt either.
+
+**Fix: suspend only, hibernate removed entirely**, not just re-pointed
+at the base config's original `suspend` setting -- confirmed first that
+this hardware genuinely supports proper suspend before relying on it:
+`/sys/power/mem_sleep` reports `s2idle [deep]`, i.e. real hardware S3
+(deep suspend), not just the shallower `s2idle` fallback. Removed the
+hibernate override file, and additionally masked
+`systemd-hibernate.service`, `systemd-hybrid-sleep.service`,
+`systemd-suspend-then-hibernate.service`, and their targets, so nothing
+-- a keybind, a script, a manual `systemctl hibernate` -- can reach
+hibernate again. `install.sh` now does the same from a fresh install
+(see its own comment there for the exact commands), so this doesn't
+silently reappear on a reinstall or a new machine.
+
+Verified live across multiple real lid close/open cycles afterward:
+`journalctl` showed clean `PM: suspend entry (deep)` /
+`PM: suspend exit` pairs each time, resuming in roughly a second rather
+than hibernate's ~3.5-minute image-restore round trip. One real, still
+only partly understood wrinkle found along the way: `systemd-logind`
+logged `Delay lock is active ... but inhibitor timeout is reached` when
+the lid was closed and reopened within a few seconds -- `before-sleep`'s
+delay inhibitor has a 5-second cap (systemd's default
+`InhibitDelayMaxSec`) before logind forces suspend to proceed regardless
+of whether `swaylock` finished starting. The `amdgpu` ucode-load
+warnings above still print on *every* suspend resume, not just the
+hibernate one -- confirmed benign under suspend specifically, though:
+no `ring gfx timeout`, no GPU reset, no coredump in any of the repeat
+tests, just the same non-fatal "optional ucode not available"-style
+messages.
+
+**Known, unresolved:** once, after a lid close/open that had also hit
+the delay-lock timeout above, the lock screen rendered correctly but
+then went black a few seconds later while typing the password -- and
+recovered on its own shortly after. Neither the system journal nor the
+user journal has a single line for that moment: no new suspend, no
+crash, no coredump, nothing from `systemd-logind`. Re-tested the same
+lid close/open sequence live under `journalctl -f` afterward and it
+completed cleanly with no repeat. Left as a known, low-frequency,
+currently unreproducible glitch rather than a fixed bug -- there's
+nothing in the logs to fix yet, and it hasn't recurred since.
+
 ## The wallpaper pipeline is the ONLY wallpaper pipeline
 
 There used to be a second, untracked script (`~/scripts/fetch-bing.sh`) firing on
@@ -520,7 +620,9 @@ consistently pointing at this one file:
 - Idle timeout: `timeout 300 'swaylock -C ~/.config/sway/lockconfig'`
   (`sway/idle/config`)
 - Before sleep/suspend: `before-sleep 'swaylock -C ~/.config/sway/lockconfig'`
-  (`sway/idle/config`)
+  -- moved to its own file/service, `sway/idle/lock-on-sleep` run by
+  `swaylock-on-sleep.service`, deliberately *not* `sway/idle/config`/
+  `swayidle.service` anymore (see "Idle management" below for why)
 - The power menu's Lock button: `"exec": "swaylock -C
   /home/yash/.config/sway/lockconfig"` (`nwg-bar/bar.json` -- absolute path
   here specifically, not `~`, for the no-shell-expansion reason documented in
