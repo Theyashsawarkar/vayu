@@ -5,6 +5,45 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.9.0 -- 2026-09-19
+
+Cut from `development` to `main`/Stable per `docs/VERSIONING.md`. Everything
+since `v1.8.0`: the tmux/kitty overhaul (named `main` session, floating
+command prompt, mako notifications, minimal transparent bar with the Rose
+Dusty palette shared with the zsh prompt), the two lid-close/lock fixes from
+`v1.8.1-nightly`, and the battery charge-limit nudges reworked (below).
+Stability sweep run against `development`'s tip before the cut: `bash -n`
+and `py_compile` across the changed scripts, `sway -C`, `systemd-analyze
+verify` on the battery unit, a clean `tmux` config load, and the watcher
+exercised against a fake `power_supply` tree (see the entry below).
+
+## 2026-09-19 (battery limit: plug-in nudge, full scenario coverage, persisted limit)
+
+The limit already persisted (`~/.local/state/battery-limit/threshold`, a plain
+file, survives reboots), but the nudge only fired on crossing the limit while
+already charging, so booting above the limit and *then* plugging in was
+silent. Reworked `battery-limit-watch.sh` around a small state machine:
+
+- **Plug in while at/above the limit** -> "Charger connected at 84% -- you're
+  already past your 70% limit, charging isn't needed, unplug".
+- **Plug in at 100%** -> "battery is full, no need to charge".
+- **Cross the limit while charging** -> "Battery at 70% -- limit reached".
+- **Reach 100% after being nudged** -> "Battery full (100%) -- please unplug".
+- Silent: reminder off / garbage value, on battery, plugging in below the
+  limit, and **service/boot start with the charger already in** (only a fresh
+  plug-in or a real crossing nudges).
+- Changing the limit re-arms it (`.notified` stores the limit it fired for);
+  the picker tells you immediately if you set a limit you're already past
+  while plugged, and suppresses the watcher's duplicate.
+- Robustness: a 60 s tick alongside the uevents so plug/unplug during suspend
+  is caught on resume; power-supply devices found by `type` instead of
+  hardcoded `BAT1`/`ACAD`; exits (systemd restarts it) if `udevadm` dies.
+- Verified with 20 scripted scenarios against a fake `power_supply` tree
+  (boot plugged/unplugged, plug-in above/below/at 100, crossing, no repeat
+  spam, re-arm after unplug, raising the limit mid-charge, off, garbage
+  value) plus a live run of the real loop where the tick caught a plug-in
+  with no uevent. Not tested with the real charger cable.
+
 ## v1.9.0-nightly -- 2026-09-19
 
 Everything from here down to `v1.8.0` below, on `development` (Nightly

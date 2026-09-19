@@ -19,7 +19,9 @@ state for a "nice to have".
 So: this just picks a target percentage and writes it to a state file;
 battery-limit-watch.sh (a plain udevadm-driven watcher, same pattern as
 battery-warning-dismiss.sh) fires a notify-send nudge once per charge
-session when you cross it. You still decide when to actually unplug.
+session when you cross it, or when you plug in while already above it.
+You still decide when to actually unplug. The choice lives in
+~/.local/state/battery-limit/threshold, so it survives reboots.
 """
 import subprocess
 import sys
@@ -83,11 +85,38 @@ def set_limit(pct):
     STATE_FILE.write_text(str(pct))
     bucket = round(pct / 10) * 10
     icon = f"{ICON_DIR}/battery-{bucket:03d}-charging.svg"
+    plugged, cap = power_state()
+    if plugged and cap is not None and cap >= pct:
+        # Already past the new limit while charging: say so now, and tell the
+        # watcher (its flag stores the limit it fired for) not to repeat it.
+        (STATE_DIR / ".notified").write_text(str(pct))
+        notify(
+            f"Battery reminder set to {pct}%",
+            f"You're at {cap}% and charging -- already past this limit. Unplug when you can.",
+            icon,
+        )
+        return
     notify(
         f"Battery reminder set to {pct}%",
-        "You'll get a nudge to unplug once charging crosses this, for better long-term battery health.",
+        "You'll get a nudge to unplug once charging crosses this, or if you plug in while already above it.",
         icon,
     )
+
+
+def power_state():
+    """(plugged_in, capacity%) from sysfs, or (False, None) if unreadable."""
+    root = Path("/sys/class/power_supply")
+    plugged, cap = False, None
+    for d in root.glob("*"):
+        try:
+            kind = (d / "type").read_text().strip()
+            if kind == "Battery":
+                cap = int((d / "capacity").read_text())
+            elif (d / "online").read_text().strip() == "1":
+                plugged = True
+        except (OSError, ValueError):
+            continue
+    return plugged, cap
 
 
 def get_selection(entries):
