@@ -5,6 +5,43 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.9.0-nightly -- 2026-09-19
+
+Everything from here down to `v1.8.0` below, on `development` (Nightly
+channel) only -- not merged to `main`/Stable yet. MINOR bump: new
+capabilities, no bug-fix-only content -- tmux now always lands in a named
+`main` session, the tmux command prompt is a centered floating box, tmux
+notifications go through mako, and the tmux bar/prompt got a new minimal
+palette (Rose Dusty). See the 2026-09-19 entry just below.
+
+## 2026-09-19 (tmux: named main session, floating cmdline, mako notifications, minimal transparent bar)
+
+- **Always the `main` session.** Bare `tmux` (zsh function in `.zshrc`)
+  runs `tmux new-session -A -s main`; explicit subcommands pass through.
+  kitty's `shell` is `tmux new-session -A -s main`, so every new terminal
+  window attaches to (or creates) `main` instead of numbered sessions.
+- **kitty:** removed the commented-out `background #2A2622` line and its
+  long explanation -- kitty stays on its default black.
+- **Notifications through mako, not the status line.** `prefix r` reload
+  and background-window bells now `notify-send` (mako) instead of tmux's
+  yellow message line / bar highlight (`alert-bell` hook,
+  `window-status-{bell,activity}-style default`). tmux-resurrect's own
+  manual save/restore messages still use tmux's message line -- they're
+  hardcoded inside the plugin (outside this repo), so left alone.
+- **Floating command prompt.** `prefix :` opens a centered popup
+  (`.tmux/scripts/cmd_prompt.sh`, an fzf input in a rounded "Cmdline" box)
+  instead of the bottom-line prompt; errors go to mako.
+- **New palette, transparent bar.** Built two swatchbook pages under
+  `tmux/palettes/` (bright `index.html`, minimal `index2.html`, with the
+  generators `gen2.js`/`gen3.js` that enforce a minimum colour distance
+  between capsules and WCAG text contrast). Picked #40 "Rose Dusty": session
+  `#D095A4`, active window `#D4B25C`, inactive `#9A9FAA`, docker `#6C8EBF`,
+  date `#9ED1A6`, time `#C282CE`. The bar has no background anymore
+  (`@surface = default`) -- only the capsules are drawn. The zsh prompt
+  (`.p10k.zsh` dir + success `>`) uses the same session colour.
+- Known follow-up: waybar workspace indicator / sway focused border are
+  still `#F38BA8`, close to but not the same as `#D095A4`.
+
 ## v1.8.1-nightly -- 2026-09-16
 
 Everything from here down to `v1.8.0` above, on `development` (Nightly

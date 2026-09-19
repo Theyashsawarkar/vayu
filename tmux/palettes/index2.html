@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>tmux bar palettes — minimal</title>
+<style>
+:root{--bg:#0d0f12;--fg:#d7dde6;--dim:#7d8794;--line:#1c2027}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.5 ui-monospace,"JetBrainsMono Nerd Font","JetBrains Mono",monospace;padding:28px 16px 90px}
+.wrap{max-width:1100px;margin:auto}
+h1{font-size:18px;margin:0 0 4px;font-weight:600}
+p.sub{color:var(--dim);margin:0 0 18px}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:22px;flex-wrap:wrap}
+button{font:inherit;color:var(--fg);background:#161a20;border:1px solid var(--line);border-radius:999px;padding:5px 14px;cursor:pointer}
+button.on{border-color:#7dd3fc;color:#7dd3fc}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:14px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;background:#000}
+.card.sel{outline:2px solid #7dd3fc}
+.term{padding:14px 12px 10px;background:#000}
+body.wall .term{background:linear-gradient(135deg,#0b1a2b 0%,#1a1030 45%,#2a1420 100%)}
+.status{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px}
+.grp{display:flex;gap:6px;align-items:center}
+.pill{padding:2px 11px;border-radius:999px;white-space:nowrap;font-weight:600}
+.meta{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#101319;border-top:1px solid var(--line);font-size:12px}
+.num{color:#7dd3fc;font-weight:700;margin-right:8px}
+.chips{display:flex;gap:4px}.chips i{width:14px;height:14px;border-radius:50%;display:block}
+.pill.act{box-shadow:0 0 0 1px rgba(255,255,255,.45);margin:0 2px}
+.prompt{margin-top:10px;font-size:13px;color:#8b93a1}.cur{display:inline-block;width:8px;height:14px;vertical-align:-2px}
+.ct{color:var(--dim)}.ct.bad{color:#f87171}
+#out{position:fixed;left:0;right:0;bottom:0;background:#0a0c0f;border-top:1px solid var(--line);padding:10px 16px;font-size:12px;color:var(--dim);white-space:pre-wrap}
+</style></head><body><div class="wrap">
+<h1>tmux bar palettes — minimal · subtle · muted</h1>
+<p class="sub">Quiet, low-saturation palettes. Session = main tone (and prompt), docker is always a soft blue, the active window is the one slightly stronger tone. Filter by the active color and pick a number.</p>
+<div class="bar"><span class="ct">preview on:</span>
+<button id="b1" class="on">pure black</button><button id="b2">translucent over wallpaper</button></div>
+<div class="bar" id="flt"></div>
+<div class="grid" id="grid"></div></div>
+<div id="out">Click a palette to see its values.</div>
+<script>
+const P=[["Rose Dusty","#D095A4","#5FB08F","#9A9FAA","#6C8EBF","#CEBB82","#C282CE",24,"Emerald"],["Coral Dusty","#D09F95","#5FB08F","#9A9FAA","#6C8EBF","#CECE82","#CE82C2",24,"Emerald"],["Sunset Dusty","#D0AE95","#5FB08F","#9A9FAA","#6C8EBF","#CECE82","#C282CE",24,"Emerald"],["Amber Dusty","#D0BC95","#5FB08F","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Emerald"],["Gold Dusty","#D0C495","#5FB08F","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Emerald"],["Lime Muted","#AFCF81","#5FB08F","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Emerald"],["Violet Muted","#9E81CF","#5FB08F","#9A9FAA","#6C8EBF","#CE8282","#CEBB82",24,"Emerald"],["Purple Dusty","#BC95D0","#5FB08F","#9A9FAA","#6C8EBF","#CE8282","#CEBB82",24,"Emerald"],["Orchid Dusty","#D095D0","#5FB08F","#9A9FAA","#6C8EBF","#CE8282","#CEBB82",24,"Emerald"],["Magenta Dusty","#D095BE","#5FB08F","#9A9FAA","#6C8EBF","#CEA282","#CECE82",24,"Emerald"],["Blush Dusty","#D095AE","#5FB08F","#9A9FAA","#6C8EBF","#CEA282","#CECE82",24,"Emerald"],["Emerald Haze","#BBD3C7","#5FB08F","#9A9FAA","#6F8FBF","#CECE82","#C282CE",22,"Emerald"],["Rose Dusty","#D095A4","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Ruby"],["Coral Dusty","#D09F95","#C7566E","#9A9FAA","#6C8EBF","#CECE82","#C282CE",24,"Ruby"],["Sunset Dusty","#D0AE95","#C7566E","#9A9FAA","#6C8EBF","#A8CE82","#C282CE",24,"Ruby"],["Amber Dusty","#D0BC95","#C7566E","#9A9FAA","#6C8EBF","#82CE8F","#C282CE",24,"Ruby"],["Gold Dusty","#D0C495","#C7566E","#9A9FAA","#6C8EBF","#82CE8F","#C282CE",24,"Ruby"],["Lime Dusty","#B7D095","#C7566E","#9A9FAA","#6C8EBF","#CEA282","#C282CE",24,"Ruby"],["Fern Dusty","#95D095","#C7566E","#9A9FAA","#6C8EBF","#CEA282","#C282CE",24,"Ruby"],["Emerald Dusty","#95D0B3","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#C282CE",24,"Ruby"],["Mint Dusty","#95D0C1","#C7566E","#9A9FAA","#6C8EBF","#CECE82","#C282CE",24,"Ruby"],["Teal Dusty","#95D0CE","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#C282CE",24,"Ruby"],["Violet Muted","#9E81CF","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Ruby"],["Purple Dusty","#BC95D0","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Ruby"],["Orchid Dusty","#D095D0","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Ruby"],["Magenta Dusty","#D095BE","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Ruby"],["Blush Dusty","#D095AE","#C7566E","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Ruby"],["Rose Dusty","#D095A4","#9B7FD1","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Amethyst"],["Coral Dusty","#D09F95","#9B7FD1","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Amethyst"],["Sunset Dusty","#D0AE95","#9B7FD1","#9A9FAA","#6C8EBF","#A8CE82","#CE82A2",24,"Amethyst"],["Amber Dusty","#D0BC95","#9B7FD1","#9A9FAA","#6C8EBF","#82CE8F","#CE82A2",24,"Amethyst"],["Gold Dusty","#D0C495","#9B7FD1","#9A9FAA","#6C8EBF","#CE8282","#82CE8F",24,"Amethyst"],["Lime Dusty","#B7D095","#9B7FD1","#9A9FAA","#6C8EBF","#CEA282","#CE82A2",24,"Amethyst"],["Fern Dusty","#95D095","#9B7FD1","#9A9FAA","#6C8EBF","#CEA282","#CE82A2",24,"Amethyst"],["Emerald Dusty","#95D0B3","#9B7FD1","#9A9FAA","#6C8EBF","#CE8282","#CEBB82",24,"Amethyst"],["Mint Dusty","#95D0C1","#9B7FD1","#9A9FAA","#6C8EBF","#CE8282","#CEBB82",24,"Amethyst"],["Teal Dusty","#95D0CE","#9B7FD1","#9A9FAA","#6C8EBF","#CE8282","#CEBB82",24,"Amethyst"],["Blush Dusty","#D095AE","#9B7FD1","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Amethyst"],["Orchid Ash","#CFAACF","#9B7FD1","#9A9FAA","#6F8FBF","#CEBB82","#82CEAF",22,"Amethyst"],["Rose Dusty","#D095A4","#D4B25C","#9A9FAA","#6C8EBF","#9ED1A6","#C282CE",24,"Gold"],["Coral Dusty","#D09F95","#D4B25C","#9A9FAA","#6C8EBF","#82CE8F","#CE82C2",24,"Gold"],["Sunset Dusty","#D0AE95","#D4B25C","#9A9FAA","#6C8EBF","#82CE8F","#CE82C2",24,"Gold"],["Amber Ash","#CFC3AA","#D4B25C","#9A9FAA","#6C8EBF","#82CE8F","#CE82C2",24,"Gold"],["Gold Ash","#CFC8AA","#D4B25C","#9A9FAA","#6C8EBF","#82CE8F","#C282CE",24,"Gold"],["Lime Dusty","#B7D095","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Gold"],["Fern Dusty","#95D095","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Gold"],["Emerald Dusty","#95D0B3","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Gold"],["Mint Dusty","#95D0C1","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Gold"],["Teal Dusty","#95D0CE","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Gold"],["Violet Muted","#9E81CF","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#9ED1A6",24,"Gold"],["Purple Dusty","#BC95D0","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#9ED1A6",24,"Gold"],["Orchid Dusty","#D095D0","#D4B25C","#9A9FAA","#6C8EBF","#CE8282","#9ED1A6",24,"Gold"],["Magenta Dusty","#D095BE","#D4B25C","#9A9FAA","#6C8EBF","#A8CE82","#82CEC8",24,"Gold"],["Blush Dusty","#D095AE","#D4B25C","#9A9FAA","#6C8EBF","#B8D19E","#A882CE",24,"Gold"],["Rose Dusty","#D095A4","#5AAFB0","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Teal"],["Coral Dusty","#D09F95","#5AAFB0","#9A9FAA","#6C8EBF","#CECE82","#CE82C2",24,"Teal"],["Sunset Dusty","#D0AE95","#5AAFB0","#9A9FAA","#6C8EBF","#A8CE82","#CE82C2",24,"Teal"],["Amber Dusty","#D0BC95","#5AAFB0","#9A9FAA","#6C8EBF","#82CE8F","#C282CE",24,"Teal"],["Gold Dusty","#D0C495","#5AAFB0","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Teal"],["Lime Dusty","#B7D095","#5AAFB0","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Teal"],["Fern Dusty","#95D095","#5AAFB0","#9A9FAA","#6C8EBF","#CE8282","#C282CE",24,"Teal"],["Violet Muted","#9E81CF","#5AAFB0","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Teal"],["Purple Dusty","#BC95D0","#5AAFB0","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Teal"],["Orchid Dusty","#D095D0","#5AAFB0","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Teal"],["Magenta Dusty","#D095BE","#5AAFB0","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Teal"],["Blush Dusty","#D095AE","#5AAFB0","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Teal"],["Amber Dusty","#D0BC95","#D9826B","#9A9FAA","#6C8EBF","#82CE8F","#CE82C2",24,"Coral"],["Gold Dusty","#D0C495","#D9826B","#9A9FAA","#6C8EBF","#82CE8F","#C282CE",24,"Coral"],["Lime Dusty","#B7D095","#D9826B","#9A9FAA","#6C8EBF","#A882CE","#CE82A2",24,"Coral"],["Fern Dusty","#95D095","#D9826B","#9A9FAA","#6C8EBF","#CEBB82","#C282CE",24,"Coral"],["Emerald Dusty","#95D0B3","#D9826B","#9A9FAA","#6C8EBF","#CEBB82","#C282CE",24,"Coral"],["Mint Dusty","#95D0C1","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#CE82C2",24,"Coral"],["Teal Dusty","#95D0CE","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#CE82C2",24,"Coral"],["Violet Muted","#9E81CF","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Coral"],["Purple Dusty","#BC95D0","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Coral"],["Orchid Dusty","#D095D0","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Coral"],["Magenta Dusty","#D095BE","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Coral"],["Blush Dusty","#D095AE","#D9826B","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Coral"],["Sunset Dusty","#D0AE95","#D48AA5","#9A9FAA","#6C8EBF","#CECE82","#82CEAF",24,"Rose"],["Amber Dusty","#D0BC95","#D48AA5","#9A9FAA","#6C8EBF","#A8CE82","#A882CE",24,"Rose"],["Gold Dusty","#D0C495","#D48AA5","#9A9FAA","#6C8EBF","#82CE8F","#A882CE",24,"Rose"],["Lime Dusty","#B7D095","#D48AA5","#9A9FAA","#6C8EBF","#CEA282","#A882CE",24,"Rose"],["Fern Dusty","#95D095","#D48AA5","#9A9FAA","#6C8EBF","#CEA282","#A882CE",24,"Rose"],["Emerald Dusty","#95D0B3","#D48AA5","#9A9FAA","#6C8EBF","#CEA282","#CECE82",24,"Rose"],["Mint Dusty","#95D0C1","#D48AA5","#9A9FAA","#6C8EBF","#CEA282","#A8CE82",24,"Rose"],["Teal Dusty","#95D0CE","#D48AA5","#9A9FAA","#6C8EBF","#CEBB82","#82CE8F",24,"Rose"],["Violet Muted","#9E81CF","#D48AA5","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Rose"],["Purple Muted","#B581CF","#D48AA5","#9A9FAA","#6C8EBF","#CEBB82","#82CEAF",24,"Rose"]];
+const INK="#0B0E14",WHITE="#FFFFFF";
+const lin=v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4;
+const lum=h=>{const c=[1,3,5].map(i=>lin(parseInt(h.substr(i,2),16)/255));return .2126*c[0]+.7152*c[1]+.0722*c[2]};
+const cr=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+const inkFor=c=>cr(c,INK)>=cr(c,WHITE)?INK:WHITE;
+const g=document.getElementById('grid'),out=document.getElementById('out'),flt=document.getElementById('flt');
+const jewels=[...new Set(P.map(p=>p[8]))];
+let cur='All';
+flt.innerHTML=['All',...jewels].map(j=>`<button data-j="${j}" class="${j==='All'?'on':''}">${j==='All'?'all':j+' active'}</button>`).join('');
+flt.onclick=e=>{if(e.target.dataset.j){cur=e.target.dataset.j;[...flt.children].forEach(x=>x.classList.toggle('on',x===e.target));render()}};
+function render(){g.innerHTML='';
+ P.forEach((p,i)=>{ if(cur!=='All'&&p[8]!==cur)return;
+  const [n,s,a,ia,d,dt,t,de,jn]=p;
+  const pill=(c,x,cls='')=>`<span class="pill ${cls}" style="background:${c};color:${inkFor(c)}">${x}</span>`;
+  const el=document.createElement('div');el.className='card';
+  el.innerHTML=`<div class="term"><div class="status">
+   <div class="grp">${pill(s,'  main')}</div>
+   <div class="grp">${pill(a,'1:nvim','act')}${pill(ia,'2:zsh')}${pill(ia,'3:zsh')}</div>
+   <div class="grp">${pill(d,'  x 0')}${pill(dt,'  Sat Sep 19')}${pill(t,'  08:32 PM')}</div></div>
+   <div class="prompt"><span style="color:${s}">~/projects</span> <span style="color:${s}">❯</span> <span class="cur" style="background:${s}"></span></div></div>
+  <div class="meta"><span><span class="num">${i+1}</span>${n} · <b style="color:${a}">${jn}</b></span>
+  <span class="chips">${[s,a,ia,d,dt,t].map(c=>`<i style="background:${c}"></i>`).join('')}</span>
+  <span class="ct">apart ΔE ${de}</span></div>`;
+  el.onclick=()=>{document.querySelectorAll('.card.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
+   out.textContent=`#${i+1} ${n} (${jn} active)\nsession/prompt ${s}  active ${a}  inactive ${ia}  docker ${d}  date ${dt}  time ${t}`};
+  g.appendChild(el)})}
+render();
+b1.onclick=()=>{document.body.classList.remove('wall');b1.classList.add('on');b2.classList.remove('on')};
+b2.onclick=()=>{document.body.classList.add('wall');b2.classList.add('on');b1.classList.remove('on')};
+</script></body></html>

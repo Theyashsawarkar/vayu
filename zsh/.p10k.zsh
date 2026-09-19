@@ -196,7 +196,7 @@
   # Sage prompt symbol if the last command succeeded -- same Terracotta
   # Clay palette as tmux.conf/kitty.conf (@surface #2A2622), so the
   # prompt reads as part of the same surface instead of stock ANSI.
-  typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_{VIINS,VICMD,VIVIS,VIOWR}_FOREGROUND='#93A683'
+  typeset -g POWERLEVEL9K_PROMPT_CHAR_OK_{VIINS,VICMD,VIVIS,VIOWR}_FOREGROUND='#D095A4'
   # Errors stay a real alert color on purpose, not softened into the
   # accent set -- a warm brick red that's still in the same earthy
   # family, so it reads as "something's wrong" without clashing.
@@ -218,17 +218,17 @@
   ##################################[ dir: current directory ]##################################
   # Default current directory color. Terracotta -- same role as the tmux
   # session pill: identity, "where you are."
-  typeset -g POWERLEVEL9K_DIR_FOREGROUND='#D98E73'
+  typeset -g POWERLEVEL9K_DIR_FOREGROUND='#D095A4'
   # If directory is too long, shorten some of its segments to the shortest possible unique
   # prefix. The shortened directory can be tab-completed to the original.
   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=truncate_to_unique
   # Replace removed segment suffixes with this symbol.
   typeset -g POWERLEVEL9K_SHORTEN_DELIMITER=
   # Color of the shortened directory segments.
-  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND='#D98E73'
+  typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND='#D095A4'
   # Color of the anchor directory segments. Anchor segments are never shortened. The first
   # segment is always an anchor.
-  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND='#D98E73'
+  typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND='#D095A4'
   # Set to true to display anchor directory segments in bold.
   typeset -g POWERLEVEL9K_DIR_ANCHOR_BOLD=false
   # Don't shorten directories that contain any of these files. They are anchors.
