@@ -5,6 +5,95 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.10.0-nightly -- 2026-09-28
+
+Everything from here down to `v1.9.0` below, on `development` (Nightly
+channel) only -- not merged to `main`/Stable yet. MINOR bump: new tmux
+capabilities (lazygit/scratch/btop popups, a session picker with previews,
+floating rename inputs, centred confirm menus, quiet save/restore) plus
+stability fixes for things that broke tmux outright. See the 2026-09-28
+entry just below.
+
+## 2026-09-28 (tmux: no more tmux-inside-a-popup, quiet save/restore, stability sweep)
+
+**The bug:** creating a session from the floating command prompt
+(`prefix :` -> `new -s foo`) opened a whole second tmux *inside the popup*
+and wrecked the layout. `cmd_prompt.sh` ran `tmux <typed command>` from a
+shell inside the popup, and a tmux client started there attaches to the
+popup's own pty. tmux's "sessions should be nested with care" guard only
+checks pane ttys, so it never fired. Now the popup only *collects* the line.
+The binding then `source-file`s it in the real client's context, exactly
+like tmux's built-in `:` prompt. Typos are parse-checked first
+(`source-file -n`) and go to mako instead of a view-mode error pane.
+
+**Nothing in the status line any more, only mako:**
+- `prefix r` no longer flashes "Reloaded!". The on-attach auto-reload
+  notifies through mako too.
+- `prefix C-s` / `C-r` go through `resurrect.sh`, which runs resurrect's
+  scripts with a `tmux` shim on `PATH` that drops `display-message` (the
+  "Saving..." spinner, "Tmux environment saved!", "Tmux restore complete!")
+  but passes `display-message -p` queries. It then notifies "Sessions
+  saved/restored". continuum's boot-time auto-restore uses it as well.
+- Kill pane/window/session (`x`, `&`, `K`, `M-k`) are centred
+  `display-menu`s instead of y/n prompts in the bar.
+- Rename window/session (`,`, `R`, `$`) use the same floating input as
+  `prefix :`, prefilled with the current name. The typed text is quoted,
+  with `\ " $` escaped and `#` doubled, so a name like `a "b" $HOME #W`
+  is kept literally.
+- `prefix S` (sync panes) notifies. `Alt+1..9`, `C-S-1..6` and `prefix L`
+  are silent no-ops when the window or last session doesn't exist,
+  instead of printing "can't find window".
+
+**Things that broke tmux arbitrarily:**
+- **Popup shells could nest tmux too.** Bare `tmux` in the `prefix t`
+  scratch shell went through the zsh `tmux()` wrapper to
+  `new-session -A -s main`, putting `main` inside the popup. The wrapper
+  now refuses to attach while `$TMUX` is set (`tmux`, `new` without `-d`,
+  `attach`) and points at `prefix s`. `new -d ...`, `ls` and the rest pass
+  through.
+- **Auto-save stopped silently.** continuum only adds its
+  `#(continuum_save.sh)` hook to `status-right` if it guesses no other tmux
+  server is running, by counting every process whose command starts with
+  `tmux`. Any `tmux` command running during a reload (a popup script, a
+  `tmux set` from a shell) failed that guess. `status-right` had just been
+  reset, so auto-save stopped until some later lucky reload. The config
+  now appends the hook itself, only on the default socket (`%if` on
+  `socket_path`), so a `tmux -L test` server can never overwrite the real
+  saves. Reproduced live: after one such reload the hook was gone.
+- **Options grew on every reload.** `set -as terminal-features/overrides`
+  appended another copy each time the file was sourced: 13 copies of each
+  after a day of `prefix r` and auto-reloads. They now use fixed array
+  slots (`[90]`, `[91]`) that are simply overwritten.
+- The session picker pins `switch-client`/`display` to the client that
+  opened it. With several kitty windows attached, a bare `switch-client`
+  moved whichever client tmux guessed.
+- `systemd/.../tmux.service` (not enabled) started an unnamed session and
+  a noisy save. It now uses `-s main` and `save.sh quiet`, to match.
+
+**Also in this batch** (tmux work that was uncommitted on `development`):
+lazygit / scratch shell / btop popups centred in the pane area
+(`popup.sh`), the sessions-only picker with live pane previews
+(`sessionizer.sh`), extrakto (`prefix Tab`), `Alt+1..9` window switching,
+kitty extended keys and undercurl, a styled copy mode and menus,
+`detach-on-destroy off` so killing a session moves you to the next one,
+`copy-command wl-copy`, and windows named after their directory (shells)
+or program (anything else).
+
+**Verified** in an isolated nested tmux (`-L outer` driving `-L inner`
+with the real config), with resurrect pointed at a scratch dir:
+- `prefix :` -> `new -s two` switches the real client, and no nested
+  client exists. Typo -> mako. Esc -> nothing runs.
+- Picker switch, `L` with and without a last session.
+- `C-s` writes a save with a clean bar. `K` kills and moves to the next
+  session. `C-r` brings it back. `M-k` kills the others.
+- Rename with quotes, `$` and `#` kept literally. `x` cancel/confirm.
+- `tmux` typed in the scratch popup is refused.
+- Two `prefix r` in a row leave the option counts flat. No errors in
+  `show-messages`.
+- Then on the live server: duplicates cleared, exactly one auto-save
+  hook, real saves untouched. `bash -n` / `zsh -n` on every changed
+  script.
+
 ## v1.9.0 -- 2026-09-19
 
 Cut from `development` to `main`/Stable per `docs/VERSIONING.md`. Everything

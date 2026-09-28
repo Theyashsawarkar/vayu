@@ -144,7 +144,23 @@ export PATH="/home/yash/.local/bin:$PATH"
 
 # Bare `tmux` attaches to the "main" session (creating it if missing);
 # any explicit subcommand/args pass through untouched.
+# Already inside tmux (a pane OR a popup, e.g. the prefix t scratch shell),
+# attaching is refused: tmux's own "nested with care" check only covers
+# panes, so from a popup it happily ran a whole tmux inside the popup.
 tmux() {
+  if [ -n "$TMUX" ]; then
+    local attach=0 arg
+    case ${1:-new} in
+      a|at|attach|attach-session) attach=1 ;;   # -d here detaches *others*
+      new|new-session)
+        attach=1
+        for arg in "${@:2}"; do [[ $arg =~ ^-[A-Za-z]*d ]] && attach=0; done ;;
+    esac
+    if [ $attach -eq 1 ]; then
+      print -u2 "tmux: already inside tmux -- use prefix s to switch sessions (or add -d)"
+      return 1
+    fi
+  fi
   if [ $# -eq 0 ]; then
     command tmux new-session -A -s main
   else
