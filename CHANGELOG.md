@@ -5,6 +5,125 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-28 (keybindings: one registry for the whole system, tmux prefix ? searches and runs)
+
+`keybind-search.py` (`Super+Shift+/`) is now the single registry for every
+keybinding except Neovim's. It is live-parsed and backs three front-ends.
+
+**What was wrong with the old list:**
+- **Sway:** it took the *last* comment line above each bind. Several
+  entries read as fragments ("states.", "obvious to the eye which button
+  Tab landed on.", "Or use $mod+[up|down|left|right]").
+- **Tmux:** keys were shown tmux-escaped (`\$`, `\;`), so stock
+  descriptions never matched. Plugin keys (extrakto, TPM) and `prefix $`
+  showed raw shell commands. `M-MouseDown…` menus slipped through the
+  mouse filter. 68 unused emacs copy-mode keys were listed.
+- **Everything else:** kitty, Zed and rmpc bindings, and keys inside popup
+  scripts, weren't listed at all.
+- **wofi:** text wasn't markup-escaped, so tmux's `<`/`>` keys broke
+  rendering, and a copied selection included the `<span>` tags.
+
+**Now:**
+- **Explicit descriptions per source:**
+  - sway and kitty: a `#: Description` line above each bind. `{}` expands
+    to the bind's last word, e.g. `#: Switch to workspace {}`.
+  - tmux: its own `bind -N`, read per table via `list-keys -N -a -P ''`.
+    Stock keys are detected by diffing against a throwaway
+    `-f /dev/null` server and shown as `default`.
+  - Zed `// comments` or humanized action names, and rmpc action names.
+  - Keys inside popup scripts: `# keybind: Source/scope | keys | desc`.
+- **Readable keys everywhere:** `Ctrl+a K`, `Alt+Shift+Up`, rmpc's
+  `<C-w>k` becomes `Ctrl+w k`.
+- **Sway modes are detected generically**, e.g.
+  `[resize mode, Super+Ctrl+r first]`.
+- **`Ctrl+a ?` in tmux** (`tmux_keys.sh`) is an fzf popup over the tmux
+  part of the registry. Enter *runs* the picked binding by replaying its
+  keys with `send-keys -K` after the popup closes. A copy-mode key enters
+  copy mode first, and `;` is escaped for the tmux command line.
+- **`--check`** exits 1 on any undescribed binding or a sway/kitty key
+  bound twice in one scope. `--check --tmux-conf FILE` checks the file on
+  disk in a throwaway server. `--list [source]` prints a plain table.
+- **Enforced for future edits:** `CLAUDE.md` (repo) and `~/.claude/CLAUDE.md`
+  state the rule. A Claude Code PostToolUse hook
+  (`keybind-check-hook.sh`) runs `--check` after any edit to a keybinding
+  source and reports failures back.
+
+**Verified:**
+- `--check` is OK: 96 sway, 214 tmux, 1 kitty, 88 Zed, 83 rmpc.
+- All 482 wofi lines parse as valid markup. `sway -C` is clean.
+- `Ctrl+a ?` tested in an isolated nested tmux: "synchronized" + Enter
+  turned sync on, `Alt+2` switched windows, and Esc runs nothing.
+- `send-keys -K` replays `{ } " # $ ~ ' %` and `\;` correctly.
+- An undocumented `bind F5` fails the tmux check. Removing kitty's `#:`
+  line made the live hook report the failure, and it was restored.
+
+## v1.11.0-nightly -- 2026-09-28
+
+Everything from here down to `v1.10.0-nightly` below, on `development`
+(Nightly channel) only -- not merged to `main`/Stable yet. MINOR bump: new
+capabilities. There is one keybinding registry for the whole system
+(sway, tmux, kitty, Zed, rmpc, script-internal keys). `Ctrl+a ?` in tmux
+searches it and runs the picked binding. Every description is action +
+object, and both search boxes say so. A `--check` mode plus a Claude Code
+hook keep it complete.
+
+**Stability sweep** before tagging:
+- `bash -n` / `py_compile` / `zsh -n` pass on every script.
+- `sway -C` is clean, and kitty's own config loader accepts `kitty.conf`.
+- A fresh `tmux -f tmux.conf` server loads with no messages. The live
+  server has exactly one continuum hook and no duplicated
+  terminal-features/overrides.
+- `--check` is OK against the live server and against the file
+  (`--tmux-conf`).
+- With no tmux server running, the search still builds (script keys only)
+  instead of failing.
+- No sway key collides with a kitty or tmux root key.
+- The search builds its 482 entries in about 0.35 s.
+
+**Improved:** the throwaway tmux servers the searcher starts (the
+stock-bindings probe, and the `--tmux-conf` check) used named sockets in
+`/tmp/tmux-UID`, which stayed there after each run. They now use `-S`
+sockets in a private temp dir that is removed afterwards. Verified: no
+sockets, dirs or processes left, and stock detection is unchanged. Dead
+test sockets from this session were cleaned out of `/tmp/tmux-1000`.
+Re-verified after the change: `Ctrl+a ?` -> "select window 2" -> Enter
+switches the window, and the hook still passes.
+
+## 2026-09-28 (keybindings: every description is action + object, and the search box says so)
+
+The searches are meant to be used as **action + object** ("kill window",
+"open lazygit", "raise volume"). wofi's fuzzy match is an ordered
+subsequence match, so that only works if every description starts with
+its verb. Many didn't: "Emoji picker", "Lazygit popup in current
+directory", "Floating command prompt", "Volume down 5%", "Media: play/pause",
+and Zed's "Project panel: toggle ...".
+
+- **Rewritten** as `<Verb> <object> (details)`: 32 sway descriptions, 10
+  tmux notes and the plugin notes. Examples: "Open emoji picker", "Open
+  lazygit popup (current directory)", "Lower volume 5%", "Play next track",
+  "Take screenshot: select a region", "Close (kill) the focused window".
+  "kill window" finds the sway window too.
+- **Zed:** action names are shown verb-first ("Toggle hide hidden
+  (project panel)"), and Zed's wording is translated to what people type:
+  "New" becomes "Create new", "Deploy" becomes "Open", "Activate" becomes
+  "Focus".
+- **rmpc:** verb-first names ("Raise volume", "Play next track", "Focus
+  pane above").
+- **`--check`** now rejects a hand-written description whose first word
+  isn't a verb (`VERBS` in the script).
+- **Placeholder:** both search boxes show it. wofi's prompt reads "action
+  + object, e.g. kill window, open lazygit, raise volume". The tmux popup's
+  ghost text reads "... kill window, split pane, rename session".
+- **Documented:** the rule is in `CLAUDE.md`, `~/.claude/CLAUDE.md` and
+  `docs/KEYBINDINGS.md`.
+
+Verified: 19 typical queries were simulated against the ordered fuzzy
+match, and each one's top hit is the right binding ("kill window" ->
+`Ctrl+a &`, "take screenshot" -> `Print`, "open session picker" ->
+`Ctrl+a s`). Every non-stock entry across all sources is verb-first. In a
+nested test tmux, `Ctrl+a ?` shows the ghost text, and "kill window"
+narrows 214 entries to exactly 1.
+
 ## v1.10.0-nightly -- 2026-09-28
 
 Everything from here down to `v1.9.0` below, on `development` (Nightly

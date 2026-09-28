@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Session picker popup (prefix s): sessions only, live preview of each one.
 #   sessionizer.sh <client>
-#   enter   switch        ctrl-x  kill (not the current one)
-#   type a name that doesn't exist + enter -> create it in ~
+# keybind: Tmux/session picker | Enter | Switch to the highlighted session
+# keybind: Tmux/session picker | Ctrl+x | Kill the highlighted session (not the current one)
+# keybind: Tmux/session picker | new name + Enter | Create a session with that name in ~ and switch to it
 #
 # Every tmux call is pinned to <client>: with more than one kitty window
 # attached, a bare switch-client would move whichever client tmux guesses.

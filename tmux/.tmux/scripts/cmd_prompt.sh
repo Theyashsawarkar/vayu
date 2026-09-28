@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Floating tmux prompt (popup), laid out like a Neovim cmdline: a single
 # rounded, titled input box. Enter runs what you typed, Esc cancels.
+# keybind: Tmux/command prompt | Enter | Run the typed tmux command (or apply the rename)
+# keybind: Tmux/command prompt | Esc | Cancel without running anything
 #   cmd_prompt.sh <client> <outfile> [label] [initial-format] [command]
 #
 #   no [command]   the line is a tmux command            (prefix :)

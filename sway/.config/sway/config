@@ -61,27 +61,33 @@ set $calc ~/.local/bin/wofi-calc.sh
 # comments for the full reasoning.
 
 # clipboard history
+#: Open clipboard history (cliphist), pick an entry to copy it again
 bindsym $mod+m exec ~/.local/bin/toggle-popup.sh clipboard wofi sh -c "cliphist list | wofi --dmenu | cliphist decode | wl-copy"
 
 # Launch Wofi Emoji Picker
+#: Open emoji picker
 bindsym $mod+period exec ~/.local/bin/toggle-popup.sh emoji wofi wofi-emoji
 
 # Previously only reachable by clicking waybar's network module, no
 # keyboard path existed at all
 # Wi-Fi picker: scan, connect, toggle
+#: Open Wi-Fi picker (scan, connect, toggle)
 bindsym $mod+Shift+w exec ~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wifi-picker.py
 
 # Previously waybar-click-only, same gap as Wi-Fi above
 # Bluetooth picker: pair, connect, toggle
+#: Open Bluetooth picker (pair, connect, toggle)
 bindsym $mod+Shift+b exec ~/.local/bin/toggle-popup.sh bluetooth wofi ~/.local/bin/bluetooth-picker.py
 
 # Previously waybar-click-only, same gap as Wi-Fi/Bluetooth above
 # Docker picker: view running containers, restart, stop
+#: Open Docker picker (running containers: restart, stop)
 bindsym $mod+Shift+d exec ~/.local/bin/toggle-popup.sh docker wofi ~/.local/bin/docker-picker.py
 
 # Matches the same keyboard-path convention as every other waybar-click
 # picker above -- notification bell was waybar-click-only otherwise
 # Notification history: view past notifications, sorted newest first
+#: Open notification history (newest first)
 bindsym $mod+Shift+n exec ~/.local/bin/toggle-popup.sh notifhistory wofi ~/.local/bin/notification-history.py
 
 # Same gap as every picker above -- the power menu (nwg-bar) was only
@@ -102,6 +108,7 @@ bindsym $mod+Shift+n exec ~/.local/bin/toggle-popup.sh notifhistory wofi ~/.loca
 # and Lock -> (wraps) -> Shutdown going back with Shift+Tab. No visible
 # focus-ring styling on top of this yet -- works correctly, just not
 # obvious to the eye which button Tab landed on.
+#: Open power menu (lock, logout, suspend, reboot, shutdown)
 bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar -i 40
 
 # Caffeine mode keyboard path -- was click-only via waybar's
@@ -125,12 +132,10 @@ bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar
 # $right variable expansion this time -- and "a" for "Awake" fits the
 # feature at least as well as "k" ever did.
 #
-# keybind-search.py only ever takes the single comment line immediately
-# above a bindsym as its description (see that script's own parsing
-# logic) -- the bug post-mortem above was that line until now, so this
-# binding searched as unrecognizable noise instead of "caffeine". This
-# line is what actually shows up there.
-# Toggle caffeine mode: keep the screen awake, don't auto-lock/suspend
+# keybind-search.py describes a binding by the `#:` line directly above
+# it (explicit, so an explanatory comment block like the one above can't
+# leak into the search as its description any more).
+#: Toggle caffeine mode: keep the screen awake, no auto-lock/suspend
 bindsym $mod+Shift+a exec ~/.local/bin/caffeine-toggle.sh
 
 # rmpc -- terminal music player, replacing termusic entirely (removed:
@@ -149,6 +154,7 @@ bindsym $mod+Shift+a exec ~/.local/bin/caffeine-toggle.sh
 # decoupled from its UI than termusic's own client/server split even
 # was), so hiding the window should never stop playback. See
 # rmpc-toggle.sh.
+#: Toggle music player popup (rmpc)
 bindsym $mod+Shift+m exec ~/.local/bin/rmpc-toggle.sh
 
 # Matches the app_id kitty is launched with above -- floating, sized to
@@ -214,6 +220,7 @@ for_window [app_id="^mpv$"] floating enable, resize set 1280 720, move position 
 # controllable window -- see the for_window rule above) -- `video` is
 # a required positional argument to music-search.py now, not a
 # persisted toggle read behind the scenes.
+#: Search music on YouTube (videos)
 bindsym $mod+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchvideo wofi ~/.local/bin/music-search.py video
 
 # Search YouTube, add the picked result straight into MPD's queue via
@@ -229,6 +236,7 @@ bindsym $mod+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchvideo wofi ~/.
 # it (rmpc debuginfo already flags this as "not installed" on this
 # machine) and surfaces a clear error notification if it's still
 # missing, rather than failing silently.
+#: Search music on YouTube Music
 bindsym $mod+Ctrl+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchmusic wofi ~/.local/bin/music-search.py music
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
@@ -237,12 +245,14 @@ bindsym $mod+Ctrl+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchmusic wof
 # one direction bound here since scroll already covers both, and
 # cycling forward through 3 states by pressing repeatedly is simple
 # enough not to need a second reverse-cycle keybinding to remember too.
+#: Cycle notification mode (normal -> silent -> dnd)
 bindsym $mod+n exec ~/.local/bin/notification-mode.sh next
 
 # Direct jumps to a specific notification mode, alongside the cycle
 # above -- for "I know exactly which mode I want right now" (DND before
 # a meeting, say) rather than pressing $mod+n repeatedly and counting
 # states.
+#: Set notification mode to {}
 bindsym $mod+Ctrl+n exec ~/.local/bin/notification-mode.sh normal
 bindsym $mod+Ctrl+s exec ~/.local/bin/notification-mode.sh silent
 bindsym $mod+Ctrl+d exec ~/.local/bin/notification-mode.sh dnd
@@ -250,7 +260,7 @@ bindsym $mod+Ctrl+d exec ~/.local/bin/notification-mode.sh dnd
 # $mod+? matches the near-universal "show shortcuts" convention (Slack,
 # Discord, GitHub, GNOME all use ? or Ctrl+/) rather than inventing a new
 # one. Excludes Neovim on purpose -- it already has its own keymap search.
-# Search all keybindings (sway + tmux) in a fuzzy wofi popup
+#: Search every keybinding on the system (this list)
 bindsym $mod+Shift+slash exec ~/.local/bin/toggle-popup.sh keybindsearch wofi ~/.local/bin/keybind-search.py
 
 ### Window Look & Feel (Classy Minimalist)
@@ -399,15 +409,19 @@ seat seat0 xcursor_theme Adwaita 24
 # Basics:
 #
 # Start a terminal
+#: Open a terminal (kitty, inside tmux main)
 bindsym $mod+Return exec $term
 
 # Start your combined app/command launcher
+#: Open app launcher
 bindsym $mod+d exec ~/.local/bin/toggle-popup.sh launcher wofi $menu
 
 # Start your math/currency calculator
+#: Open calculator (math and currency)
 bindsym $mod+c exec ~/.local/bin/toggle-popup.sh calc wofi $calc
 
 # Kill focused window
+#: Close (kill) the focused window
 bindsym $mod+Shift+q kill
 
 # Drag floating windows by holding down $mod and left mouse button.
@@ -415,31 +429,37 @@ bindsym $mod+Shift+q kill
 floating_modifier $mod normal
 
 # Reload the configuration file
+#: Reload sway config
 bindsym $mod+Shift+c reload
 
 # Exit sway (logs you out of your Wayland session)
+#: Exit sway (log out, asks first)
 bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
 
 #
 # Moving around:
 #
 # Move your focus around
+#: Focus window {}
 bindsym $mod+$left focus left
 bindsym $mod+$down focus down
 bindsym $mod+$up focus up
 bindsym $mod+$right focus right
 # Or use $mod+[up|down|left|right]
+#: Focus window {}
 bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 
 # Move the focused window with the same, but add Shift
+#: Move window {}
 bindsym $mod+Shift+$left move left
 bindsym $mod+Shift+$down move down
 bindsym $mod+Shift+$up move up
 bindsym $mod+Shift+$right move right
 # Ditto, with arrow keys
+#: Move window {}
 bindsym $mod+Shift+Left move left
 bindsym $mod+Shift+Down move down
 bindsym $mod+Shift+Up move up
@@ -449,6 +469,7 @@ bindsym $mod+Shift+Right move right
 # Workspaces:
 #
 # Switch to workspace
+#: Switch to workspace {}
 bindsym $mod+1 workspace number 1
 bindsym $mod+2 workspace number 2
 bindsym $mod+3 workspace number 3
@@ -461,6 +482,7 @@ bindsym $mod+9 workspace number 9
 bindsym $mod+0 workspace number 10
 
 # Move focused container to workspace
+#: Move window to workspace {}
 bindsym $mod+Shift+1 move container to workspace number 1
 bindsym $mod+Shift+2 move container to workspace number 2
 bindsym $mod+Shift+3 move container to workspace number 3
@@ -477,91 +499,128 @@ bindsym $mod+Shift+0 move container to workspace number 10
 #
 # You can "split" the current object of your focus with
 # $mod+b or $mod+v, for horizontal and vertical splits
+#: Split horizontally (next window opens to the side)
 bindsym $mod+v splith
+#: Split vertically (next window opens below)
 bindsym $mod+b splitv
 
 # Switch the current container between different layout styles
+#: Switch to stacking layout
 bindsym $mod+s layout stacking
 
 # Toggle the current container between split and tabbed layouts
+#: Toggle tabbed layout
 bindsym $mod+w layout toggle split tabbed
+#: Toggle split direction
 bindsym $mod+e layout toggle split
 
 # Make the current focus fullscreen
+#: Toggle fullscreen (focused window)
 bindsym $mod+f fullscreen
 
 # Toggle the current focus between tiling and floating mode
+#: Toggle floating for the focused window
 bindsym $mod+Shift+space floating toggle
 
 # Swap focus between the tiling area and the floating area
+#: Swap focus between tiling and floating windows
 bindsym $mod+space focus mode_toggle
 
 # Move focus to the parent container
+#: Focus the parent container
 bindsym $mod+a focus parent
 
 #
 # Scratchpad:
 #
 # Move the currently focused window to the scratchpad
+#: Move window to the scratchpad
 bindsym $mod+Shift+minus move scratchpad
 
 # Show the next scratchpad window or hide the focused scratchpad window.
+#: Show scratchpad windows (press again to cycle)
 bindsym $mod+minus scratchpad show
 
 #
 # Resizing containers:
 #
 mode "resize" {
+	#: Shrink width
 	bindsym $left resize shrink width 10px
+		#: Grow height
 		bindsym $down resize grow height 10px
+		#: Shrink height
 		bindsym $up resize shrink height 10px
+		#: Grow width
 		bindsym $right resize grow width 10px
 
 # Ditto, with arrow keys
+		#: Shrink width
 		bindsym Left resize shrink width 10px
+		#: Grow height
 		bindsym Down resize grow height 10px
+		#: Shrink height
 		bindsym Up resize shrink height 10px
+		#: Grow width
 		bindsym Right resize grow width 10px
 
 # Return to default mode
+		#: Leave resize mode
 		bindsym Return mode "default"
 		bindsym Escape mode "default"
 }
 
 # Resize mode (moved from $mod+r)
+#: Enter resize mode (h/j/k/l or arrows, Enter/Esc leaves)
 bindsym $mod+Ctrl+r mode "resize"
 
 # Screen recording
+#: Record screen: full screen (press again to stop)
 bindsym $mod+r       exec ~/.local/bin/wf-recorder-toggle.sh full
+#: Record screen: select a region (press again to stop)
 bindsym $mod+Shift+r exec ~/.local/bin/wf-recorder-toggle.sh region
 
 #
 # Utilities:
 #
 # Special keys to adjust volume via custom OSD scripts
+#: Toggle mute (speakers)
 bindsym --locked XF86AudioMute exec ~/.config/sway/scripts/volume_osd.sh mute-toggle
+#: Toggle mute (microphone)
 bindsym --locked XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+#: Lower volume 5%
 bindsym --locked XF86AudioLowerVolume exec ~/.config/sway/scripts/volume_osd.sh -5%
+#: Raise volume 5%
 bindsym --locked XF86AudioRaiseVolume exec ~/.config/sway/scripts/volume_osd.sh +5%
 
 # Special keys to control media via playerctl
+#: Play/pause media
 bindsym --locked XF86AudioPlay exec playerctl play-pause
+#: Play/pause media
 bindsym --locked XF86AudioPause exec playerctl play-pause
+#: Play previous track
 bindsym --locked XF86AudioPrev exec playerctl previous
+#: Play next track
 bindsym --locked XF86AudioNext exec playerctl next
+#: Stop media
 bindsym --locked XF86AudioStop exec playerctl stop
 
 # Special keys to adjust brightness via custom OSD scripts
+#: Lower brightness 5%
 bindsym --locked XF86MonBrightnessDown exec ~/.config/sway/scripts/brightness_osd.sh 5%-
+#: Raise brightness 5%
 bindsym --locked XF86MonBrightnessUp exec ~/.config/sway/scripts/brightness_osd.sh +5%
 
 # Full screen (existing)
+#: Take screenshot: full screen
 bindsym Print exec ~/.config/sway/scripts/screenshot.sh
 
 # Region select
+#: Take screenshot: select a region
 bindsym $mod+Print exec ~/.config/sway/scripts/screenshot.sh region
 
 # Manual lock trigger
+#: Lock the screen
 bindsym Mod1+Shift+semicolon exec swaylock -C ~/.config/sway/lockconfig
 
 ### User Executions & Environment Settings

@@ -1,10 +1,16 @@
 # Keybindings
 
-Every keybinding here comes straight from `sway/config` and `tmux/.config/tmux/tmux.conf`
--- this list is generated from the real `bindsym`/`bind` lines and their own comments
-(the same parsing `scripts/.local/bin/keybind-search.py` does live, bound to
-`Super+Shift+/` on the desktop itself), not hand-maintained separately from the
-configs that actually define them.
+The live, always-complete list is **`Super+Shift+/`** (every source below, fuzzy
+search in wofi) and, inside tmux, **`Ctrl+a ?`** (tmux keys; Enter runs the picked
+binding). Both come from `scripts/.local/bin/keybind-search.py`, which re-reads the
+real configs every time: sway (`#:` line above each `bindsym`), tmux (`bind -N`
+notes, stock keys marked `default`), kitty (`#:` above each `map`), Zed
+(`keymap.json`), rmpc (`config.ron`), and keys that exist only inside popup scripts
+(`# keybind:` lines). `keybind-search.py --check` fails if any binding is
+undescribed. Every description reads **action + object**, so search the same
+way: `kill window`, `open lazygit`, `raise volume`, `take screenshot` (the search
+box's placeholder says so too). See `CLAUDE.md` for the annotation rules. This page is the
+hand-written overview of the main ones.
 
 `Super` is the Windows/Cmd key (sway's `$mod`).
 
@@ -87,9 +93,8 @@ configs that actually define them.
 ## Tmux
 
 Prefix key is <kbd>Ctrl</kbd>+<kbd>a</kbd> (not tmux's default <kbd>Ctrl</kbd>+<kbd>b</kbd>). Every stock tmux
-binding still works too -- this is only the set this repo added or renamed its own note for; the
-full list (~260 entries including every stock default) is what `Super+Shift+/`'s Tmux results and
-`tmux list-keys` both show.
+binding still works too -- this is only the set this repo added; the full list (~210 entries
+including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super+Shift+/`.
 
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>a</kbd> — Send a literal Ctrl-a to the application
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>|</kbd> — Split horizontally, in the current pane's directory
@@ -97,6 +102,7 @@ full list (~260 entries including every stock default) is what `Super+Shift+/`'s
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>c</kbd> — New window, in the current pane's directory
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>&lt;</kbd>/<kbd>&gt;</kbd> — Swap window left/right
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>r</kbd> — Reload tmux config (mako notification only)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>?</kbd> — Search tmux keybindings; <kbd>Enter</kbd> runs the picked one
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>:</kbd> — Floating command prompt (runs in the real client, never nests)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>s</kbd> — Session picker with live previews (<kbd>Ctrl</kbd>+<kbd>x</kbd> kills, a new name creates)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>w</kbd> — Classic session/window tree
