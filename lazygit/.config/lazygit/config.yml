@@ -1,0 +1,21 @@
+# Matches the tmux palette (Rose Dusty): rounded borders, rose accent,
+# muted inactive borders. Opens in a tmux popup (prefix g), which already
+# draws its own rounded frame + title.
+gui:
+  border: rounded
+  nerdFontsVersion: "3"
+  showBottomLine: true
+  showRandomTip: false
+  theme:
+    activeBorderColor: ["#D095A4", bold]
+    inactiveBorderColor: ["#3B4048"]
+    searchingActiveBorderColor: ["#D4B25C", bold]
+    optionsTextColor: ["#6C8EBF"]
+    selectedLineBgColor: ["#2A2D35"]
+    inactiveViewSelectedLineBgColor: ["#1E2128"]
+    cherryPickedCommitFgColor: ["#0B0E14"]
+    cherryPickedCommitBgColor: ["#9ED1A6"]
+    markedBaseCommitFgColor: ["#0B0E14"]
+    markedBaseCommitBgColor: ["#D4B25C"]
+    unstagedChangesColor: ["#F2A97E"]
+    defaultFgColor: ["#D7DDE6"]

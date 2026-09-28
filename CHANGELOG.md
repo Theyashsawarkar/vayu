@@ -57,6 +57,32 @@ keybinding except Neovim's. It is live-parsed and backs three front-ends.
 - An undocumented `bind F5` fails the tmux check. Removing kitty's `#:`
   line made the live hook report the failure, and it was restored.
 
+## 2026-09-28 (Claude hook + global notes in the repo, lazygit theme, install.sh fixes)
+
+- **The keybinding-check hook is versioned and wired up.**
+  `scripts/.local/bin/claude-hooks-install.sh` registers
+  `keybind-check-hook.sh` in `~/.claude/settings.json`, and `install.sh`
+  runs it. It merges with jq instead of stowing the file, because Claude
+  Code rewrites `settings.json` itself. It creates the file if missing,
+  keeps every other setting and hook, and does nothing on a re-run.
+  Tested in two fake homes (no file; a file with a theme and another
+  hook) and on this machine.
+- **New `claude/` stow package:** `~/.claude/CLAUDE.md`, the global
+  "keybindings go through the registry, verb-first" rule, now travels
+  with the repo.
+- **New `lazygit/` stow package:** the Rose Dusty lazygit theme for the
+  `prefix g` popup. It was written with the tmux work but never committed.
+- **install.sh:**
+  - The stow list skipped only `packages/` and `docs/`, so a fresh
+    install would have linked the docs site's `assets/` and `_layouts/`
+    into `~`. Those are excluded now.
+  - `jq` and `python` were used (hooks, every `.py` picker) but not listed
+    in `packages/pacman.txt`. They are listed now.
+- **`mimeapps.list`:** an uncommitted change was discarded. Chrome had
+  added itself as an extra "Open with" candidate for HTML under
+  `[Added Associations]`. The default apps were never affected. Chrome
+  may add the entry again, which is harmless.
+
 ## v1.11.0-nightly -- 2026-09-28
 
 Everything from here down to `v1.10.0-nightly` below, on `development`

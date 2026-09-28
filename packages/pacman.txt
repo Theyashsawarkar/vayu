@@ -26,6 +26,7 @@ grim
 gst-plugin-pipewire
 inxi
 iwd
+jq
 kitty
 lazygit
 libnotify
@@ -38,8 +39,8 @@ mesa-utils
 mpd
 neovim
 networkmanager
-networkmanager-dmenu
 network-manager-applet
+networkmanager-dmenu
 noto-fonts
 noto-fonts-emoji
 nvm
@@ -51,6 +52,7 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 power-profiles-daemon
+python
 python-mutagen
 qt6ct
 qt6-multimedia-ffmpeg

@@ -55,9 +55,13 @@ same change:
 
 4. Update `docs/KEYBINDINGS.md` if it lists that area.
 
-A Claude Code hook (`~/.claude/settings.json`, PostToolUse on Edit/Write)
+A Claude Code hook (PostToolUse on Edit/Write, `keybind-check-hook.sh`)
 runs `--check` automatically after edits to these files and reports any
-failure back -- fix it, don't ignore it.
+failure back -- fix it, don't ignore it. It is registered in
+`~/.claude/settings.json` by `scripts/.local/bin/claude-hooks-install.sh`
+(run by `install.sh`; merges with jq, since Claude Code rewrites that file
+itself). The global `~/.claude/CLAUDE.md` is the stowed `claude/` package.
+Edits made through Bash/sed don't trigger the hook: run `--check` yourself.
 
 ## tmux specifics worth knowing
 

@@ -88,8 +88,11 @@ else
 fi
 cd "$DOTFILES_DIR"
 
-# Every top-level dir except packages/ and docs/ (not stow packages)
-mapfile -t PKGS < <(find . -maxdepth 1 -mindepth 1 -type d ! -name packages ! -name docs ! -name '.*' -printf '%f\n')
+# Every top-level dir except the non-stow ones: packages/ (package lists),
+# docs/ and the docs site's assets/ + _layouts/ (stowing those would scatter
+# the site's JS/CSS/templates into ~).
+mapfile -t PKGS < <(find . -maxdepth 1 -mindepth 1 -type d ! -name packages ! -name docs \
+  ! -name assets ! -name _layouts ! -name '.*' -printf '%f\n')
 
 log "Installing official repo packages (packages/pacman.txt)"
 xargs -a packages/pacman.txt sudo pacman -S --needed --noconfirm
@@ -121,6 +124,11 @@ done
 
 log "Stowing all packages"
 stow -d "$DOTFILES_DIR" -t "$HOME" "${PKGS[@]}"
+
+log "Registering Claude Code hooks (keybinding registry check)"
+# ~/.claude/CLAUDE.md comes from the stowed claude/ package; settings.json
+# is merged into rather than stowed (see the script for why).
+"$DOTFILES_DIR/scripts/.local/bin/claude-hooks-install.sh"
 
 log "Setting zsh as the default shell"
 if [ "$SHELL" != "$(command -v zsh)" ]; then
