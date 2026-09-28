@@ -57,6 +57,16 @@ keybinding except Neovim's. It is live-parsed and backs three front-ends.
 - An undocumented `bind F5` fails the tmux check. Removing kitty's `#:`
   line made the live hook report the failure, and it was restored.
 
+## v1.11.1-nightly -- 2026-09-28
+
+Everything from here down to `v1.11.0-nightly` below, on `development`
+(Nightly channel) only -- not merged to `main`/Stable yet. PATCH bump:
+fixes and packaging, no new capabilities. The keybinding-check hook and
+the global Claude notes are now versioned and set up by `install.sh`. The
+lazygit theme is committed. `install.sh` no longer stows the docs site
+into `~` and lists `jq`/`python`. A stray Chrome `mimeapps.list` entry was
+discarded. See the entry just below.
+
 ## 2026-09-28 (Claude hook + global notes in the repo, lazygit theme, install.sh fixes)
 
 - **The keybinding-check hook is versioned and wired up.**
