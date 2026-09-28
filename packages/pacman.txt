@@ -27,6 +27,7 @@ gst-plugin-pipewire
 inxi
 iwd
 jq
+kdeconnect
 kitty
 lazygit
 libnotify
@@ -64,6 +65,7 @@ sddm
 seahorse
 slurp
 sof-firmware
+sshfs
 stow
 sudo
 swaybg

@@ -13,6 +13,7 @@
 		"custom/theme",
 		"custom/wallpaper",
 		"custom/docker",
+		"custom/phone",
 		"custom/caffeine",
 		"backlight",
 		"pulseaudio",
@@ -133,6 +134,13 @@
 		"tooltip-format": "Bluetooth Status: {status}",
 		"on-click": "/home/yash/.local/bin/bluetooth-picker.py",
 		"max-length": 25
+	},
+
+	"custom/phone": {
+		"exec": "/home/yash/.local/bin/phone-status.sh",
+		"interval": 10,
+		"return-type": "json",
+		"on-click": "/home/yash/.local/bin/toggle-popup.sh phone wofi /home/yash/.local/bin/phone-picker.py"
 	},
 
 	"custom/caffeine": {

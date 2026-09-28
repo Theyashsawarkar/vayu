@@ -5,57 +5,146 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
-## 2026-09-28 (keybindings: one registry for the whole system, tmux prefix ? searches and runs)
+## v1.12.0-nightly -- 2026-09-29
 
-`keybind-search.py` (`Super+Shift+/`) is now the single registry for every
-keybinding except Neovim's. It is live-parsed and backs three front-ends.
+Everything from here down to `v1.11.1-nightly` below, on `development`
+(Nightly channel) only -- not merged to `main`/Stable yet. MINOR bump: a
+new capability, phone <-> laptop sync through KDE Connect. It covers the
+phone picker (`Super+Shift+o`), the waybar phone module, received files
+and clipboard notifications, the pairing flow with Accept/Reject, remote
+input via xdg-desktop-portal-luminous, and "Ring my laptop" with your own
+song, which `Super+Ctrl+a` always stops. Also moves the keybinding-registry
+entry back under `v1.11.0-nightly`, the release it shipped in. See the two
+entries just below.
 
-**What was wrong with the old list:**
-- **Sway:** it took the *last* comment line above each bind. Several
-  entries read as fragments ("states.", "obvious to the eye which button
-  Tab landed on.", "Or use $mod+[up|down|left|right]").
-- **Tmux:** keys were shown tmux-escaped (`\$`, `\;`), so stock
-  descriptions never matched. Plugin keys (extrakto, TPM) and `prefix $`
-  showed raw shell commands. `M-MouseDown…` menus slipped through the
-  mouse filter. 68 unused emacs copy-mode keys were listed.
-- **Everything else:** kitty, Zed and rmpc bindings, and keys inside popup
-  scripts, weren't listed at all.
-- **wofi:** text wasn't markup-escaped, so tmux's `<`/`>` keys broke
-  rendering, and a copied selection included the `<span>` tags.
+## 2026-09-29 (phone ring: always stoppable)
 
-**Now:**
-- **Explicit descriptions per source:**
-  - sway and kitty: a `#: Description` line above each bind. `{}` expands
-    to the bind's last word, e.g. `#: Switch to workspace {}`.
-  - tmux: its own `bind -N`, read per table via `list-keys -N -a -P ''`.
-    Stock keys are detected by diffing against a throwaway
-    `-f /dev/null` server and shown as `default`.
-  - Zed `// comments` or humanized action names, and rmpc action names.
-  - Keys inside popup scripts: `# keybind: Source/scope | keys | desc`.
-- **Readable keys everywhere:** `Ctrl+a K`, `Alt+Shift+Up`, rmpc's
-  `<C-w>k` becomes `Ctrl+w k`.
-- **Sway modes are detected generically**, e.g.
-  `[resize mode, Super+Ctrl+r first]`.
-- **`Ctrl+a ?` in tmux** (`tmux_keys.sh`) is an fzf popup over the tmux
-  part of the registry. Enter *runs* the picked binding by replaying its
-  keys with `send-keys -K` after the popup closes. A copy-mode key enters
-  copy mode first, and `;` is escaped for the tmux command line.
-- **`--check`** exits 1 on any undescribed binding or a sway/kitty key
-  bound twice in one scope. `--check --tmux-conf FILE` checks the file on
-  disk in a throwaway server. `--list [source]` prints a plain table.
-- **Enforced for future edits:** `CLAUDE.md` (repo) and `~/.claude/CLAUDE.md`
-  state the rule. A Claude Code PostToolUse hook
-  (`keybind-check-hook.sh`) runs `--check` after any edit to a keybinding
-  source and reports failures back.
+The first real "Ring my laptop" played the song for 24 s and couldn't be
+stopped: clicking the notification and `Super+Ctrl+a` did nothing, and the
+power key was the only way out. The logs show no stop request reached the
+ring code in those 24 s, and no other notification appeared. Both paths
+work when tested now, so the exact trigger isn't known. Suspected: the ring
+code asked KDE Connect for the phone's name (no D-Bus timeout) while KDE
+Connect was busy with the ring request, and the 60 s limit only started
+once the notification was up. Now nothing can hold up a stop:
+- **`Super+Ctrl+a` stops a ring directly** by killing the player
+  (`$XDG_RUNTIME_DIR/find-my-laptop.pid`), without going through mako.
+  When nothing is ringing it opens the action picker as before.
+- The 60 s limit starts with the sound. The notification (name lookup
+  included) runs in its own thread, and every KDE Connect D-Bus query has a
+  3 s timeout.
+- The ring logs to the service journal (started / notification shown /
+  stopped by what), so a failure can be traced.
+- Tested at volume 0 with a real player: key, real mouse click (ydotool),
+  time limit, and KDE Connect hanging for 20 s (key still stops it at 1.5 s).
 
-**Verified:**
-- `--check` is OK: 96 sway, 214 tmux, 1 kitty, 88 Zed, 83 rmpc.
-- All 482 wofi lines parse as valid markup. `sway -C` is clean.
-- `Ctrl+a ?` tested in an isolated nested tmux: "synchronized" + Enter
-  turned sync on, `Alt+2` switched windows, and Esc runs nothing.
-- `send-keys -K` replays `{ } " # $ ~ ' %` and `\;` correctly.
-- An undocumented `bind F5` fails the tmux check. Removing kitty's `#:`
-  line made the live hook report the failure, and it was restored.
+## 2026-09-28 (phone <-> laptop: KDE Connect, phone picker, waybar phone module)
+
+Laptop and phone reach each other over the phone's hotspot (or any shared
+network) through KDE Connect, the same Play Store app used with GSConnect
+on Ubuntu before. Paired and tested with the real phone (CMF Phone 2 Pro)
+over its hotspot.
+
+- **Daemon:** `kdeconnectd` runs as the systemd user unit
+  `kdeconnect.service`:
+  - `Type=dbus` + `BusName`, so "started" means actually ready.
+  - `Restart=always`: a crash restarts it; a `systemctl --user stop`
+    stays stopped.
+  - No `[Install]`, because enabled at login it would start before sway
+    exports `WAYLAND_DISPLAY` and clipboard sync would silently break.
+    sway starts it after `dbus-update-activation-environment`.
+  - A user D-Bus service override (`kdeconnect/` stow package) points
+    activation at the unit (`SystemdService=`), so a `kdeconnect-cli` call
+    while it's down starts the supervised daemon, never a stray one.
+    Found live: the bus only picks the override up after a `ReloadConfig`
+    (or a new login).
+- **Phone picker** (`phone-picker.py`, `Super+Shift+o`, also the waybar
+  click), same shape as the Bluetooth picker, every entry action + object:
+  - Send file (the 40 newest files in Downloads/Pictures/Screenshots/
+    Videos/Documents/Desktop), send clipboard, ring (find my phone), ping,
+    unpair.
+  - Browse files: mounts the phone over sftp and opens the folder the
+    phone exposes (`getDirectories`, e.g. `.../storage/emulated/0`
+    "Internal shared storage"; the mount root itself is always "Permission
+    denied" on Android) in yazi, in its own kitty window. `xdg-open` would
+    go through kitty's `shell tmux ...` and just attach tmux.
+  - Accept/reject an incoming pair request; pair with a reachable,
+    unpaired phone.
+  - Opens in ~80 ms. Devices are listed over D-Bus (the daemon's
+    `devices`, ~6 ms), not with `kdeconnect-cli --list-devices`, which
+    blocks ~2 s on network discovery every call and made the popup
+    noticeably late. Per-device CLI actions (`-d ID --ping` etc.) are
+    fast (~30 ms) and stay on the CLI.
+- **Waybar `custom/phone`** (`phone-status.sh`), in the right-hand
+  device-controls cluster between docker and caffeine: the phone glyph plus battery %, a bolt while charging,
+  a green border while connected, and a dimmed glyph when not. It never
+  starts the daemon: `busctl tree` D-Bus-activates the service even with
+  `--auto-start=no` (found live: it revived a stopped daemon every 10 s),
+  so it checks `NameHasOwner` first.
+- **Notifications and clipboard:** KDE Connect's own plugins. The phone's
+  notifications arrive through mako, and the clipboard syncs both ways.
+- **Every feature working, with feedback** (second pass, after testing
+  from the phone):
+  - *Remote input / presentation remote* were dropped: 307x "No such
+    interface org.freedesktop.portal.RemoteDesktop". sway's portals (wlr,
+    gtk) don't implement RemoteDesktop. `xdg-desktop-portal-luminous` (AUR)
+    does; `xdg/.config/xdg-desktop-portal/sway-portals.conf` routes only
+    RemoteDesktop to it (gtk/wlr keep the rest). KDE Connect's windows
+    (the presenter pointer overlay) float instead of tiling.
+  - *Files from the phone* arrived silently, because KDE Connect only
+    reports finished transfers to Plasma's job tracker. `phone-events.py`
+    (user unit `phone-events.service`, started by sway) watches the share
+    plugin's `shareReceived` D-Bus signal and notifies: "Received from
+    <phone>", name, size, folder; click opens it, "Show in folder" opens
+    yazi. Bug found testing: `dbus-monitor` block-buffers into a pipe, so
+    signals sat unread; it runs under `stdbuf -oL` now.
+  - *Clipboard:* laptop -> phone auto-sync pushed everything copied,
+    passwords included, so it's off (`autoShare=false`, per-device policy
+    below). "Send clipboard" in the picker uses the clipboard plugin's
+    `sendClipboard`, so it lands on the phone's clipboard (not as a shared
+    text), and confirms with a preview. Phone -> laptop (Android 10+ only
+    sends when you tap "Send clipboard" on the phone) now notifies with a
+    preview and an Undo that restores the previous clipboard, which is
+    held in memory only, never on disk. Clipboard reads are capped at
+    1 MB and skip non-text: an uncapped read once spiked the service to a
+    740 MB peak. Stress-tested with a 50 MB clipboard and an image: 9.8 MB
+    peak.
+  - *Ring my laptop* from the phone:
+    - It was silent: the default ringtone is Plasma's
+      `Oxygen-Im-Phone-Ring.ogg`, absent here.
+    - Pointing it at freedesktop's `phone-incoming-call.oga` then gave a
+      1.46 s chirp, because KDE Connect plays the ringtone once.
+    - `phone-events.py` now generates a ~24 s ringtone (that ring x12 with
+      0.5 s gaps, ffmpeg, `~/.local/share/sounds/`, not kept in the repo)
+      and sets it per device.
+    - KDE Connect gives no signal and no way to stop the ring, so the
+      watcher follows PipeWire (`pactl subscribe`) for the kdeconnectd
+      stream. It notifies "<phone> is ringing this laptop"; a click stops
+      it by destroying that stream's PipeWire node (`pw-cli destroy`; this
+      pactl has no `kill-sink-input`, found testing). The notification
+      closes itself when the ring ends. A muted laptop is unmuted for the
+      ring and muted again after.
+    - Verified with a stand-in stream: click stops it, natural end
+      dismisses, mute is restored.
+    - Test pitfall: mako's own notification sound (`paplay`, a `pacat`
+      stream) matched the stand-in owner at first and fed back into more
+      "ringing" notifications. Production only matches kdeconnectd (by
+      binary, or by `application.name` for native PipeWire streams).
+  - *Per-device policy:* KDE Connect keeps plugin settings per device, so
+    `phone-events.py` applies `DEVICE_POLICY` (the clipboard + ringtone
+    settings above) to every paired phone at start and after pairing, and
+    restarts the daemon if anything changed.
+  - *`Super+Ctrl+a`* (`notification-actions.sh`) lists the current
+    notification's actions in wofi, since mako's left click only runs the
+    default one: Accept/Reject a pairing request, Undo a phone clipboard,
+    Show in folder. `makoctl menu` parses the picker's own dash-options
+    as its own (it rejected wofi's `-i`/`-p`), so the script passes itself
+    back as an argument-free picker that runs wofi. Tested end to end with
+    a two-action notification.
+- **Install:** `kdeconnect` and `sshfs` are in `packages/pacman.txt`, and
+  `install.sh` opens ufw 1714-1764 TCP/UDP. The ports were the one thing
+  that blocked discovery here: the phone stayed invisible until they were
+  open. The noisy ModemManager telephony plugin is disabled (no modem).
 
 ## v1.11.1-nightly -- 2026-09-28
 
@@ -124,6 +213,58 @@ sockets, dirs or processes left, and stock detection is unchanged. Dead
 test sockets from this session were cleaned out of `/tmp/tmux-1000`.
 Re-verified after the change: `Ctrl+a ?` -> "select window 2" -> Enter
 switches the window, and the hook still passes.
+
+## 2026-09-28 (keybindings: one registry for the whole system, tmux prefix ? searches and runs)
+
+`keybind-search.py` (`Super+Shift+/`) is now the single registry for every
+keybinding except Neovim's. It is live-parsed and backs three front-ends.
+
+**What was wrong with the old list:**
+- **Sway:** it took the *last* comment line above each bind. Several
+  entries read as fragments ("states.", "obvious to the eye which button
+  Tab landed on.", "Or use $mod+[up|down|left|right]").
+- **Tmux:** keys were shown tmux-escaped (`\$`, `\;`), so stock
+  descriptions never matched. Plugin keys (extrakto, TPM) and `prefix $`
+  showed raw shell commands. `M-MouseDown…` menus slipped through the
+  mouse filter. 68 unused emacs copy-mode keys were listed.
+- **Everything else:** kitty, Zed and rmpc bindings, and keys inside popup
+  scripts, weren't listed at all.
+- **wofi:** text wasn't markup-escaped, so tmux's `<`/`>` keys broke
+  rendering, and a copied selection included the `<span>` tags.
+
+**Now:**
+- **Explicit descriptions per source:**
+  - sway and kitty: a `#: Description` line above each bind. `{}` expands
+    to the bind's last word, e.g. `#: Switch to workspace {}`.
+  - tmux: its own `bind -N`, read per table via `list-keys -N -a -P ''`.
+    Stock keys are detected by diffing against a throwaway
+    `-f /dev/null` server and shown as `default`.
+  - Zed `// comments` or humanized action names, and rmpc action names.
+  - Keys inside popup scripts: `# keybind: Source/scope | keys | desc`.
+- **Readable keys everywhere:** `Ctrl+a K`, `Alt+Shift+Up`, rmpc's
+  `<C-w>k` becomes `Ctrl+w k`.
+- **Sway modes are detected generically**, e.g.
+  `[resize mode, Super+Ctrl+r first]`.
+- **`Ctrl+a ?` in tmux** (`tmux_keys.sh`) is an fzf popup over the tmux
+  part of the registry. Enter *runs* the picked binding by replaying its
+  keys with `send-keys -K` after the popup closes. A copy-mode key enters
+  copy mode first, and `;` is escaped for the tmux command line.
+- **`--check`** exits 1 on any undescribed binding or a sway/kitty key
+  bound twice in one scope. `--check --tmux-conf FILE` checks the file on
+  disk in a throwaway server. `--list [source]` prints a plain table.
+- **Enforced for future edits:** `CLAUDE.md` (repo) and `~/.claude/CLAUDE.md`
+  state the rule. A Claude Code PostToolUse hook
+  (`keybind-check-hook.sh`) runs `--check` after any edit to a keybinding
+  source and reports failures back.
+
+**Verified:**
+- `--check` is OK: 96 sway, 214 tmux, 1 kitty, 88 Zed, 83 rmpc.
+- All 482 wofi lines parse as valid markup. `sway -C` is clean.
+- `Ctrl+a ?` tested in an isolated nested tmux: "synchronized" + Enter
+  turned sync on, `Alt+2` switched windows, and Esc runs nothing.
+- `send-keys -K` replays `{ } " # $ ~ ' %` and `\;` correctly.
+- An undocumented `bind F5` fails the tmux check. Removing kitty's `#:`
+  line made the live hook report the failure, and it was restored.
 
 ## 2026-09-28 (keybindings: every description is action + object, and the search box says so)
 

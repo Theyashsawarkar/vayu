@@ -1,0 +1,9 @@
+# Overrides /usr/share/dbus-1/services/org.kde.kdeconnect.service (the
+# user dir takes precedence): D-Bus activation -- any kdeconnect-cli call
+# while the daemon is down -- starts the systemd unit instead of a bare,
+# unsupervised kdeconnectd, so there is only ever one daemon, restarted by
+# systemd if it crashes.
+[D-BUS Service]
+Name=org.kde.kdeconnect
+Exec=/usr/bin/kdeconnectd
+SystemdService=kdeconnect.service

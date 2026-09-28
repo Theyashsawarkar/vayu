@@ -30,6 +30,7 @@ window#waybar {
 #network,
 #backlight,
 #bluetooth,
+#custom-phone,
 #custom-caffeine,
 #pulseaudio,
 #battery,
@@ -46,7 +47,7 @@ window#waybar {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-#clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #bluetooth, #backlight, #pulseaudio, #battery, #custom-power {
+#clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #bluetooth, #custom-phone, #backlight, #pulseaudio, #battery, #custom-power {
     padding: 0 12px;
 }
 
@@ -66,7 +67,11 @@ window#waybar {
 }
 
 #custom-docker {
-    margin-right: 2px; /* tight pairing with caffeine right after it */
+    margin-right: 2px; /* tight pairing with phone + caffeine right after it */
+}
+
+#custom-phone {
+    margin-right: 2px; /* same tight spacing inside the docker/phone/caffeine cluster */
 }
 
 /* Theme toggle: light/dark mode for every app that reads the standard
@@ -129,7 +134,7 @@ window#waybar {
 
 /* One consistent accent (Mauve) for "you're pointing at something
    interactive" everywhere, instead of a different color per module */
-#clock:hover, #custom-docker:hover, #custom-capslock:hover, #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover, #custom-wallpaper:hover, #network:hover, #bluetooth:hover, #custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
+#clock:hover, #custom-docker:hover, #custom-capslock:hover, #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover, #custom-wallpaper:hover, #network:hover, #bluetooth:hover, #custom-phone:hover, #custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
     border-color: rgba(203, 166, 247, 0.4);
 }
 
@@ -530,6 +535,23 @@ window#waybar {
 #bluetooth.connected {
     color: #A6E3A1; /* Pastel green when paired */
     border-color: rgba(166, 227, 161, 0.4);
+}
+
+/* Phone (KDE Connect), between docker and caffeine in the device-controls
+   cluster: same status language as bluetooth -- green border
+   while the paired phone is reachable, no border when it isn't (the glyph
+   itself is already dimmed by phone-status.sh). */
+#custom-phone.connected {
+    border-color: rgba(166, 227, 161, 0.4);
+}
+
+#custom-phone.disconnected {
+    border-color: transparent;
+}
+
+/* A phone is asking to pair: Yellow, like a pending decision */
+#custom-phone.request {
+    border-color: rgba(249, 226, 175, 0.6);
 }
 
 /* CAFFEINE — dim gray when off (matches every other "off" state above),

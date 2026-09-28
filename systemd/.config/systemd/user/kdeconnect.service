@@ -1,0 +1,20 @@
+[Unit]
+Description=KDE Connect daemon (phone <-> laptop: files, clipboard, notifications)
+Documentation=https://kdeconnect.kde.org
+# Needs the sway session's WAYLAND_DISPLAY for clipboard sync; sway's
+# `dbus-update-activation-environment --all` exports it before the
+# `systemctl --user restart kdeconnect.service` exec that starts this.
+PartOf=graphical-session.target
+
+[Service]
+# Type=dbus: "started" means the daemon owns its bus name, so the phone
+# picker / waybar module never race a half-started daemon.
+Type=dbus
+BusName=org.kde.kdeconnect
+ExecStart=/usr/bin/kdeconnectd
+Restart=always
+RestartSec=2
+
+# No [Install] on purpose: enabled at login it would start before sway
+# exports WAYLAND_DISPLAY, and clipboard sync would silently not work.
+# sway's config starts it; D-Bus activation covers every other case.

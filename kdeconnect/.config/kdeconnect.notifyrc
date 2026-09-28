@@ -1,0 +1,7 @@
+# KDE Connect's own notification events (KNotification reads per-event
+# overrides from here). The pairing request popup is off: phone-events.py
+# shows its own, with the verification key, click = Accept and Reject in
+# the Super+Ctrl+a action menu. Keeping both would mean two prompts for
+# one request.
+[Event/pairingRequest]
+Action=

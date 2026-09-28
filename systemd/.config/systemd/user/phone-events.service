@@ -1,0 +1,15 @@
+[Unit]
+Description=Phone events -> notifications (KDE Connect: received files, clipboard)
+# Reads the Wayland clipboard, so it needs the sway session's environment:
+# started by sway's config right after kdeconnect.service, like it.
+After=kdeconnect.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/phone-events.py
+Restart=always
+RestartSec=2
+
+# No [Install]: see kdeconnect.service -- started from sway, after
+# dbus-update-activation-environment, so WAYLAND_DISPLAY is set.

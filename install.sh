@@ -175,6 +175,10 @@ sudo systemctl enable --now \
 # a physical-console machine, but add any rules you need (e.g. `ufw allow ssh`)
 # before enabling it if you plan to reach this box over the network.
 sudo systemctl enable --now ufw
+# KDE Connect (phone <-> laptop, see phone-picker.py): discovery + transfers
+# use 1714-1764 TCP/UDP. Without these the phone never sees the laptop.
+sudo ufw allow 1714:1764/udp
+sudo ufw allow 1714:1764/tcp
 # sddm is enabled but not started now -- starting it mid-script would hijack
 # this TTY session before the rest of the script finishes; it'll take over
 # on the reboot the final instructions ask for.

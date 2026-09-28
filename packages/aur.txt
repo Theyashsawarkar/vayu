@@ -14,5 +14,6 @@ sway-audio-idle-inhibit-git
 swayfx
 swaylock-effects
 wofi-emoji
+xdg-desktop-portal-luminous
 yay
 zen-browser-bin

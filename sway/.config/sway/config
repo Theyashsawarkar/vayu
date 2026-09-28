@@ -79,6 +79,22 @@ bindsym $mod+Shift+w exec ~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wi
 #: Open Bluetooth picker (pair, connect, toggle)
 bindsym $mod+Shift+b exec ~/.local/bin/toggle-popup.sh bluetooth wofi ~/.local/bin/bluetooth-picker.py
 
+# Phone picker (KDE Connect, also waybar's phone module): send files and
+# the clipboard to the phone, browse its storage, ring it, pair/unpair.
+#: Open phone picker (KDE Connect: send file, clipboard, browse, ring)
+bindsym $mod+Shift+o exec ~/.local/bin/toggle-popup.sh phone wofi ~/.local/bin/phone-picker.py
+
+# Stops the laptop ringing (Find my device) if it is; otherwise, since
+# mako's left click only runs a notification's default action, this lists
+# all of them (Accept/Reject a pairing request, Undo a phone clipboard...).
+#: Stop phone ring, else pick an action on the current notification (Accept, Reject, Undo...)
+bindsym $mod+Ctrl+a exec ~/.local/bin/notification-actions.sh
+
+# KDE Connect's own windows (the presentation-remote pointer overlay, its
+# dialogs) float instead of tiling into the layout.
+for_window [app_id="org.kde.kdeconnect.daemon"] floating enable, border none, sticky enable
+for_window [app_id="kdeconnectd"] floating enable, border none, sticky enable
+
 # Previously waybar-click-only, same gap as Wi-Fi/Bluetooth above
 # Docker picker: view running containers, restart, stop
 #: Open Docker picker (running containers: restart, stop)
@@ -666,6 +682,14 @@ exec systemctl --user restart sway-audio-idle-inhibit.service
 # same swayidle binary, same WAYLAND_DISPLAY-not-ready race at login.
 exec systemctl --user reset-failed swaylock-on-sleep.service
 exec systemctl --user restart swaylock-on-sleep.service
+
+# KDE Connect daemon (phone <-> laptop) as a supervised user unit, started
+# after dbus-update-activation-environment above so it gets WAYLAND_DISPLAY
+# (clipboard sync). See systemd/.config/systemd/user/kdeconnect.service.
+exec systemctl --user restart kdeconnect.service
+# ...and the watcher that turns its silent events (files received, phone
+# clipboard) into notifications (scripts/.local/bin/phone-events.py).
+exec systemctl --user restart phone-events.service
 
 # Prevent idle timeouts when watching fullscreen videos
 for_window [class=".*"] inhibit_idle fullscreen

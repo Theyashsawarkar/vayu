@@ -22,6 +22,8 @@ hand-written overview of the main ones.
 - <kbd>Super</kbd>+<kbd>.</kbd> — Emoji picker
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi-Fi picker (scan, connect, toggle)
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> — Bluetooth picker (pair, connect, toggle)
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>o</kbd> — Phone picker, KDE Connect (send file / clipboard, browse phone storage, ring, pair)
+- <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>a</kbd> — Stop the laptop ringing (phone's Find my device), otherwise pick an action on the current notification (Accept/Reject pairing, Undo phone clipboard, Show received file in folder)
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd> — Docker picker (running containers, restart, stop)
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notification history
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>p</kbd> — Power menu (lock / logout / suspend / reboot / shutdown)
