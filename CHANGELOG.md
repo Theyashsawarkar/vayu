@@ -5,6 +5,54 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (waybar vanished at login: RT signal before its handler)
+
+- After the reboot there was no bar. `bar-events.service` starts beside
+  waybar and sends every capsule's refresh signal 0.3 s later; on a cold
+  boot waybar hadn't installed its handlers yet, and SIGRTMIN+N's default
+  action is to terminate (no core dump, nothing logged). Reproduced:
+  `pkill -RTMIN+8 waybar` every 10 ms across a waybar start killed it.
+- New `waybar-signal N` (pure bash, launches nothing) only signals a
+  waybar whose `/proc/<pid>/status` SigCgt shows it already catches that
+  signal; a starting waybar runs each script once anyway. `bar-events.py`
+  does the same check natively (and no longer forks `pkill` per refresh).
+  All other senders -- sway's Caps/Num Lock release binds,
+  `keylock-toggle.sh`, `swayidle-startup.sh` (also runs at login),
+  `caffeine-toggle.sh`, `theme-toggle.sh`, `notification-mode.sh` --
+  switched to it, by full path (sway's PATH lacks ~/.local/bin).
+- Tested: the same 10 ms barrage through `waybar-signal` left waybar
+  alive; three waybar + bar-events simultaneous starts all survived;
+  signals still reach a running waybar (8-14). Also finished the event
+  tests pending from the previous entry: a real container start/stop took
+  both docker capsules 0 -> 1 -> 0 with the daemon started on demand, and
+  a color-scheme flip sent exactly one theme refresh per change.
+
+## 2026-09-29 (bar capsules are event-driven: nothing polls)
+
+- New `bar-events.py` (user unit `bar-events.service`, started by sway
+  after waybar) is the one place that turns "this changed" into "refresh
+  that capsule". It sleeps in a GLib main loop on D-Bus subscriptions:
+  mako's `NotificationClosed` (bell), GSettings `color-scheme` (theme),
+  user systemd `swayidle.service` state (caffeine), KDE Connect's
+  device/battery/daemon signals and kdeconnectd joining or leaving the
+  bus (phone), system systemd `docker.service` state plus `docker
+  events` start/die while it runs (docker). systemd's `Subscribe` works
+  unprivileged, so no root hook is needed. Bursts collapse into one
+  refresh 0.3 s after the last event.
+- Every custom waybar capsule is now `"interval": "once"` plus its
+  signal (docker got signal 14). The KDE Connect refresh added to
+  `phone-events.py` in the previous entry moved here.
+- tmux runs no status jobs: the docker pill shows `@docker_count`, which
+  `bar-events.py` sets on each change (and `--tmux-docker` once when
+  tmux.conf loads). `docker_status.sh` is gone; `status-interval` only
+  redraws the clock.
+- waybar's network module is netlink-driven; its timer only refreshed
+  signal strength, now every 30 s instead of 2. The speed meter keeps
+  2 s: a rate has to be sampled.
+- Tested live: 20 s idle ran no capsule script at all. A closed
+  notification, a KDE Connect battery signal and a swayidle stop/start
+  each re-ran exactly their own capsule right after.
+
 ## 2026-09-29 (idle wake-ups: 15 process launches a second down to ~2.4)
 
 - Measured idle process launches (`processes` in /proc/stat): 445 in

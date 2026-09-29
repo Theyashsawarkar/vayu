@@ -52,7 +52,7 @@
 	"custom/capslock": {
 		"exec": "/home/yash/.local/bin/keylock-status.sh capslock",
 		"on-click": "/home/yash/.local/bin/keylock-toggle.sh capslock",
-		"interval": 30,
+		"interval": "once",
 		"signal": 9,
 		"return-type": "json",
 		"hide-empty-text": true
@@ -61,7 +61,7 @@
 	"custom/numlock": {
 		"exec": "/home/yash/.local/bin/keylock-status.sh numlock",
 		"on-click": "/home/yash/.local/bin/keylock-toggle.sh numlock",
-		"interval": 30,
+		"interval": "once",
 		"signal": 10,
 		"return-type": "json",
 		"hide-empty-text": true
@@ -79,7 +79,7 @@
 
 	"custom/notifications": {
 		"exec": "/home/yash/.local/bin/notification-history-status.sh",
-		"interval": 10,
+		"interval": "once",
 		"return-type": "json",
 		"on-click": "/home/yash/.local/bin/notification-history.py",
 		"on-scroll-up": "/home/yash/.local/bin/notification-mode.sh next",
@@ -94,7 +94,7 @@
 
 	"custom/theme": {
 		"exec": "/home/yash/.local/bin/theme-status.sh",
-		"interval": 60,
+		"interval": "once",
 		"signal": 11,
 		"return-type": "json",
 		"on-click": "/home/yash/.local/bin/theme-toggle.sh"
@@ -108,7 +108,8 @@
 
 	"custom/docker": {
 		"exec": "/home/yash/.local/bin/docker-status.sh",
-		"interval": 10,
+		"interval": "once",
+		"signal": 14,
 		"return-type": "json",
 		"on-click": "/home/yash/.local/bin/docker-picker.py"
 	},
@@ -120,7 +121,7 @@
 		"format-disabled": "  Disabled",
 		"format-linked": "  No IP",
 		"format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
-		"interval": 2,
+		"interval": 30,
 		"max-length": 30,
 		"tooltip-format-wifi": "{essid}\nSignal: {signalStrength}%  ({signaldBm} dBm)\nFrequency: {frequency} GHz\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
 		"tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
@@ -147,7 +148,7 @@
 
 	"custom/phone": {
 		"exec": "/home/yash/.local/bin/phone-status.sh",
-		"interval": 60,
+		"interval": "once",
 		"signal": 13,
 		"return-type": "json",
 		"on-click": "/home/yash/.local/bin/toggle-popup.sh phone wofi /home/yash/.local/bin/phone-picker.py"
@@ -156,7 +157,7 @@
 	"custom/caffeine": {
 		"exec": "~/.local/bin/caffeine-status.sh",
 		"on-click": "~/.local/bin/caffeine-toggle.sh",
-		"interval": 60,
+		"interval": "once",
 		"signal": 12,
 		"return-type": "json"
 	},

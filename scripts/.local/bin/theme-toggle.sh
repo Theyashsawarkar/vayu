@@ -118,5 +118,6 @@ else
     notify-send -u low -i "$icon" "Theme" "Switched to $label mode"
 fi
 
-# Refresh the waybar capsule now (it only polls once a minute as a fallback).
-pkill -RTMIN+11 waybar 2>/dev/null || true
+# Refresh the waybar capsule now (bar-events.py also sees the color-scheme
+# change, 0.3 s later).
+"$HOME/.local/bin/waybar-signal" 11 2>/dev/null || true

@@ -256,31 +256,6 @@ SIGNALS = {  # (interface suffix, member) -> handler(dev_id, value)
     ("device", "pairingFailed"): on_pairing_failed,
 }
 
-# Signals that change what waybar's phone capsule (phone-status.sh) shows.
-# Each one refreshes it through waybar signal 13, so the capsule doesn't
-# have to poll every 10 s (its 60 s poll is only a fallback).
-BAR_SIGNAL = 13
-BAR_REFRESH = {
-    ("device", "reachableChanged"), ("device", "pairStateChanged"),
-    ("device", "nameChanged"), ("device.battery", "refreshed"),
-    ("daemon", "pairingRequestsChanged"), ("daemon", "deviceListChanged"),
-}
-bar_timer = None
-bar_lock = threading.Lock()
-
-
-def refresh_bar():
-    """Signals come in bursts (a phone connecting sends reachableChanged,
-    then battery refreshed), so wait 0.3 s and refresh the capsule once."""
-    global bar_timer
-    with bar_lock:
-        if bar_timer:
-            bar_timer.cancel()
-        bar_timer = threading.Timer(0.3, subprocess.run,
-                                    [["pkill", f"-RTMIN+{BAR_SIGNAL}", "waybar"]], {"check": False})
-        bar_timer.daemon = True
-        bar_timer.start()
-
 
 def parse_arg(line):
     m = re.match(r'\s+(string|int32|boolean) (.*)$', line)
@@ -296,11 +271,10 @@ def parse_arg(line):
 
 def watch_signals():
     """One dbus-monitor for every KDE Connect signal handled here. All of
-    SIGNALS carry exactly one argument, so the handler runs on that line (a
-    per-signal flush, not on the next signal's header). BAR_REFRESH ones
-    only need their header."""
+    them carry exactly one argument, so the handler runs on that line (a
+    per-signal flush, not on the next signal's header)."""
     rules = [f"type='signal',interface='{BUS}.{iface}',member='{member}'"
-             for iface, member in SIGNALS.keys() | BAR_REFRESH]
+             for iface, member in SIGNALS]
     while True:
         # stdbuf: dbus-monitor block-buffers into a pipe, so signals sat
         # unread until 4 KB accumulated (found testing with a fake signal).
@@ -308,9 +282,6 @@ def watch_signals():
                                 stdout=subprocess.PIPE, text=True)
         pending = None
         for line in proc.stdout:
-            m = re.search(rf"interface={re.escape(BUS)}\.([\w.]+); member=(\w+)", line)
-            if m and m.groups() in BAR_REFRESH:
-                refresh_bar()
             m = re.search(r"path=/modules/kdeconnect/devices/([^/;]+)[^;]*; "
                           rf"interface={re.escape(BUS)}\.([\w.]+); member=(\w+)", line)
             if m:
@@ -616,7 +587,6 @@ def main():
     enforce_device_policy()
     load_initial_states()
     threading.Thread(target=watch_signals, daemon=True).start()
-    refresh_bar()  # whatever changed while this wasn't running
     threading.Thread(target=watch_ring, daemon=True).start()
     watch_clipboard()
 

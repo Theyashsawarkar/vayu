@@ -30,7 +30,7 @@ case "$KEY" in
 esac
 
 # Glob and read in bash, no ls/head/cat: waybar runs this on every
-# Caps/Num Lock release (signal) plus a 30 s fallback poll.
+# Caps/Num Lock release (signal), never on a timer.
 LED_FILES=($LED_GLOB)
 LED_FILE=${LED_FILES[0]}
 if [ ! -e "$LED_FILE" ]; then

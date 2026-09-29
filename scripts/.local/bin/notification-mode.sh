@@ -97,4 +97,4 @@ notify-send -u normal -i "$icon" "Notifications: $label" "$desc"
 # own config sets "signal": 8) rather than waiting up to 5s for the next
 # poll -- the whole point of this being "soft and flawless" is the icon
 # changing the moment you act, not on a delay.
-pkill -RTMIN+8 waybar 2>/dev/null || true
+"$HOME/.local/bin/waybar-signal" 8 2>/dev/null || true

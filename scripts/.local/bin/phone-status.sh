@@ -2,8 +2,8 @@
 # Phone (KDE Connect) segment for waybar, JSON like docker-status.sh.
 #   connected:    phone glyph + battery %, with a bolt while charging
 #   disconnected: dim phone glyph (paired phone not reachable, or none paired)
-# Click opens phone-picker.py. Refreshed by phone-events.py on KDE Connect
-# signals (waybar signal 13), 60 s poll as fallback. Reads the daemon's
+# Click opens phone-picker.py. Refreshed by bar-events.py on KDE Connect
+# signals (waybar signal 13), never on a timer. Reads the daemon's
 # D-Bus state only -- never starts anything (the systemd unit
 # kdeconnect.service owns the daemon).
 

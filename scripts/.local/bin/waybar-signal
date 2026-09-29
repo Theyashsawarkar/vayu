@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# waybar-signal N -- refresh the waybar custom module with "signal": N.
+#
+# Use this instead of `pkill -RTMIN+N waybar`. A real-time signal's
+# default action is to terminate, so one that lands while waybar is still
+# starting (before it has installed its handler) kills the whole bar,
+# which is how the bar vanished at login. This only signals a waybar whose
+# SigCgt mask shows it already catches SIGRTMIN+N; a waybar still starting
+# runs every module's script once anyway, so skipping it loses nothing.
+# Pure bash: no processes launched.
+n=${1:?usage: waybar-signal N}
+bit=$(( 34 + n - 1 ))   # SIGRTMIN is 34 on glibc; signal S is bit S-1
+for status in /proc/[0-9]*/status; do
+    comm= cgt=
+    while read -r key val; do
+        case $key in
+            Name:) comm=$val; [[ $comm == waybar ]] || break ;;
+            SigCgt:) cgt=$val; break ;;
+        esac
+    done 2>/dev/null < "$status"
+    [[ $comm == waybar && -n $cgt ]] || continue
+    if (( (16#$cgt >> bit) & 1 )); then
+        pid=${status#/proc/}; pid=${pid%/status}
+        kill -s "RTMIN+$n" "$pid" 2>/dev/null
+    fi
+done
+exit 0

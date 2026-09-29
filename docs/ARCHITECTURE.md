@@ -2670,6 +2670,9 @@ the instant you switch, not on the module's own 5s poll interval.
 Confirmed with a real keybinding switch to `dnd` and finding the bell's
 color had already changed to Red in a screenshot taken immediately after,
 not waited out to the next poll.
+(Since 2026-09-29 every sender uses `~/.local/bin/waybar-signal N`
+instead of `pkill`: an RT signal landing before waybar has its handler
+kills the bar -- see CHANGELOG.)
 
 **A deliberate design choice worth stating plainly**: the mode-change
 confirmation notification itself follows whatever mode it just switched

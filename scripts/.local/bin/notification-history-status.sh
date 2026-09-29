@@ -18,8 +18,8 @@ case "$mode" in
     *) mode="normal" ;;
 esac
 
-# jq, not python3: this runs every 10 s, and starting Python cost ~50 ms a
-# time against a few ms for jq.
+# jq, not python3: this runs on every closed notification (bar-events.py),
+# and starting Python cost ~50 ms a time against a few ms for jq.
 count=$(makoctl history -j 2>/dev/null | jq length 2>/dev/null)
 count="${count:-0}"
 

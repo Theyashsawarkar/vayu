@@ -37,5 +37,6 @@ else
     systemctl --user restart swayidle.service
 fi
 
-# Refresh the waybar capsule now (it only polls once a minute as a fallback).
-pkill -RTMIN+12 waybar 2>/dev/null || true
+# Refresh the waybar capsule now (bar-events.py also sees swayidle's state
+# change, 0.3 s later).
+"$HOME/.local/bin/waybar-signal" 12 2>/dev/null || true

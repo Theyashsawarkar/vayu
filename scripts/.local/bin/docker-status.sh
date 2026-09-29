@@ -8,7 +8,7 @@
 
 ICON=$''
 # docker is socket-activated (install.sh), so `docker ps` against a stopped
-# daemon would start it -- every 5 s, from this capsule. Only ask docker
+# daemon would start it -- on every refresh of this capsule. Only ask docker
 # once it is actually running.
 count=0
 systemctl is-active --quiet docker.service && count=$(docker ps -q | wc -l)

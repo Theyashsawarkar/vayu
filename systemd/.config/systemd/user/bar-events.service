@@ -1,0 +1,13 @@
+[Unit]
+Description=Bar events -> waybar/tmux capsule refreshes (no polling)
+Documentation=file://%h/.local/bin/bar-events.py
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/bar-events.py
+Restart=always
+RestartSec=2
+
+# No [Install]: started from sway's config right after waybar, like
+# phone-events.service, so it lives and dies with the sway session.
