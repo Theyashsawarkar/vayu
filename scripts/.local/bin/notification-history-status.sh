@@ -12,13 +12,13 @@
 # already treats as authoritative.
 
 STATE_FILE="$HOME/.local/state/notification-mode/current"
-mode=$(cat "$STATE_FILE" 2>/dev/null || true)
+read -r mode < "$STATE_FILE" 2>/dev/null || mode=""
 case "$mode" in
     normal|silent|dnd) ;;
     *) mode="normal" ;;
 esac
 
-# jq, not python3: this runs every 5 s, and starting Python cost ~50 ms a
+# jq, not python3: this runs every 10 s, and starting Python cost ~50 ms a
 # time against a few ms for jq.
 count=$(makoctl history -j 2>/dev/null | jq length 2>/dev/null)
 count="${count:-0}"

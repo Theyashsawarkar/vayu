@@ -5,6 +5,34 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (idle wake-ups: 15 process launches a second down to ~2.4)
+
+- Measured idle process launches (`processes` in /proc/stat): 445 in
+  30 s. Two things made most of them:
+- tmux-continuum's auto-save is a `#(continuum_save.sh)` job in
+  status-right, run every 5 s status tick: 22 processes each time just
+  to find 15 minutes hadn't passed. Saving is now the
+  `tmux-autosave.timer` user unit (resurrect's `save.sh quiet` every
+  15 min, skipped when no tmux server runs; enabled by install.sh).
+  status-right is set after tpm so it replaces the hook continuum adds,
+  and `@continuum-save-interval` is 0 in case it comes back. continuum
+  still does the auto-restore at server start.
+- The phone capsule ran `phone-status.sh` every 10 s at 32 processes a
+  run (`busctl | cut | tr` per property). Parsing moved into bash and
+  properties are read several per busctl call (12 a run, same output).
+  `phone-events.py`, already watching KDE Connect's D-Bus signals,
+  now also refreshes the capsule (waybar signal 13) on reachable, pair,
+  name, battery, pairing-request and device-list changes, debounced
+  0.3 s; the poll is a 60 s fallback. Tested with a fake battery
+  `refreshed` signal: the capsule re-ran right after it.
+- `keylock-status.sh` (6 -> 1 process a run) and
+  `notification-history-status.sh` (6 -> 4) read files in bash instead
+  of `ls`/`head`/`cat`. Same output.
+- Result: 71 launches in 30 s. Found on the way: resurrect deletes its
+  own save when two land in the same second (it compares the new file
+  with itself through `last`) -- only reachable by saving twice within
+  a second, so left upstream's.
+
 ## 2026-09-29 (tmux: docker capsule no longer empty)
 
 - Since docker became socket-activated its daemon is usually stopped,

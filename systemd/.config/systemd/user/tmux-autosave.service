@@ -1,0 +1,10 @@
+[Unit]
+Description=Save tmux sessions (tmux-resurrect)
+
+[Service]
+Type=oneshot
+# Replaces tmux-continuum's auto-save, which ran as a #() job in the tmux
+# bar: 22 processes every 5 s status tick just to find that 15 minutes
+# hadn't passed yet (tmux.conf). Skipped when no tmux server is running.
+ExecCondition=/usr/bin/tmux has-session
+ExecStart=%h/.tmux/plugins/tmux-resurrect/scripts/save.sh quiet

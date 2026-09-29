@@ -147,7 +147,8 @@
 
 	"custom/phone": {
 		"exec": "/home/yash/.local/bin/phone-status.sh",
-		"interval": 10,
+		"interval": 60,
+		"signal": 13,
 		"return-type": "json",
 		"on-click": "/home/yash/.local/bin/toggle-popup.sh phone wofi /home/yash/.local/bin/phone-picker.py"
 	},

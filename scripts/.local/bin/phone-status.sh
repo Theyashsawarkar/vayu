@@ -2,48 +2,65 @@
 # Phone (KDE Connect) segment for waybar, JSON like docker-status.sh.
 #   connected:    phone glyph + battery %, with a bolt while charging
 #   disconnected: dim phone glyph (paired phone not reachable, or none paired)
-# Click opens phone-picker.py. Reads the daemon's D-Bus state only -- never
-# starts anything (the systemd unit kdeconnect.service owns the daemon).
+# Click opens phone-picker.py. Refreshed by phone-events.py on KDE Connect
+# signals (waybar signal 13), 60 s poll as fallback. Reads the daemon's
+# D-Bus state only -- never starts anything (the systemd unit
+# kdeconnect.service owns the daemon).
 
 ICON=$'\U000F011C'   # nf-md-cellphone
 BOLT=$'\U000F140B'   # nf-md-lightning_bolt
 BUS=org.kde.kdeconnect
 
-get() {  # get <device-path> <iface> <prop> -> value (booleans/ints unquoted)
-  busctl --user --auto-start=no get-property "$BUS" "$1" "$2" "$3" 2>/dev/null | cut -d' ' -f2- | tr -d '"'
+# Parsing stays in bash: this runs from waybar, and the old
+# `busctl | cut | tr` per property launched 32 processes a run. Now it's
+# one busctl per call, several properties per get-property.
+props() {  # props <path> <iface> <prop>... -> PROPS[], values unquoted
+  local out
+  out=$(busctl --user --auto-start=no get-property "$BUS" "$@" 2>/dev/null)
+  mapfile -t PROPS <<< "$out"
+  PROPS=("${PROPS[@]#* }"); PROPS=("${PROPS[@]//\"/}")
+}
+strings() {  # strings <busctl "as N \"a\" \"b\"" output> -> STRINGS[]
+  local s=$1 re='"([^"]*)"'
+  STRINGS=()
+  while [[ $s =~ $re ]]; do STRINGS+=("${BASH_REMATCH[1]}"); s=${s#*"${BASH_REMATCH[0]}"}; done
 }
 
-name="" charge="" charging=""
+name="" charge="" charging="" paired_name=""
 # Only look if the daemon is already running: a call to a stopped
 # kdeconnectd would D-Bus-activate it (`busctl tree` even with
-# --auto-start=no), restarting a deliberately stopped daemon every 10 s.
+# --auto-start=no), restarting a deliberately stopped daemon on every run.
 # NameHasOwner asks the bus itself.
 running=$(busctl --user call org.freedesktop.DBus /org/freedesktop/DBus \
   org.freedesktop.DBus NameHasOwner s "$BUS" 2>/dev/null)
 # Paired device ids from the daemon's own `devices` method (onlyReachable=
 # false, onlyPaired=true), not `busctl tree`: introspecting kdeconnectd
-# every 10 s also spammed its log ("Skipped method sendClipboard").
-paired_ids=""
-[ "$running" = "b true" ] && paired_ids=$(busctl --user --auto-start=no call "$BUS" /modules/kdeconnect \
-  org.kde.kdeconnect.daemon devices bb false true 2>/dev/null | grep -o '"[^"]*"' | tr -d '"')
-# A phone asking to pair (it isn't paired yet, so it's not in $paired_ids).
-requests=""
-[ "$running" = "b true" ] && requests=$(busctl --user --auto-start=no get-property "$BUS" /modules/kdeconnect \
-  org.kde.kdeconnect.daemon pairingRequests 2>/dev/null | grep -o '"[^"]*"' | tr -d '"')
-if [ -n "$requests" ]; then
-  req_name=$(get "/modules/kdeconnect/devices/${requests%% *}" org.kde.kdeconnect.device name)
+# on every run also spammed its log ("Skipped method sendClipboard").
+paired_ids=() requests=()
+if [ "$running" = "b true" ]; then
+  strings "$(busctl --user --auto-start=no call "$BUS" /modules/kdeconnect \
+    org.kde.kdeconnect.daemon devices bb false true 2>/dev/null)"
+  paired_ids=("${STRINGS[@]}")
+  # A phone asking to pair (it isn't paired yet, so it's not in paired_ids).
+  strings "$(busctl --user --auto-start=no get-property "$BUS" /modules/kdeconnect \
+    org.kde.kdeconnect.daemon pairingRequests 2>/dev/null)"
+  requests=("${STRINGS[@]}")
+fi
+if [ ${#requests[@]} -gt 0 ]; then
+  props "/modules/kdeconnect/devices/${requests[0]}" org.kde.kdeconnect.device name
   printf '{"text":"%s","class":"request","tooltip":"%s"}\n' \
     "<span color='#F9E2AF'>$ICON</span>  <span color='#F9E2AF'>pair?</span>" \
-    "$req_name wants to pair\nClick: phone picker (Accept / Reject)"
+    "${PROPS[0]} wants to pair\nClick: phone picker (Accept / Reject)"
   exit 0
 fi
-for id in $paired_ids; do
+for id in "${paired_ids[@]}"; do
   path=/modules/kdeconnect/devices/$id
-  [ "$(get "$path" org.kde.kdeconnect.device isPaired)" = true ] || continue
-  [ "$(get "$path" org.kde.kdeconnect.device isReachable)" = true ] || { paired_name=$(get "$path" org.kde.kdeconnect.device name); continue; }
-  name=$(get "$path" org.kde.kdeconnect.device name)
-  charge=$(get "$path/battery" org.kde.kdeconnect.device.battery charge)
-  charging=$(get "$path/battery" org.kde.kdeconnect.device.battery isCharging)
+  props "$path" org.kde.kdeconnect.device name isPaired isReachable
+  [ "${PROPS[1]}" = true ] || continue
+  [ "${PROPS[2]}" = true ] || { paired_name=${PROPS[0]}; continue; }
+  name=${PROPS[0]}
+  props "$path/battery" org.kde.kdeconnect.device.battery charge isCharging
+  charge=${PROPS[0]} charging=${PROPS[1]}
   break
 done
 

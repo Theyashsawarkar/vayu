@@ -29,8 +29,11 @@ case "$KEY" in
     *) echo "unknown key: $KEY" >&2; exit 1 ;;
 esac
 
-LED_FILE=$(ls $LED_GLOB 2>/dev/null | head -n1)
-if [ -z "$LED_FILE" ]; then
+# Glob and read in bash, no ls/head/cat: waybar runs this on every
+# Caps/Num Lock release (signal) plus a 30 s fallback poll.
+LED_FILES=($LED_GLOB)
+LED_FILE=${LED_FILES[0]}
+if [ ! -e "$LED_FILE" ]; then
     # Genuine error (no LED device found at all) -- surfaced, not hidden,
     # so a real problem doesn't just silently disappear the same way the
     # normal "off" state now does.
@@ -38,7 +41,7 @@ if [ -z "$LED_FILE" ]; then
     exit 0
 fi
 
-STATE=$(cat "$LED_FILE" 2>/dev/null || echo 0)
+read -r STATE < "$LED_FILE" 2>/dev/null || STATE=0
 
 if [ "$STATE" -gt 0 ]; then
     printf '{"text":"%s %s","class":"locked","tooltip":"%s: On -- click to turn off"}\n' "$BADGE" "$ICON" "$LABEL"
