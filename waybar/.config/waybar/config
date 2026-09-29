@@ -2,7 +2,7 @@
 	"layer": "top",
 	"position": "top",
 	"height": 41,
-	"spacing": 5,
+	"spacing": 8,
 
 	"modules-center": ["custom/notifications", "clock#time", "clock"],
 	"modules-left": ["sway/workspaces", "bluetooth", "network", "network#speed"],
@@ -33,8 +33,14 @@
 	},
 
 	"backlight": {
-		"format": "{icon}  {percent}%",
-		"format-icons": ["󰪞", "󰪠", "󰪢", "󰪤", "󰪥"],
+		// Material brightness-5/6/7: a sun that fills as it gets
+		// brighter (outline, half, full). Replaced circle-slice pies,
+		// which read as a clock at low levels. 125% matches the volume
+		// icon's weight next to it (this sun fills more of its box than
+		// the speaker does, so 150% looked bigger); rise='-1pt' centres
+		// it on the digits, measured from screenshots (2026-09-29).
+		"format": "<span size='125%' rise='-1pt'>{icon}</span>  {percent}%",
+		"format-icons": ["󰃞", "󰃟", "󰃠"],
 		"tooltip-format": "Click: drag to set   Scroll: +/-5%",
 		"on-click": "/home/yash/.local/bin/brightness-slider.sh",
 		"on-scroll-up": "/home/yash/.config/sway/scripts/brightness_osd.sh +5%",
@@ -167,16 +173,15 @@
 	},
 
 	"pulseaudio": {
-		// Icon size handled entirely in style.css (#pulseaudio
-		// text-shadow), not here -- an earlier version wrapped just
-		// {icon} in its own inline Pango span (size='16384') to grow
-		// only the icon; broke visibly (icon vanished, muted icon +
-		// "Muted" text landed on different lines). A later attempt used
-		// a uniform CSS font-size instead, which broke a *different*
-		// way (see style.css's own note). Landed on text-shadow, a
-		// paint-only glow that can't touch layout or rendering.
-		"format": "{icon}  {volume}%",
-		"format-muted": "󰝟  Muted",
+		// Icon at 150% (at 12px it read smaller than the brightness
+		// icon beside it). rise='-2pt' keeps it centred on the digits:
+		// without it the bigger glyph pushed the text 2 px down and the
+		// icon sat 2 px above the text's middle (measured from
+		// screenshots, 2026-09-29). An icon-only span was tried before
+		// and "broke", but that was the threshold-object format-icons
+		// bug below hiding the icon, not the span.
+		"format": "<span size='150%' rise='-2pt'>{icon}</span>  {volume}%",
+		"format-muted": "<span size='150%' rise='-2pt'>󰝟</span>  Muted",
 		// Plain array, NOT waybar's threshold-object form
 		// ({"icon":...,"max":...}) -- that form is real and documented
 		// (waybar's own man page and source, src/ALabel.cpp), and was

@@ -398,6 +398,8 @@ layer_effects "notifications" {
 client.focused          #F38BA8 #11111B #CDD6F4 #F38BA8   #F38BA8
 client.focused_inactive #45475A #1E1E2E #A6ADC8 #45475A   #45475A
 client.unfocused        #313244 #1E1E2E #6C7086 #313244   #313244
+# Urgent = danger red, the same as everywhere else in this setup.
+client.urgent           #DC2626 #11111B #CDD6F4 #DC2626   #DC2626
 
 
 ### Wallpaper configuration

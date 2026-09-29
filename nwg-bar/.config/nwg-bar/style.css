@@ -130,12 +130,12 @@ button:nth-child(4):focus {
     box-shadow: 0 0 10px rgba(249, 226, 175, 0.25);
 }
 
-button:nth-child(5) { border-color: rgba(243, 139, 168, 0.35); } /* Shutdown -- Red, the one destructive action here, a touch more present even at rest */
+button:nth-child(5) { border-color: rgba(220, 38, 38, 0.35); } /* Shutdown -- danger red, the one destructive action here, a touch more present even at rest */
 button:nth-child(5):hover,
 button:nth-child(5):focus {
-    background-color: rgba(243, 139, 168, 0.14);
-    border-color: rgba(243, 139, 168, 0.7);
-    box-shadow: 0 0 12px rgba(243, 139, 168, 0.35);
+    background-color: rgba(220, 38, 38, 0.14);
+    border-color: rgba(220, 38, 38, 0.7);
+    box-shadow: 0 0 12px rgba(220, 38, 38, 0.35);
 }
 
 label {

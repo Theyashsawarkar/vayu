@@ -28,7 +28,7 @@ WOFI_PROMPT = "Docker"
 # have a real severity difference worth signaling separately.
 COLOR_INFO = "#89DCEB"     # Sky
 COLOR_RESTART = "#FAB387"  # Peach
-COLOR_STOP = "#F38BA8"     # Red
+COLOR_STOP = "#DC2626"     # Danger red, as everywhere
 COLOR_COMMAND = "#94E2D5"  # Teal -- Stats/Stop All, the two top-level shortcuts
 
 

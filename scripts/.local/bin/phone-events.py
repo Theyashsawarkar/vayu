@@ -111,6 +111,8 @@ def on_file(dev_id, url):
 NOT_PAIRED, REQUESTED, REQUESTED_BY_PEER, PAIRED = 0, 1, 2, 3
 pair_states = {}      # dev_id -> last seen pairState
 pair_prompts = {}     # dev_id -> (notify-send Popen, notification id) of an open request
+rejected_here = set()  # dev_ids we just rejected: KDE Connect then also reports
+                       # "request expired" and "Pairing failed: Cancelled by user"
 
 
 def dev_prop(dev_id, name):
@@ -153,6 +155,9 @@ def decide_pairing(dev_id, name, prompt, accept):
         if prompt["decided"].is_set():
             return
         prompt["decided"].set()
+    if not accept:
+        rejected_here.add(dev_id)
+        threading.Timer(10, rejected_here.discard, [dev_id]).start()
     dev_call(dev_id, "acceptPairing" if accept else "cancelPairing")
     if not accept:
         simple_notify("Pairing rejected", f"{name} was not paired")
@@ -168,7 +173,7 @@ def prompt_pairing(dev_id):
     name = device_name(dev_id)
     key = dev_prop(dev_id, "verificationKey")
     notify = subprocess.Popen(
-        ["notify-send", "-a", "KDE Connect", "-u", "critical", "-i", ICON, "-p",
+        ["notify-send", "-a", "KDE Connect", "-u", "critical", "-t", "0", "-i", ICON, "-p",
          "-A", "default=Accept", "-A", "reject=Reject",
          f"{name} wants to pair",
          f"Verification key {key}: check the phone shows the same\n"
@@ -183,7 +188,13 @@ def prompt_pairing(dev_id):
 
     def dialog():
         prompt["dialog"] = subprocess.Popen(
-            ["wofi", "--dmenu", "-i", "--lines", "3", "-p", f"{name} wants to pair "],
+            # Fixed height, not --lines: wofi sizes --lines from the rows it
+            # has when it first draws, and these arrive a moment later, so
+            # the dialog sometimes came up cut to the prompt (reproduced
+            # 2026-09-29). No cache: wofi moves past picks up, which had
+            # put Reject first.
+            ["wofi", "--dmenu", "-i", "--height", "200", "--cache-file", "/dev/null",
+             "-p", f"{name} wants to pair "],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         choice, _ = prompt["dialog"].communicate(f"{accept_label}\n{reject_label}\n")
         choice = choice.strip()
@@ -217,7 +228,7 @@ def on_pair_state(dev_id, state):
         threading.Timer(3, enforce_device_policy).start()
     elif state == NOT_PAIRED and previous == PAIRED:
         simple_notify(f"Unpaired from {name}", "Pair again from the phone, or Super+Shift+o")
-    elif state == NOT_PAIRED and previous == REQUESTED_BY_PEER:
+    elif state == NOT_PAIRED and previous == REQUESTED_BY_PEER and dev_id not in rejected_here:
         simple_notify("Pairing request expired", f"{name} is not paired")
 
 
@@ -233,6 +244,8 @@ def on_reachable(dev_id, reachable):
 
 def on_pairing_failed(dev_id, error):
     close_pair_prompt(dev_id)
+    if dev_id in rejected_here:  # our own Reject, already announced
+        return
     simple_notify("Pairing failed", f"{device_name(dev_id)}: {error}", "critical")
 
 
@@ -438,7 +451,7 @@ def ring():
         if player.poll() is not None:
             return
         notify = subprocess.Popen(
-            ["notify-send", "-a", "KDE Connect", "-u", "critical", "-i", ICON, "-p",
+            ["notify-send", "-a", "KDE Connect", "-u", "critical", "-t", "0", "-i", ICON, "-p",
              "-A", "default=Stop ringing", f"{name} is ringing this laptop",
              "Click to stop · or Super+Ctrl+a · or Ring again on the phone"
              + (" · speakers unmuted for the ring" if muted else "")],

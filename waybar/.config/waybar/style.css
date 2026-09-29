@@ -41,8 +41,12 @@ window#waybar {
     padding: 2px 12px;
     margin-top: 4px;
     margin-bottom: 4px;
-    margin-left: 4px;
-    margin-right: 4px;
+    /* No side margins: the gap between capsules is waybar's "spacing"
+       (config), the same 8px everywhere inside each of the three parts
+       (left, center, right). Only the bar's outer ends get a margin, 4px
+       like the top: #workspaces and #custom-power below. */
+    margin-left: 0;
+    margin-right: 0;
     border: 1px solid rgba(203, 166, 247, 0.18); /* Subtle Royal Mauve border */
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -62,16 +66,7 @@ window#waybar {
    never going to look symmetric on screen with this specific glyph.
    9px left / 19px right measured out to an 11px/12px visual gap. */
 #custom-caffeine {
-    padding: 0 19px 0 9px;
-    margin-right: 12px; /* ends the device-controls cluster (caps/num lock, docker, caffeine), gap before brightness/volume */
-}
-
-#custom-docker {
-    margin-right: 2px; /* tight pairing with phone + caffeine right after it */
-}
-
-#custom-phone {
-    margin-right: 2px; /* same tight spacing inside the docker/phone/caffeine cluster */
+    padding: 0 19px 0 12px; /* re-measured 2026-09-29: 12/12 visible gap (9px left gave 9/12) */
 }
 
 /* Theme toggle: light/dark mode for every app that reads the standard
@@ -82,10 +77,6 @@ window#waybar {
    for the moon (dark mode active) -- same warm/cool pairing logic as
    caffeine's off/on colors elsewhere in this file, just flipped since
    here *dark* is the expected default rather than the exception. */
-#custom-theme {
-    margin-right: 2px; /* tight pairing before the wallpaper button, same device-controls cluster */
-}
-
 #custom-theme.dark {
     color: #74C7EC; /* Sapphire */
 }
@@ -98,11 +89,9 @@ window#waybar {
 /* Wallpaper refresh button: Rosewater -- genuinely unused anywhere else in
    this bar, warm and soft, fits a personalization/aesthetic action better
    than any of the harder-working status colors already spoken for
-   elsewhere. Tight pairing with docker right after it, same as the rest
-   of the device-controls cluster. */
+   elsewhere. */
 #custom-wallpaper {
     color: #F5E0DC; /* Rosewater */
-    margin-right: 2px;
     /* fa-image's own glyph has more built-in left-side bearing than
        right -- same class of issue the caffeine icon has (see its own
        padding comment above). Measured directly: at the shared 12px/12px
@@ -111,18 +100,16 @@ window#waybar {
        pill boundary vs. the glyph's ink boundary, not eyeballed).
        Shifted padding to compensate rather than leave it visually
        off-center. */
-    padding-left: 9px;
-    padding-right: 15px;
+    padding-left: 12px;  /* re-measured 2026-09-29: 12/12 visible gap */
+    padding-right: 16px; /* (9/15 had drifted to 9/11) */
 }
 
-/* Sits apart from the rest of the right group -- it's the one button
-   here that ends the session rather than reporting on it, same reasoning
-   as giving workspaces their own hover hue for a genuinely different kind
-   of interaction. Resting state gets a faint red tint (not full accent
-   color, so it doesn't look like an active warning at rest) and margin
-   separating it from battery. */
+/* The one button here that ends the session rather than reporting on it,
+   same reasoning as giving workspaces their own hover hue for a genuinely
+   different kind of interaction. Resting state gets a faint red tint (not
+   full accent color, so it doesn't look like an active warning at rest). */
 #custom-power {
-    margin-left: 10px;
+    margin-right: 4px; /* the bar's right end, same as the top margin */
     color: #F38BA8;
 }
 
@@ -138,33 +125,21 @@ window#waybar {
     border-color: rgba(203, 166, 247, 0.4);
 }
 
-/* --- Logical grouping instead of one evenly-spaced row ---
-   Left:   [workspaces] · [bluetooth][network][network#speed]
-   Center: [time][date]
-   Right:  [caps/num lock][docker][caffeine] · [backlight][pulseaudio] · [battery] · [power]
-             nav  ·  connectivity status          time            device controls          personal controls    power  ·  power
-   Reorganized from an earlier layout that mixed indicators and
-   controls on both sides -- now indicators/status (workspaces,
-   bluetooth, wifi, network speed) read left to right on the left,
-   clock stays centered, and everything you actually click/toggle
-   (lock states, docker, caffeine, brightness, volume, battery, power)
-   lives on the right. Tighter margin within a group, a clearer gap
-   between groups, same principle as before, just re-derived for the
-   new adjacencies. */
-#bluetooth {
-    margin-left: 10px; /* starts the left connectivity cluster, after workspaces */
-}
-
-#network {
-    margin-right: 2px;
-}
-
+/* --- Three parts, one gap ---
+   Left:   [workspaces][bluetooth][network][network#speed]
+   Center: [notifications][time][date]
+   Right:  [caps/num lock][theme][wallpaper][docker][phone][caffeine][backlight][pulseaudio][battery][power]
+   Indicators/status on the left, the clock centred, everything you
+   click/toggle on the right. Inside each part every capsule is 8px from
+   the next (config "spacing", no per-capsule margins), and the bar ends
+   are 4px from the screen edges, like the top. Replaced (2026-09-29) a
+   mix of 9/11/13/19/21px gaps from per-module margins that split each
+   side into sub-clusters. */
 /* The second `network#speed` instance — covering both the documented
    naming convention (.speed as an added class) and the alternate some
    waybar versions use (a hyphenated id), since it wasn't practical to
    confirm which applies without a live GTK inspector on this machine. */
 #network.speed, #network-speed {
-    margin-right: 12px;
     /* Download/upload numbers change digit count constantly (12KB vs
        1.2MB vs 999B), which was making the whole pill visibly grow and
        shrink every couple seconds. min-width doesn't stop it growing
@@ -192,12 +167,14 @@ window#waybar {
     min-width: 177px;
 }
 
-#backlight {
-    margin-right: 2px;
-}
-
-#pulseaudio {
-    margin-right: 12px;
+/* Fixed, equal width for brightness and volume, so the capsules don't
+   grow and shrink as the number changes (1% -> 100% -> Muted). 60px is
+   the smallest that holds "Muted", the widest content, at the normal
+   12px padding; 56 let muted grow the capsule. Content stays centred
+   (GTK's default), within 1 px left vs right in every state, measured
+   from screenshots (2026-09-29). Height is fixed by the bar. */
+#backlight, #pulseaudio {
+    min-width: 60px;
 }
 
 /* --- Color engineering pass: every module gets its own resting-state
@@ -257,7 +234,6 @@ window#waybar {
    real attention color so it's obvious at a glance you're in it, not
    just half of a two-tone toggle. */
 #custom-notifications {
-    margin-right: 8px;
 }
 
 /* Each mode gets its own bell icon (fa-bell / fa-bell-slash /
@@ -305,7 +281,8 @@ window#waybar {
    in the opposite group on the far side of the bar, so no adjacency
    clash the way Pink/Flamingo had.
 
-   No text-shadow/font-size tricks here anymore -- both were tried as
+   Icon size lives in waybar/config (a 150% Pango span on {icon}).
+   No text-shadow/font-size tricks here -- both were tried as
    ways to make the volume icon more noticeable, both asked to be
    reverted (the shadow read as an unwanted glow once actually seen
    live; the font-size bump broke three of the four glyphs outright, see
@@ -345,8 +322,8 @@ window#waybar {
 /* --- Color is reserved for actual status, not module branding --- */
 
 #network.disconnected {
-    color: #F38BA8; /* Red */
-    border-color: rgba(243, 139, 168, 0.35);
+    color: #DC2626; /* Danger red, as everywhere */
+    border-color: rgba(220, 38, 38, 0.35);
 }
 
 #network.disabled {
@@ -393,9 +370,6 @@ window#waybar {
    waybar's own hide/show does to the widget tree) that isn't practical
    to verify reliably here -- independent pills is the correct trade,
    not a shortcut. */
-#custom-capslock, #custom-numlock {
-    margin-right: 2px;
-}
 
 /* No .unlocked rule anymore -- unlocked means keylock-status.sh reports
    empty text, hide-empty-text removes the whole module, so there's
@@ -440,6 +414,7 @@ window#waybar {
    the bar, so it reads as part of one palette rather than its own thing */
 #workspaces {
     padding: 1px 2px;
+    margin-left: 4px; /* the bar's left end, same as the top margin */
 }
 
 /* #workspaces (the group wrapper) already gets the shared pill treatment
@@ -451,6 +426,9 @@ window#waybar {
    just sit directly in the one shared container. Colors, spacing,
    hover/focused underline accent all unchanged otherwise. */
 #workspaces button {
+    /* Transparent top border to match the 2px bottom one (the underline),
+       so the number is centred in the button instead of 1px high. */
+    border-top: 2px solid transparent;
     padding: 0 5px;
     color: #6C7086; /* Dim inactive — matches capslock/numlock's unlocked gray */
     margin: 1px;
@@ -524,6 +502,12 @@ window#waybar {
     color: #F38BA8; /* Red */
     font-weight: 800;
     border-bottom: 2px solid #F38BA8;
+}
+/* A window asking for attention: danger red, same as sway's client.urgent. */
+#workspaces button.urgent {
+    color: #DC2626;
+    font-weight: 800;
+    border-bottom: 2px solid #DC2626;
 }
 
 /* BLUETOOTH STATES */
@@ -599,8 +583,8 @@ window#waybar {
 }
 
 #battery.critical {
-    color: #F38BA8; /* Red */
-    border-color: rgba(243, 139, 168, 0.4);
+    color: #DC2626; /* Danger red, as everywhere */
+    border-color: rgba(220, 38, 38, 0.4);
 }
 
 #battery.charging {
@@ -618,3 +602,20 @@ tooltip label {
     color: #CDD6F4;
     padding: 4px 6px;
 }
+
+/* --- Per-capsule centring (2026-09-29) ---
+   Each glyph carries its own uneven side bearing, so equal padding left
+   the icon or text off-centre by up to 2px. These even out the visible
+   gap (ink to capsule edge) on both sides, measured on a solid
+   background: power 12/8, bell 12/9, bluetooth 12/11, theme 12/11, time
+   13/12 and battery 13/12 before; 12/12 on every one after. Caffeine
+   and wallpaper are set in their own rules
+   above. Capsules whose text changes width (network speed, brightness,
+   volume) are centred by GTK inside their min-width, so they can be at
+   most half a pixel off. */
+#custom-power { padding-right: 16px; }
+#custom-notifications { padding-right: 15px; }
+#bluetooth { padding-right: 13px; }
+#custom-theme { padding-right: 13px; }
+#clock.time, #clock-time { padding-left: 11px; }
+#battery { padding-left: 11px; }

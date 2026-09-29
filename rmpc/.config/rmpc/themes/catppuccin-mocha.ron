@@ -29,7 +29,7 @@
     level_styles: (
         info: (fg: "#74c7ec", bg: "#11111b"),
         warn: (fg: "#f9e2af", bg: "#11111b"),
-        error: (fg: "#f38ba8", bg: "#11111b"),
+        error: (fg: "#dc2626", bg: "#11111b"),
         debug: (fg: "#a6e3a1", bg: "#11111b"),
         trace: (fg: "#f5c2e7", bg: "#11111b"),
     ),

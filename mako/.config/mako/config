@@ -126,7 +126,15 @@ border-color=#CBA6F78C
 progress-color=over #313244
 
 # --- Behavior ---
-default-timeout=5000
+# How long each notification stays up (2026-09-29, asked for "a second
+# or two"): normal 3 s here, low 2 s, critical 6 s and actionable 6 s
+# in their sections below. Things that must stay until resolved set
+# their own timeout of 0, which ignore-timeout=0 honours: the phone ring
+# and pairing request (phone-events.py, both close themselves once
+# answered) and batsignal's battery warnings ([app-name=batsignal],
+# dismissed on AC by battery-warning-dismiss.sh). Nothing is lost when
+# one fades: history (Super+Shift+n) keeps it.
+default-timeout=3000
 ignore-timeout=0
 
 # max-visible=1 -- real architectural limit, not a style choice: mako
@@ -173,7 +181,8 @@ max-history=200
 on-notify=exec paplay /usr/share/sounds/freedesktop/stereo/message.oga
 
 # --- High Urgency Alerts ---
-# Overrides the border to a warm peach tone if a system-critical event occurs
+# Dark red border for errors and critical events. Danger is dark red
+# (#DC2626) everywhere in this setup; it was peach here (2026-09-29).
 #
 # Real bug found while chasing an unrelated report: mako's own config
 # format only ever matches urgency= against "low", "normal", "critical"
@@ -184,8 +193,11 @@ on-notify=exec paplay /usr/share/sounds/freedesktop/stereo/message.oga
 # the default 5000ms timeout this whole time, not the peach border +
 # "never auto-dismiss" this section was clearly meant to give it.
 [urgency=critical]
-border-color=#FAB387
-default-timeout=0
+border-color=#DC2626
+# Was 0 (never fade): every error, and KDE Connect's "Pairing failed:
+# Cancelled by user" after a reject, sat on screen until clicked. 6 s
+# reads a one-line error comfortably.
+default-timeout=6000
 
 # --- Low Urgency ---
 # Quieter visual weight for the low end of the scale (hover/volume ticks,
@@ -196,6 +208,17 @@ default-timeout=0
 # than reusing an accent color there too.
 [urgency=low]
 border-color=#585B70
+default-timeout=2000
+
+# A notification with a button (Undo a phone clipboard, Open a received
+# file) loses the button when it fades, so it gets the longer time.
+# After [urgency=low]: later sections win.
+[actionable]
+default-timeout=6000
+
+# batsignal's warnings are meant to stay until the charger goes in.
+[app-name=batsignal]
+default-timeout=0
 
 # --- Overflow placeholder ---
 # With max-visible=1 above, this is real: any 2nd+ notification arriving

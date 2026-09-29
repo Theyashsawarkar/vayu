@@ -5,6 +5,117 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.13.0-nightly -- 2026-09-29
+
+Everything from here down to `v1.12.0-nightly` below, on `development`
+(Nightly channel) only -- not merged to `main`/Stable yet. MINOR bump: a
+visual and behaviour pass across the desktop. Danger is one dark red
+everywhere; notifications fade on their own (low 2 s, normal 3 s,
+critical 6 s) while the phone ring, pairing request and battery warnings
+stay; wofi popups use fixed heights so they can't come up cut short; a
+pairing reject shows one notification. In waybar: a larger volume icon, a
+filling-sun brightness icon, fixed-size brightness/volume capsules, one
+8px gap inside each of the three parts, and every capsule's contents
+centred to the pixel. Checked live: no failed units, no new errors in
+this boot's logs, every script passes its syntax check, and every waybar
+status script returns valid JSON.
+
+## 2026-09-29 (waybar: contents centred in every capsule)
+
+Measured every capsule on a temporary solid background (the visible gap
+from icon/text to the capsule edge, on all four sides). Icon glyphs carry
+uneven side bearings, so equal padding left some off-centre: power 12/8,
+bell 12/9, caffeine 9/12, wallpaper 9/11, bluetooth/theme 12/11,
+time/battery 13/12. Per-capsule padding now gives 12/12 on every static
+capsule. Workspace numbers sat 1px high because the underline is a 2px
+bottom border; a matching transparent top border centres them (11/11).
+What's left is at most half a pixel, and can't be split: an odd number of
+spare pixels (the 31px capsule height against an even-height glyph, or
+GTK centring changing text inside network speed/brightness min-width).
+
+## 2026-09-29 (waybar: three parts, one gap)
+
+The bar is three parts (left, centre, right), and every capsule inside a
+part is now the same 8px from its neighbour. Before, per-module margins
+gave a mix of 9, 11, 13, 19 and 21px gaps that split each side into
+sub-clusters. All side margins are gone; waybar's `spacing` (8) sets the
+gap, and only the bar's two ends keep a 4px margin, matching the top.
+Measured from screenshots: every gap matches, including Caps Lock when
+it appears, the left and right edges are both 4px, and the centre part
+sits exactly at the middle of the screen.
+
+## 2026-09-29 (brightness and volume capsules: fixed size)
+
+The brightness and volume capsules no longer grow and shrink as the
+number changes. Both are 60px (`min-width`), the smallest width that
+holds "Muted", the widest text, with the usual 12px padding, so there's
+no excess. Content stays centred. Measured from screenshots at
+brightness 5/50/100% and volume 5/60%/muted: both are the same width
+every time, and the left and right gaps match within 1px. Height was
+already fixed by the bar (31px in every state).
+
+## 2026-09-29 (brightness icon: a filling sun)
+
+The waybar brightness icon was a set of pie slices, which read as a clock
+at low levels. It's now Material's brightness sun, which fills as the
+level rises: outline up to a third, half-filled to two thirds, full
+above that. At 125% (`rise='-1pt'`) it matches the volume icon beside
+it, and screenshots show it centred on the digits at low, medium and
+high brightness, with the digits at the same height as the volume
+module's.
+
+## 2026-09-29 (larger volume icon)
+
+The waybar volume icon is 150% (a Pango span on `{icon}` and on the
+muted glyph), so it's no longer smaller than the brightness icon next to
+it. On its own the bigger glyph pushed the percentage 2 px down and sat
+2 px above the text's middle; `rise='-2pt'` fixes both. Measured from
+screenshots: at low, medium, high and muted the icon and text share one
+centre line, the digits sit at the same height as the brightness
+module's, and the bar is still 41 px tall. The same span was once
+recorded as breaking the icon, but the real cause then was the
+threshold-object `format-icons` bug.
+
+## 2026-09-29 (danger is dark red everywhere)
+
+Error notifications had a peach (orange) border, and other danger states
+used Catppuccin's pinkish red `#F38BA8`. Danger is now one dark red,
+`#DC2626`, in every place:
+- mako's error/critical border (was peach)
+- waybar's critical battery and disconnected network, plus a new urgent
+  workspace style
+- sway's urgent window border (was sway's built-in `#900000`)
+- swaylock's wrong-password ring and text
+- rmpc's error lines
+- the Docker picker's Stop and the power menu's Power off
+`#D20F39` (Catppuccin Latte red) was darker but too hard to read as
+waybar text. `#F38BA8` stays as the focus accent (workspaces, focused
+window border, power button), which isn't a danger signal. Peach stays
+for warnings (low battery, Caps Lock, picker commands).
+
+## 2026-09-29 (popups keep their height; notifications fade)
+
+The pairing dialog sometimes came up cut down to just its prompt, and a
+rejected pairing left a notification on screen that never went away.
+- **Popups use a fixed `--height` instead of `--lines`.** wofi sizes a
+  `--lines` list from the rows it has when it first draws. Rows piped in a
+  moment later (every script popup) sometimes left the list one row tall.
+  Reproduced with delays of 0.05 s and 0.15 s; a fixed height drew every
+  row each time. Each height matches what `--lines` used to draw, measured
+  from SwayFX's layer-surface size: pairing dialog 200 px, calculator
+  100/150, music query 100, music results 752, notification history 752,
+  keybinding search 680. The pairing dialog and the `Super+Ctrl+a` action
+  picker also skip wofi's cache, which had been moving Reject above Accept.
+- **Notifications fade:** low after 2 s, normal 3 s, critical 6 s, and
+  6 s for ones with a button (Undo, Open). Critical used to never fade.
+  The phone ring and the pairing request (`-t 0`) and batsignal's battery
+  warnings still stay until they're dealt with. History (`Super+Shift+n`)
+  keeps everything.
+- **A reject shows one notification.** KDE Connect followed it with
+  "Pairing request expired" and a critical "Pairing failed: Cancelled by
+  user", which is what stuck. `phone-events.py` now skips both for 10 s
+  after its own Reject. A real expiry is still announced.
+
 ## v1.12.0-nightly -- 2026-09-29
 
 Everything from here down to `v1.11.1-nightly` below, on `development`

@@ -10,7 +10,9 @@
 # wofi's -i/-p), so it gets this script back, with no arguments, as the
 # picker program; that call runs wofi.
 if [ -n "$NOTIFICATION_ACTIONS_PICK" ]; then
-  exec wofi --dmenu -i -p "Action "
+  # No cache: wofi moves past picks to the top, so Accept/Reject would
+  # swap places depending on what was chosen before.
+  exec wofi --dmenu -i --cache-file /dev/null -p "Action "
 fi
 
 # A ring comes first and never goes through mako: on 2026-09-29 one could

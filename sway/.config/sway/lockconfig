@@ -44,7 +44,7 @@ ring-color=CBA6F7ff
 ring-clear-color=A6E3A1ff
 ring-caps-lock-color=FAB387ff
 ring-ver-color=89B4FAff
-ring-wrong-color=F38BA8ff
+ring-wrong-color=DC2626ff
 
 # --- Line: hidden ---
 line-color=00000000
@@ -57,7 +57,7 @@ line-wrong-color=00000000
 text-color=CDD6F4ff
 text-clear-color=A6E3A1ff
 text-ver-color=89B4FAff
-text-wrong-color=F38BA8ff
+text-wrong-color=DC2626ff
 text-caps-lock-color=FAB387ff
 
 # --- Key highlights ---

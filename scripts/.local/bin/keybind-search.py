@@ -518,9 +518,12 @@ def run_wofi():
             "Couldn't parse any keybindings -- check the configs are readable",
         ])
         sys.exit(1)
+    # --height 680 is what --lines 12 drew; --lines sizes the list from the
+    # rows wofi has at its first draw, so it sometimes came up one row tall
+    # (reproduced 2026-09-29).
     result = subprocess.run(
         ["wofi", "--dmenu", "--insensitive", "--matching", "fuzzy",
-         "--prompt", SEARCH_HINT, "--lines", "12"],
+         "--prompt", SEARCH_HINT, "--height", "680"],
         input="\n".join(wofi_line(e) for e in entries), capture_output=True, text=True,
     )
     selection = html.unescape(re.sub(r"<[^>]+>", "", result.stdout.strip()))

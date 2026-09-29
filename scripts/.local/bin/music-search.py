@@ -151,7 +151,9 @@ def run_logged(cmd, **kwargs):
 
 
 def get_query(prompt):
-    proc = run_logged(["wofi", "--show", "dmenu", "--prompt", prompt, "--lines", "1"])
+    # --height, not --lines 1: wofi sizes --lines from its first draw, which
+    # varies with timing (a cut-off pairing dialog, 2026-09-29).
+    proc = run_logged(["wofi", "--show", "dmenu", "--prompt", prompt, "--height", "100"])
     return proc.stdout.strip()
 
 
@@ -245,7 +247,9 @@ def pick_result(results):
         proc = run_logged(
             [
                 "wofi", "--dmenu", "--allow-images", "--allow-markup", "--insensitive",
-                "--matching", "fuzzy", "--prompt", "Pick a track...", "--lines", "10",
+                "--matching", "fuzzy", "--prompt", "Pick a track...",
+                # = --lines 10, which sometimes drew one row (see get_query)
+                "--height", "752",
             ],
             input="\n".join(lines),
         )

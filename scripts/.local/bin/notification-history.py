@@ -131,7 +131,10 @@ def main():
         [
             "wofi", "--dmenu", "--allow-images", "--allow-markup", "--insensitive",
             "--matching", "fuzzy", "--prompt", "Notification history...",
-            "--lines", "10",
+            # 752 px = what --lines 10 drew. --lines sizes the list from the
+            # rows wofi has at its first draw, so it sometimes came up one
+            # row tall (reproduced 2026-09-29).
+            "--height", "752",
         ],
         input="\n".join(lines), capture_output=True, text=True,
     )
