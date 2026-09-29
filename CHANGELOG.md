@@ -5,6 +5,16 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (/boot gets its boot-time fsck)
+
+- After the reboot the kernel still warned that the `/boot` FAT volume
+  was not properly unmounted. fstab asks for a check (pass 2), but
+  `dosfstools` wasn't installed, so there was no `fsck.fat` and systemd
+  skipped the check silently on every boot. Added `dosfstools` to
+  `packages/pacman.txt`. Post-reboot checks: `resume=` is gone from the
+  kernel command line, no failed units, userspace boot 3.9 s (was
+  11.3 s), docker socket-activated, 4 GB swapfile + 4 GB zram.
+
 ## 2026-09-29 (waybar: capsules update on events, not polls; faster boot)
 
 - Caps Lock and Num Lock were polled every second, and theme and
