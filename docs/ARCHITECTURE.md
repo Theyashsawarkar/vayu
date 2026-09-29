@@ -456,6 +456,14 @@ hibernate again. `install.sh` now does the same from a fresh install
 (see its own comment there for the exact commands), so this doesn't
 silently reappear on a reinstall or a new machine.
 
+Masking left the resume setup behind. The 2026-09-29 stability pass
+found and removed it: `resume=`/`resume_offset=` in `/etc/kernel/cmdline`
+(the UKI's command line), the `resume` hook in `/etc/mkinitcpio.conf`'s
+`HOOKS`, and a 12 GB `/swapfile` sized to hold a hibernation image (RAM
+is 9.6 GB). The swapfile is now 4 GB of plain overflow behind the 4 GB
+zram swap, and nothing reads a resume image any more. If any of these
+comes back, hibernate is half set up again.
+
 Verified live across multiple real lid close/open cycles afterward:
 `journalctl` showed clean `PM: suspend entry (deep)` /
 `PM: suspend exit` pairs each time, resuming in roughly a second rather

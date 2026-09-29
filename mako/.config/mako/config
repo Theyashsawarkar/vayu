@@ -216,6 +216,16 @@ default-timeout=2000
 [actionable]
 default-timeout=6000
 
+# Notifications the KDE Connect daemon forwards from the phone ask never to
+# expire. A phone's media player (YMusic's Previous/Play/Skip card) then
+# sat on screen for as long as the song played. Ignoring that request lets
+# them fade like everything else (6 s, via [actionable] when they have
+# buttons). Only the daemon sets this desktop entry: phone-events.py's own
+# ring and pairing prompts come through notify-send without it, so they
+# still stay until answered.
+[desktop-entry=org.kde.kdeconnect.daemon]
+ignore-timeout=1
+
 # batsignal's warnings are meant to stay until the charger goes in.
 [app-name=batsignal]
 default-timeout=0

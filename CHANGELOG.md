@@ -5,6 +5,43 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (stability pass: hibernate fully gone, stuck phone media card)
+
+A full stability pass (same checks as `v1.0.0`'s) found:
+- Hibernate was masked on 2026-08-30 (the amdgpu resume crash, see
+  ARCHITECTURE.md) but its setup was still there: `resume=`/
+  `resume_offset=` on the kernel command line, the `resume` initramfs
+  hook, and a 12 GB swapfile sized for a hibernation image. All removed;
+  the swapfile is now 4 GB of plain overflow behind zram.
+- The installed lid-timeout hook in `/etc` had picked up hibernate verbs
+  and pointed at a Papirus icon that no longer exists. The repo copy
+  (suspend only, AdwaitaLegacy icon) is the right one and goes back to
+  `/etc`. `/etc/lid-timeout-poweroff.conf` was still in test mode
+  (`TIMEOUT_SECONDS=60`, `DRY_RUN=1`), so the 30-minute auto-poweroff
+  only ever sent a notification; it gets the repo's 1800 s / real mode.
+- systemd's TPM NvPCR units failed every boot: they need a systemd
+  initramfs and this one is mkinitcpio's busybox one. Nothing uses
+  measured boot here, so `install.sh` now masks them.
+- `/boot` was mounted world-readable (fmask/dmask 0022), which
+  `bootctl` flags as a security hole for the random seed. Now 0077.
+- KDE Connect's forwarded phone notifications ask never to expire, so a
+  phone media player's Previous/Play/Skip card stayed on screen for as
+  long as music played. mako now ignores that request for the daemon's
+  notifications only (`desktop-entry=org.kde.kdeconnect.daemon`), so
+  they fade after 6 s; phone-events.py's ring and pairing prompts still
+  stay until answered. Tested both with real notifications.
+- The previous entry's `tmux.service` link wasn't actually on disk.
+  Restowed `systemd` (it stays un-enabled, as intended), and removed a
+  dangling `~/.local/bin/__pycache__` link to a gitignored dir.
+
+Everything else is clean: git in sync with origin (branches and tags),
+stow dry run has nothing to do, exactly one sway/waybar/mako/swaybg/
+kdeconnectd, no failed user units, sway/mako/waybar/kitty configs valid,
+all 46 scripts pass their syntax check, every waybar status script
+returns JSON, `keybind-search.py --check` OK, tmux.conf loads cleanly and
+idempotently on an isolated server, and the wallpaper archive sits at
+its 60-file cap.
+
 ## 2026-09-29 (repo hygiene: nothing stray in ~)
 
 A dry run of `install.sh`'s own `stow` call found three problems:

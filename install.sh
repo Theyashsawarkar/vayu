@@ -208,6 +208,15 @@ sudo systemctl mask systemd-hibernate.service systemd-hybrid-sleep.service \
   suspend-then-hibernate.target
 sudo systemctl kill -s HUP systemd-logind.service
 
+# systemd's NvPCR measurement units need NvPCR indexes that only a systemd
+# initramfs sets up; mkinitcpio's busybox one doesn't, so they fail every
+# boot ("Could not extend NvPCR"). Nothing here uses measured boot (no disk
+# encryption), so mask them. The late systemd-tpm2-setup.service still
+# sets up the SRK.
+log "Masking TPM NvPCR units (no systemd initramfs)"
+sudo systemctl mask systemd-tpm2-setup-early.service systemd-pcrproduct.service \
+  systemd-pcrlogin@.service
+
 log "Adding $USER to the docker group"
 sudo usermod -aG docker "$USER"
 
