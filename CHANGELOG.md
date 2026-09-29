@@ -5,6 +5,24 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (lighter desktop: no tray applets, docker on demand)
+
+A performance pass over what runs all the time:
+- `nm-applet` and `blueman-applet` (with its `blueman-tray`, ~170 MB
+  together) no longer start with sway. Waybar has no tray, so they showed
+  nothing. WiFi secrets live in NetworkManager (psk-flags=0 on every saved
+  network), bluez powers the adapter on by itself, and blueman-manager
+  D-Bus-starts its applet when opened (for PIN pairing) and stops it on
+  close. Checked after stopping them: WiFi connected, Bluetooth powered.
+- Docker starts through `docker.socket` on first use instead of at boot.
+  No container has a restart policy, so nothing is lost, and boot no
+  longer waits on `docker.service` (1.5 s) or pulls in
+  `NetworkManager-wait-online` (5.8 s). The waybar docker capsule only
+  runs `docker ps` while the daemon is up; otherwise its 5-second poll
+  would start docker straight away.
+- The notification bell's history count uses `jq` instead of starting
+  Python every 5 s: 53 ms to 13 ms a run.
+
 ## 2026-09-29 (stability pass: hibernate fully gone, stuck phone media card)
 
 A full stability pass (same checks as `v1.0.0`'s) found:

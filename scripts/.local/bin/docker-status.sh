@@ -7,7 +7,11 @@
 # (see style.css) without duplicating that same signal in the text color.
 
 ICON=$''
-count=$(docker ps -q | wc -l)
+# docker is socket-activated (install.sh), so `docker ps` against a stopped
+# daemon would start it -- every 5 s, from this capsule. Only ask docker
+# once it is actually running.
+count=0
+systemctl is-active --quiet docker.service && count=$(docker ps -q | wc -l)
 
 if [ "$count" -gt 0 ]; then
     class="running"

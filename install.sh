@@ -170,7 +170,12 @@ log "Enabling system services"
 # manage the wireless radio) and iwd would just sit there unused. See
 # docs/ARCHITECTURE.md for how this was found on the original machine.
 sudo systemctl enable --now \
-  NetworkManager bluetooth docker power-profiles-daemon systemd-oomd
+  NetworkManager bluetooth docker.socket power-profiles-daemon systemd-oomd
+# Docker starts on first use through its socket (any docker command, the
+# docker picker) rather than at every boot: ~130 MB and 1.5 s of boot, and
+# docker.service is what pulled NetworkManager-wait-online (5.8 s) into
+# every boot.
+sudo systemctl disable docker.service
 # ufw's default policy is deny-incoming/allow-outgoing once enabled; fine for
 # a physical-console machine, but add any rules you need (e.g. `ufw allow ssh`)
 # before enabling it if you plan to reach this box over the network.
