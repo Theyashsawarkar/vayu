@@ -5,6 +5,8 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.14.0 -- 2026-09-29
+
 ## 2026-09-29 (waybar vanished at login: RT signal before its handler)
 
 - After the reboot there was no bar. `bar-events.service` starts beside
