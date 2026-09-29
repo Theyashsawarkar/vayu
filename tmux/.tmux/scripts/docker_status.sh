@@ -1,27 +1,20 @@
 #!/usr/bin/env bash
 # Docker segment for the tmux status bar.
 #
-# Shows a docker icon + running-container count whenever the docker daemon
-# is reachable, even if that count is zero. Prints nothing (hiding the
-# segment) if the daemon isn't up, so it doesn't clutter the bar.
+# Always prints a docker icon + running-container count, 0 while the
+# daemon is stopped -- same as waybar's docker-status.sh. The pill itself
+# (caps, fill, padding) lives in tmux.conf, so printing nothing here left
+# an empty blue capsule on the bar.
+#
+# docker is socket-activated (install.sh), so `docker ps` against a stopped
+# daemon would start it -- every status tick, from this segment. Only ask
+# docker once it is actually running.
 
-icon=$'\uf308' # nf-linux-docker (U+F308)
+icon=$'' # nf-linux-docker (U+F308)
 
-running=0
-if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet docker 2>/dev/null; then
-    running=1
-elif pgrep -x dockerd >/dev/null 2>&1; then
-    running=1
-fi
+count=0
+systemctl is-active --quiet docker.service && count=$(docker ps -q 2>/dev/null | wc -l)
 
-[ "$running" -eq 1 ] || exit 0
-
-count=$(docker ps -q 2>/dev/null | wc -l)
-
-# Plain text, no embedded #[fg=...] escapes -- the filled-pill design
-# (tmux.conf) wraps this whole module in bg=<role color>,fg=#1E1E2E
-# itself, so the color (dark ink on a solid Amber fill) is applied once,
-# centrally, by the wrapping module in tmux.conf, not per-script. Same
-# reasoning held even through the earlier "hollow pill" design in between
-# -- icon and the real running-container count logic above are unchanged.
+# Plain text, no embedded #[fg=...] escapes -- tmux.conf wraps this whole
+# module in its filled pill (dark ink on a solid fill) centrally.
 printf '%s  x %s' "$icon" "$count"

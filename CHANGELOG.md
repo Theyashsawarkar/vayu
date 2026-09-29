@@ -5,6 +5,16 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (tmux: docker capsule no longer empty)
+
+- Since docker became socket-activated its daemon is usually stopped,
+  and tmux's `docker_status.sh` printed nothing then -- but the pill
+  (caps, fill, padding) lives in tmux.conf, so the bar showed an empty
+  blue capsule. It now always prints the icon and count (0 while the
+  daemon is stopped), same as waybar's capsule, and still only runs
+  `docker ps` once `docker.service` is up so the bar can't wake docker.
+  Checked by rendering the bar in a pty on a `-L` test server.
+
 ## 2026-09-29 (/boot gets its boot-time fsck)
 
 - After the reboot the kernel still warned that the `/boot` FAT volume
