@@ -725,7 +725,6 @@ for_window [app_id=".*"] inhibit_idle fullscreen
 exec systemctl --user restart batsignal.service
 
 # Clipboard history management
-exec --no-startup-id cliphist store
 exec --no-startup-id wl-paste --type text --watch cliphist store
 exec --no-startup-id wl-paste --type image --watch cliphist store
 

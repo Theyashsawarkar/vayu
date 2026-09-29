@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-30 (post-reboot check; drop no-op cliphist exec)
+
+- Verified v1.14.0 after a cold boot: waybar, bar-events, phone-events,
+  mako, batsignal and kdeconnectd up; no failed units; dockerd not running
+  (socket only). Idle process launches ~22 per 30 s, down from ~47.
+- Removed `exec cliphist store` from sway/config: with nothing on stdin at
+  login it exits immediately. The two `wl-paste --watch cliphist store`
+  lines do the actual recording.
+
 ## v1.14.0 -- 2026-09-29
 
 ## 2026-09-29 (waybar vanished at login: RT signal before its handler)
