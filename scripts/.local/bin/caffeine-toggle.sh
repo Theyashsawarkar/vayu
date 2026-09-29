@@ -50,3 +50,6 @@ else
     rm -f "$STATE_FILE"
     notify-send -i "$ICON" "Caffeine off" "Screen will dim, lock, and suspend normally again"
 fi
+
+# Refresh the waybar capsule now (it only polls once a minute as a fallback).
+pkill -RTMIN+12 waybar 2>/dev/null || true

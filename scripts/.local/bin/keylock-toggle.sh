@@ -45,3 +45,7 @@ if ! systemctl --user is-active --quiet ydotool.service; then
 fi
 
 ydotool key "${KEYCODE}:1" "${KEYCODE}:0"
+# The capsule updates on a signal, not a 1 s poll (waybar/config); give
+# the LED a moment to follow the key first.
+sleep 0.1
+case "$KEY" in capslock) pkill -RTMIN+9 waybar ;; numlock) pkill -RTMIN+10 waybar ;; esac

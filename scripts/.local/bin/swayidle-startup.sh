@@ -36,3 +36,6 @@ if [ -e "$STATE_FILE" ]; then
 else
     systemctl --user restart swayidle.service
 fi
+
+# Refresh the waybar capsule now (it only polls once a minute as a fallback).
+pkill -RTMIN+12 waybar 2>/dev/null || true

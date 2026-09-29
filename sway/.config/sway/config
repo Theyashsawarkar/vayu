@@ -154,6 +154,14 @@ bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar
 #: Toggle caffeine mode: keep the screen awake, no auto-lock/suspend
 bindsym $mod+Shift+a exec ~/.local/bin/caffeine-toggle.sh
 
+# Waybar's Caps/Num Lock capsules update on a signal instead of polling
+# every second. --release leaves the key itself alone: the lock still
+# toggles, and waybar re-reads the LED once the key is up.
+#: Update Caps Lock indicator in waybar (on key release)
+bindsym --release Caps_Lock exec pkill -RTMIN+9 waybar
+#: Update Num Lock indicator in waybar (on key release)
+bindsym --release Num_Lock exec pkill -RTMIN+10 waybar
+
 # rmpc -- terminal music player, replacing termusic entirely (removed:
 # its own search was the only thing ever broken, but the whole tool got
 # swapped out rather than kept around as a half-used shell -- see

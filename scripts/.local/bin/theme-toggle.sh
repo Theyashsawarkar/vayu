@@ -117,3 +117,6 @@ if [ -n "$missing" ]; then
 else
     notify-send -u low -i "$icon" "Theme" "Switched to $label mode"
 fi
+
+# Refresh the waybar capsule now (it only polls once a minute as a fallback).
+pkill -RTMIN+11 waybar 2>/dev/null || true

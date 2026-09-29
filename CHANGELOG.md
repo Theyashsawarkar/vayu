@@ -5,6 +5,30 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (waybar: capsules update on events, not polls; faster boot)
+
+- Caps Lock and Num Lock were polled every second, and theme and
+  caffeine every 5 s, although they only change when you press or click
+  something. Now whatever changes them signals waybar: sway
+  `--release` binds on Caps_Lock/Num_Lock (the key itself still
+  toggles), `keylock-toggle.sh`, `theme-toggle.sh`, `caffeine-toggle.sh`
+  and `swayidle-startup.sh`. Slow fallback polls (30 s and 60 s) stay in
+  case something else changes them. The bell and docker capsules poll
+  every 10 s instead of 5. That's about 2.5 fewer process launches a
+  second from waybar. Tested live: pressing Caps Lock showed and cleared
+  the capsule within 0.6 s, and the LED toggled both times.
+- Boot: `docker.service` and `NetworkManager-wait-online` held up
+  graphical.target by 7.4 s (of 11.3 s userspace). They're off the path
+  once docker is socket-activated (previous entry). systemd-boot's menu
+  timeout goes to 0; hold Space at boot for the menu.
+- Measured and left alone: the kernel stage only looks like 10.5 s
+  because the clock was already running at hand-off. Kernel plus
+  initramfs take ~0.6 s, so a systemd initramfs would gain nothing.
+  phone-events.py's `journalctl -f` ring watcher shows 69 MB RSS, but
+  only ~0.7 MB is its own; the rest is page cache from the journal
+  files, which the kernel reclaims when needed, and KDE Connect has no
+  D-Bus signal to replace it.
+
 ## 2026-09-29 (lighter desktop: no tray applets, docker on demand)
 
 A performance pass over what runs all the time:
