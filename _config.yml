@@ -80,3 +80,5 @@ exclude:
   - zed/
   - zsh/
   - install.sh
+  # tmux palette swatchbooks (reference, moved out of the tmux stow package)
+  - docs/tmux-palettes/

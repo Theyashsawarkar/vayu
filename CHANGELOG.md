@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-29 (repo hygiene: nothing stray in ~)
+
+A dry run of `install.sh`'s own `stow` call found three problems:
+- `systemd/lid-timeout-poweroff{,.conf}` sat in the package root, so stow
+  linked them into `~` as stray files. They're reference copies of
+  root-owned files that live in `/etc` (system-sleep hooks only run from
+  there). `systemd/.stow-local-ignore` now skips them, and the two links
+  were removed from `~`; the real `/etc` files are untouched.
+- `tmux/palettes/` (the Rose Dusty swatchbooks and their generators) would
+  have been stowed as `~/palettes`. Moved to `docs/tmux-palettes/`, and
+  added to `_config.yml`'s exclude list so the docs site still doesn't
+  publish them.
+- `~/.config/systemd/user/tmux.service` had never been linked (the unit
+  was added after `systemd/` was first stowed, the gotcha noted in
+  ARCHITECTURE.md). Restowed.
+The same dry run now reports nothing to do.
+
 ## v1.13.0-nightly -- 2026-09-29
 
 Everything from here down to `v1.12.0-nightly` below, on `development`
