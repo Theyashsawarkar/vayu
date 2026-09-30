@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks GitHub for new commits on whatever branch is currently checked
 # out in ~/dotfiles, and if there are any, notifies and shows a
-# nwg-bar prompt (Update Now / Later) to apply them. Run once per login
+# nwg-bar prompt (Update Now / Later) to apply them. Run once per sway login
 # via systemd/.config/systemd/user/update-check.service, not on every
 # sway reload -- this is a startup check, not something that should
 # re-fire every time the config gets edited and reloaded during a
@@ -41,8 +41,19 @@ log() { printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >>"$LOG_FILE"; }
 
 cd "$DOTFILES_DIR" || { log "ERROR: $DOTFILES_DIR not found"; exit 1; }
 
-if ! timeout 20 git -c core.sshCommand="ssh -o BatchMode=yes -o ConnectTimeout=8" fetch origin --quiet 2>>"$LOG_FILE"; then
-    log "fetch failed (offline, or auth not ready yet) -- skipping this boot"
+# Runs as sway starts, often before Wi-Fi is up: wait for NetworkManager
+# to report a connection, then allow a few tries for DNS to catch up.
+nm-online -q -t 60 || log "no network after 60 s -- trying the fetch anyway"
+fetched=false
+for attempt in 1 2 3; do
+    if timeout 20 git -c core.sshCommand="ssh -o BatchMode=yes -o ConnectTimeout=8" fetch origin --quiet 2>>"$LOG_FILE"; then
+        fetched=true
+        break
+    fi
+    [ "$attempt" -lt 3 ] && sleep 10
+done
+if ! $fetched; then
+    log "fetch failed 3 times (offline, or auth not ready) -- skipping this login"
     exit 0
 fi
 

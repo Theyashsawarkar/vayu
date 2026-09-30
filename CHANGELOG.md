@@ -5,6 +5,27 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (update check runs with sway and waits for the network)
+
+- The update check failed 32 of its last 37 runs ("Could not resolve
+  hostname github.com"). The user manager lingers, so its
+  `default.target` is reached at boot: the check ran before login, with
+  no sway for its notification or nwg-bar prompt, and ~4 s before Wi-Fi
+  connected (every recent boot). `After=network-online.target` didn't
+  help: in the user manager that target doesn't track the real network.
+- `update-check.service` is now `WantedBy=sway-session.target`,
+  `PartOf=graphical-session.target` and `Type=exec`, so it doesn't hold
+  up startup. `update-check.sh` waits for NetworkManager (`nm-online -t
+  60`) and retries the fetch 3 times, 10 s apart. `install.sh` enables it
+  without `--now`.
+- Found on the way: `systemctl --user reenable` (or `disable`) on a
+  stow-linked unit also deletes the unit's symlink, since it points
+  outside systemd's search path. Restored with stow. No repo script
+  disables user units.
+- Verified: started through systemd, it fetched and logged "up to date"
+  in 3.8 s. With nm-online and git stubbed to fail, it tries 3 times (20
+  s), logs it and exits 0.
+
 ## 2026-10-01 (one stow package list; update notices login-screen changes)
 
 - `update-apply.sh` ("Update Now") had its own package list, excluding

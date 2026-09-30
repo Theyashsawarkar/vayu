@@ -252,7 +252,10 @@ sudo usermod -aG docker "$USER"
 
 log "Enabling user services"
 systemctl --user daemon-reload
-systemctl --user enable --now wallpaper.timer tmux-autosave.timer batsignal.service battery-warning-dismiss.service battery-limit-watch.service update-check.service
+systemctl --user enable --now wallpaper.timer tmux-autosave.timer batsignal.service battery-warning-dismiss.service battery-limit-watch.service
+# Enabled, not started: it runs with sway (WantedBy=sway-session.target) and
+# needs sway for its prompt.
+systemctl --user enable update-check.service
 # swayidle, swaylock-on-sleep and sway-audio-idle-inhibit are Wayland
 # clients: not enabled, sway's config starts them once it is up.
 
