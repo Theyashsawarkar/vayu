@@ -5,6 +5,8 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.15.1-nightly -- 2026-10-01
+
 ## 2026-10-01 (update check runs with sway and waits for the network)
 
 - The update check failed 32 of its last 37 runs ("Could not resolve
