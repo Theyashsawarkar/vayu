@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (docs: sway-session.target in ARCHITECTURE)
+
+- `docs/ARCHITECTURE.md`'s exec-order section still said sway's first
+  exec is `dbus-update-activation-environment`. It now names
+  `sway-session.sh` and explains the target: why `PartOf=` did nothing
+  before (kdeconnect dumped core every 2 s between logout and login,
+  seen in this boot's journal), and that new Wayland-client units should
+  be `PartOf=graphical-session.target`.
+
 ## v1.15.0-nightly -- 2026-10-01
 
 ## 2026-10-01 (stow: tmux.service linked, __pycache__ ignored)

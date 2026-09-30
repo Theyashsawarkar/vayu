@@ -274,7 +274,8 @@ genuinely needs a spare VM or drive to close.
 
 ## exec order matters: dbus-update-activation-environment must come first
 
-`sway/config`'s very first `exec` is `dbus-update-activation-environment --all`. This
+`sway/config`'s very first `exec` is `~/.local/bin/sway-session.sh`, whose first
+step is `dbus-update-activation-environment --all`. This
 has to run before *anything* that starts a systemd `--user` service (`swayidle.service`,
 `sway-audio-idle-inhibit.service`) — those services run under the systemd user
 manager, a separate process from sway with its own environment, and it has no idea
@@ -288,6 +289,22 @@ Note this only matters at sway's actual startup: plain `exec` lines (unlike
 `exec_always`) don't re-run on `swaymsg reload`, so testing an exec-order fix via
 reload alone won't catch an actual ordering bug — it only shows up on a real fresh
 login.
+
+### sway-session.target: user services stop with sway
+
+`sway-session.sh` then starts `sway-session.target`
+(`systemd/.config/systemd/user/`), which binds `graphical-session.target`. That
+target refuses a manual start, and nothing else ever started it. The script then
+waits on sway's `shutdown` IPC event, stops the target, and unsets
+`WAYLAND_DISPLAY`/`SWAYSOCK`/`I3SOCK`/`DISPLAY` in the user manager.
+
+Why it matters: the user manager lingers (`Linger=yes`), so it outlives a logout.
+Before this, `PartOf=graphical-session.target` did nothing: swayidle,
+swaylock-on-sleep, sway-audio-idle-inhibit, bar-events, kdeconnect, phone-events and
+the portals kept running after sway exited. They crash-looped against the dead
+compositor (kdeconnect dumped core every 2 s, and xdg-desktop-portal-luminous hit
+its start limit and stayed failed into the next login). A new Wayland-client user
+unit should get `PartOf=graphical-session.target` for the same reason.
 
 ## Idle management: swayidle as a systemd user service, plus caffeine mode
 
