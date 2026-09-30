@@ -9,7 +9,6 @@ google-chrome
 mongosh-bin
 opencode-bin
 scenefx0.4
-sddm-sugar-dark
 sway-audio-idle-inhibit-git
 swayfx
 swaylock-effects

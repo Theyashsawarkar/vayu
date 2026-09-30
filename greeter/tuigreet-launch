@@ -1,0 +1,22 @@
+#!/bin/sh
+# greetd's greeter command: puts "ace at <battery icon> NN%" (plus a bolt
+# while charging) in tuigreet's box title. Read once per start, i.e. at
+# boot and after each logout. tuigreet ignores --custom-title when a
+# config file sets one, so run it on a copy with the title filled in.
+bat=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1)
+pct=$(cat "$bat/capacity" 2>/dev/null || echo 0)
+icon=$(printf '\357\211\204')                        # U+F244 empty
+[ "$pct" -ge 15 ] && icon=$(printf '\357\211\203')   # U+F243 quarter
+[ "$pct" -ge 40 ] && icon=$(printf '\357\211\202')   # U+F242 half
+[ "$pct" -ge 65 ] && icon=$(printf '\357\211\201')   # U+F241 three quarters
+[ "$pct" -ge 90 ] && icon=$(printf '\357\211\200')   # U+F240 full
+bolt=""
+[ "$(cat "$bat/status" 2>/dev/null)" = Charging ] && bolt=" $(printf '\357\203\247')"  # U+F0E7
+
+cfg=$(mktemp --suffix=.toml) || exec tuigreet
+sed "s|^custom_title = .*|custom_title = \"ace at $icon $pct%$bolt\"|" \
+  "${TUIGREET_CONFIG:-/etc/tuigreet/config.toml}" > "$cfg"
+tuigreet --config "$cfg" "$@"
+rc=$?
+rm -f "$cfg"
+exit $rc

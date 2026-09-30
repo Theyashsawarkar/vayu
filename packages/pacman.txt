@@ -23,6 +23,8 @@ foot
 fzf
 git
 gnome-keyring
+greetd
+greetd-tuigreet
 grim
 gst-plugin-pipewire
 inxi
@@ -59,10 +61,8 @@ python-mutagen
 qt6ct
 qt6-multimedia-ffmpeg
 qt6-svg
-qt6-virtualkeyboard
 ripgrep
 rmpc
-sddm
 seahorse
 slurp
 sof-firmware
@@ -72,6 +72,7 @@ sudo
 swaybg
 swayidle
 swayimg
+terminus-font
 terraform
 thunar
 tmux

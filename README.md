@@ -28,7 +28,7 @@ plugins), tmux (TPM), the Nerd Font the status bars need, Homebrew (`gh`, `pnpm`
 enables the required services. It backs up any pre-existing conflicting dotfiles to
 `~/.dotfiles-backup` before stowing, and is safe to re-run.
 
-When it finishes: reboot, log into the SDDM greeter, pick the **Sway** session, and
+When it finishes: reboot, log in at the tuigreet prompt on tty1 (it starts Sway), and
 inside a tmux pane press `prefix + I` (`Ctrl-a` then `Shift-i`) once to fetch the tmux
 plugins.
 

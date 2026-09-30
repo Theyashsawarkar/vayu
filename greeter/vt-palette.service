@@ -1,0 +1,13 @@
+# /etc/systemd/system/vt-palette.service -- installed by greeter/apply.sh.
+# Catppuccin Mocha with a true black background for the text consoles
+# (tuigreet's colour names index this palette). Loaded before greetd.
+[Unit]
+Description=Catppuccin Mocha console palette
+Before=greetd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/setvtrgb /etc/vtrgb
+
+[Install]
+WantedBy=greetd.service

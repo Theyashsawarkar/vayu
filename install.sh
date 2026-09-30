@@ -89,10 +89,11 @@ fi
 cd "$DOTFILES_DIR"
 
 # Every top-level dir except the non-stow ones: packages/ (package lists),
-# docs/ and the docs site's assets/ + _layouts/ (stowing those would scatter
-# the site's JS/CSS/templates into ~).
+# greeter/ (system files, installed by greeter/apply.sh), docs/ and the docs
+# site's assets/ + _layouts/ (stowing those would scatter the site's
+# JS/CSS/templates into ~).
 mapfile -t PKGS < <(find . -maxdepth 1 -mindepth 1 -type d ! -name packages ! -name docs \
-  ! -name assets ! -name _layouts ! -name '.*' -printf '%f\n')
+  ! -name greeter ! -name assets ! -name _layouts ! -name '.*' -printf '%f\n')
 
 log "Installing official repo packages (packages/pacman.txt)"
 xargs -a packages/pacman.txt sudo pacman -S --needed --noconfirm
@@ -184,10 +185,36 @@ sudo systemctl enable --now ufw
 # use 1714-1764 TCP/UDP. Without these the phone never sees the laptop.
 sudo ufw allow 1714:1764/udp
 sudo ufw allow 1714:1764/tcp
-# sddm is enabled but not started now -- starting it mid-script would hijack
-# this TTY session before the rest of the script finishes; it'll take over
-# on the reboot the final instructions ask for.
-sudo systemctl enable sddm
+# Login: greetd + tuigreet (text greeter on tty1). Not SDDM: its greeter
+# runs on Xorg and that X server stayed up, as root, for the whole sway
+# session (~120 MB with sddm + sddm-helper). greetd leaves only itself.
+# The env mirrors what SDDM derived from sway.desktop's DesktopNames:
+# xdg-desktop-portal picks its backends from XDG_CURRENT_DESKTOP.
+# greeter/apply.sh writes /etc/greetd/config.toml plus the tuigreet config,
+# the patched console font (rounded box, icons) and the console palette;
+# the sway command and its env live in greeter/config.toml.
+sudo mkdir -p /etc/greetd
+./greeter/apply.sh
+# The package's PAM file plus gnome-keyring, as SDDM's had: unlocks the
+# login keyring with the login password.
+sudo tee /etc/pam.d/greetd >/dev/null <<'EOF'
+#%PAM-1.0
+
+auth       required     pam_securetty.so
+auth       requisite    pam_nologin.so
+auth       include      system-local-login
+-auth      optional     pam_gnome_keyring.so
+account    include      system-local-login
+password   include      system-local-login
+-password  optional     pam_gnome_keyring.so use_authtok
+session    include      system-local-login
+-session   optional     pam_gnome_keyring.so auto_start
+EOF
+# Enabled but not started now -- starting it mid-script would take over
+# this TTY before the script finishes; it takes over on the reboot the
+# final instructions ask for.
+sudo systemctl disable sddm 2>/dev/null || true
+sudo systemctl enable greetd
 
 # Lid-close must suspend, never hibernate -- confirmed live on this exact
 # machine (Acer Aspire A315-23, Ryzen 3250U/Vega APU) that hibernate resume
@@ -239,6 +266,6 @@ if command -v dconf >/dev/null 2>&1; then
 fi
 
 log "Done."
-echo "Reboot, log in through the SDDM greeter, and pick the Sway session."
+echo "Reboot and log in at the tuigreet prompt on tty1 (it starts Sway)."
 echo "Inside a tmux session, press prefix + I (Ctrl-a then Shift-i) to fetch tmux plugins."
 echo "Docker-group membership needs a fresh login (or 'newgrp docker') to take effect."

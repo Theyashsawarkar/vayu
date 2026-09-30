@@ -5,6 +5,43 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (login screen: Mocha Rosé tuigreet theme)
+
+- The mockup sessions only produced an HTML preview, so the login
+  screen hadn't changed. `greeter/` now installs the chosen look
+  (`greeter/apply.sh`, called by `install.sh`; not stowed):
+  true black background, a rounded box, the clock just above it with
+  clock and calendar icons, no key-hint line, `•` for the password, and the
+  title `ace at <battery icon> NN%` plus a bolt while charging.
+- tuigreet can't do rounded corners or icons, so `build-console-font.py`
+  patches Terminus 12x24. Its 512 glyph slots are full, so the eight icons
+  replace ΄ ΅ ΐ ΰ ⌐ ⌠ ⌡ ₧. They're at Nerd Font code points. Every tty gets
+  this font and the Catppuccin Mocha palette (`vt-palette.service`).
+- The battery title is read when the greeter starts (at boot and on logout)
+  and isn't live. With a config file present, tuigreet ignores
+  `--custom-title`, so `tuigreet-launch` runs it on a filled-in copy.
+- The font is loaded in the initramfs (consolefont hook), so `apply.sh` runs
+  `mkinitcpio -P`. `systemd-vconsole-setup` doesn't run again later.
+- Verified with `tuigreet --mock` at 160x45: clock 2 rows above the box.
+  Pending: first real boot into it. Rollback is in `greeter/README.md`.
+- Packages: `+terminus-font`.
+
+## 2026-09-30 (login: greetd + tuigreet replaces SDDM)
+
+- SDDM's greeter runs on Xorg, and that X server stayed up as root for
+  the whole sway session (Xorg ~80 MB, plus sddm and sddm-helper ~45 MB).
+  Now greetd + tuigreet on tty1: a text greeter that exits at login.
+- `install.sh` writes `/etc/greetd/config.toml` and `/etc/pam.d/greetd`
+  (the package's file plus the gnome-keyring lines SDDM's PAM had, so the
+  login keyring still unlocks), disables sddm, enables greetd. The sway
+  command sets the `XDG_CURRENT_DESKTOP=sway:wlroots:swayfx` etc. SDDM
+  derived from `sway.desktop`; the portals pick backends from it.
+- Packages: `+greetd greetd-tuigreet`, `-sddm qt6-virtualkeyboard`
+  (only SDDM's on-screen keyboard used it), AUR `-sddm-sugar-dark`.
+- Pending: first login through greetd after a reboot; then remove sddm.
+  Rollback from a tty2 login: `sudo systemctl disable greetd && sudo
+  systemctl enable sddm`.
+
 ## 2026-09-30 (idle units start with sway, not before it)
 
 - `swayidle.service` and `swaylock-on-sleep.service` were

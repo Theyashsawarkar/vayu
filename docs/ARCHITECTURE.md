@@ -248,7 +248,7 @@ user, `sudo` where it needs root:
     particular one).
 11. Bootstrap Homebrew if missing, then `brew install gh pnpm`.
 12. Enable + start the services this machine actually runs (`NetworkManager`, `iwd`,
-    `bluetooth`, `docker`, `power-profiles-daemon`, `ufw`); `sddm` is *enabled* but not
+    `bluetooth`, `docker`, `power-profiles-daemon`, `ufw`); `greetd` (tuigreet login, replacing SDDM) is *enabled* but not
     started immediately, since starting a display manager mid-script would hijack the
     console you're running the script from — it takes over on the reboot the script's
     final message tells you to do anyway.
