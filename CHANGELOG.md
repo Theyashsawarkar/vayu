@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (one stow package list; update notices login-screen changes)
+
+- `update-apply.sh` ("Update Now") had its own package list, excluding
+  only packages/, docs/ and hidden dirs. The next update would have stowed
+  `greeter/` (`~/apply.sh`, `~/config.toml`, `~/vtrgb`, `~/README.md`) and
+  the docs site's `assets/` + `_layouts/` into ~. Not triggered yet: the
+  update check never got that far (next entry).
+- `scripts/.local/bin/dotfiles-stow-packages` is now the one list.
+  `install.sh` and `update-apply.sh` both run it from the repo, and
+  `update-apply.sh` stops if it lists nothing.
+- `greeter/` needs sudo, so a restow can't install it. `update-apply.sh`
+  now notifies "Login screen changed: run greeter/apply.sh" when a pull
+  touched it.
+- Verified in a throwaway home, updating a v1.14.0 clone to HEAD with
+  notify-send/swaymsg/makoctl/systemctl stubbed: no greeter/assets/_layouts
+  links, the login-screen notice on the first run, none on a re-run.
+
 ## 2026-10-01 (docs: sway-session.target in ARCHITECTURE)
 
 - `docs/ARCHITECTURE.md`'s exec-order section still said sway's first

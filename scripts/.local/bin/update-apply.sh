@@ -29,6 +29,7 @@ cd "$DOTFILES_DIR" || {
 }
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
+OLD_HEAD=$(git rev-parse HEAD)
 
 if ! PULL_OUT=$(timeout 30 git -c core.sshCommand="ssh -o BatchMode=yes -o ConnectTimeout=8" pull --ff-only origin "$BRANCH" 2>&1); then
     log "pull --ff-only failed: $PULL_OUT"
@@ -38,11 +39,17 @@ if ! PULL_OUT=$(timeout 30 git -c core.sshCommand="ssh -o BatchMode=yes -o Conne
 fi
 log "pulled: $PULL_OUT"
 
-# Same package discovery install.sh itself uses (every top-level dir
-# except packages/docs/hidden ones) -- restow (-R, not plain stow) so
-# both new files in the pull AND anything removed get their symlinks
-# corrected, not just newly-added ones.
-mapfile -t PKGS < <(find . -maxdepth 1 -mindepth 1 -type d ! -name packages ! -name docs ! -name '.*' -printf '%f\n')
+# Same package list install.sh uses (dotfiles-stow-packages, run from the
+# repo since the pull may have just added or changed it) -- restow (-R,
+# not plain stow) so both new files in the pull AND anything removed get
+# their symlinks corrected, not just newly-added ones.
+mapfile -t PKGS < <("$DOTFILES_DIR/scripts/.local/bin/dotfiles-stow-packages" "$DOTFILES_DIR")
+if [ "${#PKGS[@]}" -eq 0 ]; then
+    log "no stow packages found"
+    notify-send -u critical -i "$ICON_ERROR" "Update pulled but restow skipped" \
+        "dotfiles-stow-packages listed nothing -- run it in ~/dotfiles to see why"
+    exit 1
+fi
 if ! STOW_OUT=$(stow -R -d "$DOTFILES_DIR" -t "$HOME" "${PKGS[@]}" 2>&1); then
     log "stow -R failed: $STOW_OUT"
     notify-send -u critical -i "$ICON_ERROR" "Update pulled but restow failed" \
@@ -64,3 +71,9 @@ systemctl --user daemon-reload >/dev/null 2>&1 || true
 log "update applied successfully on $BRANCH"
 notify-send -u normal -i "$ICON_OK" "Desktop updated" \
     "Pulled and restowed the latest $BRANCH. Sway/mako reloaded live -- log out or reboot if any systemd service definitions changed."
+# greeter/ is system files (needs sudo), so a restow doesn't install it.
+if ! git diff --quiet "$OLD_HEAD" HEAD -- greeter/; then
+    log "greeter/ changed: run greeter/apply.sh"
+    notify-send -u normal -i "$ICON_OK" "Login screen changed" \
+        "Run ~/dotfiles/greeter/apply.sh in a terminal (needs sudo) to install it."
+fi

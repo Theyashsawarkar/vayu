@@ -88,12 +88,9 @@ else
 fi
 cd "$DOTFILES_DIR"
 
-# Every top-level dir except the non-stow ones: packages/ (package lists),
-# greeter/ (system files, installed by greeter/apply.sh), docs/ and the docs
-# site's assets/ + _layouts/ (stowing those would scatter the site's
-# JS/CSS/templates into ~).
-mapfile -t PKGS < <(find . -maxdepth 1 -mindepth 1 -type d ! -name packages ! -name docs \
-  ! -name greeter ! -name assets ! -name _layouts ! -name '.*' -printf '%f\n')
+# Every top-level dir except the non-stow ones (packages/, docs/, greeter/,
+# the docs site's assets/ + _layouts/): one list, shared with update-apply.sh.
+mapfile -t PKGS < <(./scripts/.local/bin/dotfiles-stow-packages "$DOTFILES_DIR")
 
 log "Installing official repo packages (packages/pacman.txt)"
 xargs -a packages/pacman.txt sudo pacman -S --needed --noconfirm

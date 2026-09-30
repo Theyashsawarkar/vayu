@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Prints the stow packages in ~/dotfiles (or $1), one per line: every
+# top-level directory except the ones that aren't stow packages. The single
+# list used by install.sh and update-apply.sh; the two used to keep their
+# own copies, and update-apply.sh's had drifted (it would have stowed
+# greeter/'s system files and the docs site's assets/ + _layouts/ into ~).
+#
+#   packages/          package lists
+#   docs/              documentation
+#   greeter/           system files, installed by greeter/apply.sh
+#   assets/ _layouts/  the docs site's JS/CSS/templates
+#   .*                 .git, .github...
+set -euo pipefail
+cd "${1:-$HOME/dotfiles}"
+find . -maxdepth 1 -mindepth 1 -type d \
+  ! -name packages ! -name docs ! -name greeter ! -name assets ! -name _layouts \
+  ! -name '.*' -printf '%f\n' | sort
