@@ -5,6 +5,8 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.15.0-nightly -- 2026-10-01
+
 ## 2026-10-01 (stow: tmux.service linked, __pycache__ ignored)
 
 - A restow of `scripts` would have linked `__pycache__` (gitignored,
