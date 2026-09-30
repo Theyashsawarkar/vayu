@@ -1,22 +1,25 @@
 #!/bin/sh
-# greetd's greeter command: puts "ace at <battery icon> NN%" (plus a bolt
-# while charging) in tuigreet's box title. Read once per start, i.e. at
-# boot and after each logout. tuigreet ignores --custom-title when a
-# config file sets one, so run it on a copy with the title filled in.
+# greetd's greeter command: puts "Ace · NN%" (plus "· charging") in
+# tuigreet's box title. Read once per start, i.e. at boot and after each
+# logout. tuigreet ignores --custom-title when a config file sets one, so run
+# it on a copy with the title filled in. Plain text on purpose: a one-cell
+# console icon is too small to read (a clock looked like a "G").
+title=Ace
 bat=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1)
-pct=$(cat "$bat/capacity" 2>/dev/null || echo 0)
-icon=$(printf '\357\211\204')                        # U+F244 empty
-[ "$pct" -ge 15 ] && icon=$(printf '\357\211\203')   # U+F243 quarter
-[ "$pct" -ge 40 ] && icon=$(printf '\357\211\202')   # U+F242 half
-[ "$pct" -ge 65 ] && icon=$(printf '\357\211\201')   # U+F241 three quarters
-[ "$pct" -ge 90 ] && icon=$(printf '\357\211\200')   # U+F240 full
-bolt=""
-[ "$(cat "$bat/status" 2>/dev/null)" = Charging ] && bolt=" $(printf '\357\203\247')"  # U+F0E7
+if [ -n "$bat" ] && pct=$(cat "$bat/capacity" 2>/dev/null); then
+  title="$title · $pct%"
+  [ "$(cat "$bat/status" 2>/dev/null)" = Charging ] && title="$title · charging"
+fi
 
-cfg=$(mktemp --suffix=.toml) || exec tuigreet
-sed "s|^custom_title = .*|custom_title = \"ace at $icon $pct%$bolt\"|" \
+# tuigreet-ace keeps the box centred under the clock (see apply.sh). Stock
+# tuigreet moves the box up by window_padding, so drop that padding there.
+greeter=/usr/local/bin/tuigreet-ace pad=
+[ -x "$greeter" ] || { greeter=tuigreet pad='s|^window_padding = .*|window_padding = 0|;'; }
+
+cfg=$(mktemp --suffix=.toml) || exec "$greeter"
+sed "${pad}s|^custom_title = .*|custom_title = \"$title\"|" \
   "${TUIGREET_CONFIG:-/etc/tuigreet/config.toml}" > "$cfg"
-tuigreet --config "$cfg" "$@"
+"$greeter" --config "$cfg" "$@"
 rc=$?
 rm -f "$cfg"
 exit $rc

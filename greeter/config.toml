@@ -8,11 +8,13 @@ command = "env XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway:wlroots:swayfx 
 
 [display]
 show_time = true
-# U+F017 clock, U+F073 calendar (patched into the console font)
-time_format = " %H:%M     %a %d %b"
+# e.g. "01:12 AM  ·  Thu 01 Oct 2026". Every field is fixed width, and the
+# total (28) must stay even: the box is 44 wide on 160 columns, so an odd
+# width sits half a cell off its centre.
+time_format = "%I:%M %p  ·  %a %d %b %Y"
 show_title = true
-# tuigreet-launch rewrites this line to "ace at <battery icon> NN%"
-custom_title = "ace"
+# tuigreet-launch rewrites this line to "Ace · NN%" (plus "· charging")
+custom_title = "Ace"
 
 [remember]
 username = true
@@ -24,9 +26,12 @@ characters = "•"
 
 [layout]
 width = 44
-# At 160x45 cells this parks the clock one row above the box: tuigreet
-# pins the clock to row window_padding and lifts the box by the same.
-window_padding = 7
+# The clock sits on row window_padding. tuigreet-ace (tuigreet patched by
+# tuigreet-center-box.patch) centres the box on the screen whatever the
+# padding, so at 160x45 cells 16 puts the clock one row above the box at
+# rows 18-26. Stock tuigreet lifts the box by the padding, so
+# tuigreet-launch sets 0 when it has to fall back to it.
+window_padding = 16
 container_padding = 2
 
 [layout.widgets]

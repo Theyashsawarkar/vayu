@@ -191,8 +191,9 @@ sudo ufw allow 1714:1764/tcp
 # The env mirrors what SDDM derived from sway.desktop's DesktopNames:
 # xdg-desktop-portal picks its backends from XDG_CURRENT_DESKTOP.
 # greeter/apply.sh writes /etc/greetd/config.toml plus the tuigreet config,
-# the patched console font (rounded box, icons) and the console palette;
-# the sway command and its env live in greeter/config.toml.
+# builds tuigreet-ace (tuigreet patched to keep the box centred), the
+# patched console font (rounded box) and the console palette; the sway
+# command and its env live in greeter/config.toml.
 sudo mkdir -p /etc/greetd
 ./greeter/apply.sh
 # The package's PAM file plus gnome-keyring, as SDDM's had: unlocks the

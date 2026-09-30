@@ -1,0 +1,14 @@
+--- a/crates/tuigreet/src/ui/util.rs
++++ b/crates/tuigreet/src/ui/util.rs
+@@ -114,7 +114,10 @@
+     (y, box_height)
+   };
+ 
+-  (x, y, width, box_height)
++  // Callers draw at these coordinates directly, so make them absolute:
++  // otherwise the box ignores the rows above the main area (window padding,
++  // clock) and is centred on the whole screen minus them.
++  (area.x + x, area.y + y, width, box_height)
+ }
+ 
+ // Computes the size of a text entry, from the container width and, if

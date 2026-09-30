@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (login screen: centred, "Ace", 12-hour date, no icons)
+
+- On the real screen the one-cell icons read as letters: the clock as
+  "G", the calendar as "≡", the bolt as "S". Dropped them. The title is now
+  `Ace · NN%` (`· charging` added while charging; just `Ace` with no
+  battery), and the clock reads `01:16 AM  ·  Thu 01 Oct 2026`, 12-hour
+  like waybar. `build-console-font.py` only rounds the box corners now, so
+  ΄ ΅ ΐ ΰ ⌐ ⌠ ⌡ ₧ are back. The installed font keeps the unused icons until
+  `apply.sh` runs again.
+- The clock and box were half a cell apart horizontally, because the old
+  clock text was 23 cells wide (odd) over a 44-cell box. The new text is 28
+  cells. They also sat in the top third of the screen. tuigreet puts the
+  clock on row `window_padding`, then draws the box as if that area didn't
+  exist, which lifts the box by the same padding. So the clock and box
+  couldn't both be centred.
+- Fix: `greeter/tuigreet-center-box.patch` makes `get_rect_bounds` return
+  absolute coordinates. `apply.sh` builds tuigreet 0.11.1 with it (tarball
+  sha256-pinned to Arch's) as `/usr/local/bin/tuigreet-ace`, out of
+  pacman's way. `window_padding = 16`: box rows 18-26 of 45 (dead centre),
+  clock on row 16. If the binary is missing, `tuigreet-launch` runs stock
+  tuigreet with padding 0 (box still centred, clock on the top row).
+- Verified with `--mock` at 160x45 (both binaries). Pending: real boot.
+
 ## 2026-10-01 (login screen: Mocha Rosé tuigreet theme)
 
 - The mockup sessions only produced an HTML preview, so the login

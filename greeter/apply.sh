@@ -7,12 +7,26 @@ here=$(cd "$(dirname "$0")" && pwd)
 fonts=/usr/share/kbd/consolefonts
 
 pacman -Q terminus-font >/dev/null 2>&1 || sudo pacman -S --needed --noconfirm terminus-font
+command -v cargo >/dev/null || sudo pacman -S --needed --noconfirm rust  # builds tuigreet-ace
 
 # Rounded corners + icons: a patched copy of Terminus 12x24.
-tmp=$(mktemp)
-trap 'rm -f "$tmp"' EXIT
+tmp=$(mktemp) build=$(mktemp -d)
+trap 'rm -rf "$tmp" "$build"' EXIT
 python3 "$here/build-console-font.py" "$fonts/ter-v24n.psf.gz" "$tmp"
 sudo install -Dm644 "$tmp" "$fonts/ter-v24n-ace.psf.gz"
+
+# tuigreet-ace: tuigreet with the box centred on the screen instead of lifted
+# by window_padding (tuigreet-center-box.patch). A separate binary, so a
+# pacman update of greetd-tuigreet doesn't undo it; tuigreet-launch falls
+# back to stock tuigreet if it's missing.
+tg_ver=0.11.1
+tg_sha=7d643ba224c40c6a63f9462a826630543071aea08e732ccd2e880bcd80d939e8
+curl -fsSL "https://github.com/tuigreet/tuigreet/archive/$tg_ver/tuigreet-$tg_ver.tar.gz" -o "$build/src.tar.gz"
+echo "$tg_sha  $build/src.tar.gz" | sha256sum -c --quiet
+tar -xzf "$build/src.tar.gz" -C "$build"
+patch -d "$build/tuigreet-$tg_ver" -p1 < "$here/tuigreet-center-box.patch"
+cargo build --locked --release --manifest-path "$build/tuigreet-$tg_ver/Cargo.toml"
+sudo install -Dm755 "$build/tuigreet-$tg_ver/target/release/tuigreet" /usr/local/bin/tuigreet-ace
 
 sudo install -Dm644 "$here/config.toml" /etc/tuigreet/config.toml
 sudo install -Dm755 "$here/tuigreet-launch" /usr/local/bin/tuigreet-launch
