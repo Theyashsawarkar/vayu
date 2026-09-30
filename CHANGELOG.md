@@ -5,6 +5,16 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (stow: tmux.service linked, __pycache__ ignored)
+
+- A restow of `scripts` would have linked `__pycache__` (gitignored,
+  but stow doesn't read .gitignore) into `~/.local/bin`.
+  `scripts/.stow-local-ignore` now skips it, alongside stow's defaults, the
+  same way `systemd/` does.
+- `~/.config/systemd/user/tmux.service` was still missing (noted in earlier
+  entries). It's linked now, and still not enabled.
+- Verified: a dry-run restow of all 20 packages has nothing left to link.
+
 ## 2026-10-01 (sway-session.target: user services stop with sway)
 
 - Health check found `xdg-desktop-portal-luminous` failed. It had died

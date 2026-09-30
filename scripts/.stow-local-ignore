@@ -1,0 +1,9 @@
+# stow skips these. __pycache__ is Python's bytecode cache (bar-events.py,
+# keybind-search.py...): gitignored, but stow would still link it into
+# ~/.local/bin. A local ignore file replaces stow's defaults, so those are
+# repeated here too.
+\.git
+^/README.*
+^/LICENSE.*
+^/COPYING
+__pycache__
