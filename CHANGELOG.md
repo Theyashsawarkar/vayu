@@ -5,6 +5,26 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (sway-session.target: user services stop with sway)
+
+- Health check found `xdg-desktop-portal-luminous` failed. It had died
+  when sway exited on a logout, and systemd kept restarting it with no
+  compositor ("NoCompositor") until it hit the start limit.
+- Root cause: `graphical-session.target` was never active, so
+  `PartOf=graphical-session.target` did nothing. That covers the idle
+  units, bar-events, kdeconnect, phone-events and the portals. The user
+  manager lingers across logout, and `WAYLAND_DISPLAY` stayed in its
+  environment, so they all outlived sway.
+- `sway-session.sh` (run from sway's config, replacing the bare
+  `dbus-update-activation-environment --all`) imports the environment,
+  starts the new `sway-session.target` (binds graphical-session.target),
+  waits for sway's shutdown IPC event, then stops the target and unsets
+  the display variables. Nothing is enabled under graphical-session.target,
+  so starting it doesn't start anything twice.
+- Verified live: both targets active, 0 failed user units. The shutdown
+  watcher returns within ~25 ms of a headless sway exiting. The full logout
+  path is proven on the next logout.
+
 ## 2026-10-01 (login screen: no temp files, re-runnable apply.sh)
 
 - `tuigreet-launch` wrote its filled-in config to a temp file and deleted

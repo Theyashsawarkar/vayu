@@ -1,0 +1,10 @@
+[Unit]
+Description=sway session (pulls in graphical-session.target)
+# graphical-session.target refuses a manual start, so sway starts this and
+# it binds that target. Units with PartOf=graphical-session.target (the idle
+# units, bar-events, kdeconnect, the portals...) then stop when sway exits
+# instead of crash-looping against a compositor that's gone: the user
+# manager lingers across logout. Started and stopped by sway's config.
+BindsTo=graphical-session.target
+Wants=graphical-session-pre.target
+After=graphical-session-pre.target

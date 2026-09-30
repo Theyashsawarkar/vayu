@@ -657,7 +657,13 @@ bindsym Mod1+Shift+semicolon exec swaylock -C ~/.config/sway/lockconfig
 # failure: swayidle.service crash-looped with "Unable to connect to the
 # compositor" because this used to run near the end of this file, after
 # the swayidle restart below had already fired.
-exec dbus-update-activation-environment --all
+#
+# sway-session.sh does that, starts sway-session.target (binds
+# graphical-session.target) and stops it when sway shuts down, so the
+# PartOf=graphical-session.target units stop with sway. The user manager
+# lingers across logout; without this they crash-looped with no compositor
+# (xdg-desktop-portal-luminous hit its start limit after a logout).
+exec ~/.local/bin/sway-session.sh
 
 exec waybar 
 exec mako
