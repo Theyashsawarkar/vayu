@@ -1,9 +1,13 @@
 #!/bin/sh
 # greetd's greeter command: puts "Ace · NN%" (plus "· charging") in
 # tuigreet's box title. Read once per start, i.e. at boot and after each
-# logout. tuigreet ignores --custom-title when a config file sets one, so run
-# it on a copy with the title filled in. Plain text on purpose: a one-cell
-# console icon is too small to read (a clock looked like a "G").
+# logout. tuigreet ignores --custom-title when a config file sets one, so it
+# gets a filled-in copy of the config on fd 3. That way there's no temp
+# file, and exec leaves no wrapper for greetd's signals to miss. Plain text
+# on purpose: a one-cell console icon is too small to read (a clock looked
+# like a "G").
+conf=${TUIGREET_CONFIG:-/etc/tuigreet/config.toml}
+
 title=Ace
 bat=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1)
 if [ -n "$bat" ] && pct=$(cat "$bat/capacity" 2>/dev/null); then
@@ -16,10 +20,7 @@ fi
 greeter=/usr/local/bin/tuigreet-ace pad=
 [ -x "$greeter" ] || { greeter=tuigreet pad='s|^window_padding = .*|window_padding = 0|;'; }
 
-cfg=$(mktemp --suffix=.toml) || exec "$greeter"
-sed "${pad}s|^custom_title = .*|custom_title = \"$title\"|" \
-  "${TUIGREET_CONFIG:-/etc/tuigreet/config.toml}" > "$cfg"
-"$greeter" --config "$cfg" "$@"
-rc=$?
-rm -f "$cfg"
-exit $rc
+[ -r "$conf" ] || exec "$greeter" "$@"
+exec "$greeter" --config /dev/fd/3 "$@" 3<<CFG
+$(sed "${pad}s|^custom_title = .*|custom_title = \"$title\"|" "$conf")
+CFG

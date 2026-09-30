@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-01 (login screen: no temp files, re-runnable apply.sh)
+
+- `tuigreet-launch` wrote its filled-in config to a temp file and deleted
+  it after tuigreet exited. If the greeter was killed first (greetd at
+  shutdown, or a killed test run), the file stayed: 18 had piled up in
+  /tmp. Now the config goes to tuigreet on fd 3 and the launcher `exec`s
+  it, so there's no temp file and no wrapper process. A missing config falls
+  back to tuigreet's own default.
+- `apply.sh` is cheap to re-run: `mkinitcpio -P` only when the font or
+  `FONT=` changes, and tuigreet-ace is rebuilt only when the version or
+  the patch changes (stamp in `/usr/local/share/tuigreet-ace/build-id`).
+  The cargo build now uses its own `--target-dir` inside the temp dir.
+- Removing the icons from the font needs one `apply.sh` run to reach the
+  installed font. Verified with a dry run (sudo stubbed): download,
+  checksum, patch, build, installs.
+
 ## 2026-10-01 (login screen: centred, "Ace", 12-hour date, no icons)
 
 - On the real screen the one-cell icons read as letters: the clock as

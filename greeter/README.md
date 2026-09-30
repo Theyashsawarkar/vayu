@@ -36,5 +36,5 @@ user = "greeter"
 T
 sudo sed -i 's/^FONT=.*/FONT=default8x16/' /etc/vconsole.conf
 sudo systemctl disable vt-palette.service && sudo mkinitcpio -P
-sudo rm -f /usr/local/bin/tuigreet-ace
+sudo rm -rf /usr/local/bin/tuigreet-ace /usr/local/share/tuigreet-ace
 ```
