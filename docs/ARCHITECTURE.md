@@ -377,6 +377,14 @@ confirm the reboot hadn't quietly broken anything else in the same session
 (config/theme loaded correctly, `cache_dir` resolved, zero errors -- see the rmpc
 theme entries above).
 
+**Superseded 2026-09-30:** the root cause was the `WantedBy=default.target` itself.
+`swayidle.service`, `swaylock-on-sleep.service` and `sway-audio-idle-inhibit.service`
+now have no `[Install]` section (like `bar-events.service`): nothing starts them
+before sway exists, sway's config starts them after `dbus-update-activation-environment`,
+and `swayidle-startup.sh` is just "start unless the caffeine marker exists". The
+`reset-failed` workaround is gone. Don't re-enable them; a Wayland client can't run
+from `default.target`.
+
 `sway-audio-idle-inhibit.service` has a real crash history of its own
 (`coredumpctl list` shows several SIGABRTs across separate days, unrelated to
 this reboot), but confirmed currently healthy and running since this exact boot
@@ -404,7 +412,7 @@ the lid physically closes" -- those are different triggers with
 different intent, and they shouldn't have shared one service's on/off
 state. Fixed by splitting `before-sleep` out of `sway/idle/config`
 into its own file, `sway/idle/lock-on-sleep`, run by a second, separate
-systemd user service, `swaylock-on-sleep.service` -- always enabled,
+systemd user service, `swaylock-on-sleep.service` -- always
 started unconditionally from `sway/config` right alongside
 `sway-audio-idle-inhibit.service`, and never touched by
 `caffeine-toggle.sh`/`swayidle-startup.sh`. Caffeine mode still stops

@@ -1,5 +1,6 @@
 [Unit]
 Description=swayidle -- screen dimming/lock/suspend timeouts
+PartOf=graphical-session.target
 
 [Service]
 Type=simple
@@ -7,5 +8,7 @@ ExecStart=/usr/bin/swayidle -w -C %h/.config/sway/idle/config
 Restart=on-failure
 RestartSec=2
 
-[Install]
-WantedBy=default.target
+# No [Install]: a Wayland client, so it can't run before sway exists.
+# Started by sway's config via swayidle-startup.sh (which honours caffeine
+# mode). It used to be WantedBy=default.target: the user manager started it
+# at login before the compositor, and it crash-looped ~9 times per boot.

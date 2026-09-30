@@ -675,14 +675,9 @@ exec ~/.local/bin/notification-mode-restore.sh
 # Start the idle manager automatically
 # Managed as a systemd user service (systemd/.config/systemd/user/swayidle.service)
 # rather than a raw exec, so caffeine-toggle.sh can stop/start it cleanly via
-# systemctl instead of juggling raw processes.
-#
-# Not a plain `systemctl restart` -- swayidle.service is `enabled`
-# (WantedBy=default.target), so systemd auto-starts it at every login on
-# its own regardless of caffeine mode's last state, meaning caffeine never
-# survived a reboot. swayidle-startup.sh re-applies whatever was last
-# chosen via the waybar caffeine toggle (see its own comments for the
-# full reasoning) instead of unconditionally starting it here.
+# systemctl instead of juggling raw processes. The unit isn't enabled (a
+# Wayland client can't start before sway); swayidle-startup.sh starts it
+# unless caffeine mode was left on.
 exec ~/.local/bin/swayidle-startup.sh
 # Also a systemd user service now (systemd/.config/systemd/user/sway-audio-idle-inhibit.service)
 # instead of a raw exec -- it crashed once connecting to the audio stack too
@@ -691,9 +686,6 @@ exec systemctl --user restart sway-audio-idle-inhibit.service
 
 # Lock-before-sleep, split out from swayidle.service above so caffeine mode
 # never disables it (systemd/.config/systemd/user/swaylock-on-sleep.service).
-# reset-failed first for the same reason swayidle-startup.sh needs it above --
-# same swayidle binary, same WAYLAND_DISPLAY-not-ready race at login.
-exec systemctl --user reset-failed swaylock-on-sleep.service
 exec systemctl --user restart swaylock-on-sleep.service
 
 # KDE Connect daemon (phone <-> laptop) as a supervised user unit, started

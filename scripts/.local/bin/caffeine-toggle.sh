@@ -11,12 +11,9 @@
 # Uses systemctl --user rather than raw process management (pkill/setsid)
 # -- simpler and more reliable than juggling backgrounding/disown by hand.
 #
-# STATE_FILE persists the on/off choice across reboots -- swayidle.service
-# is `enabled` (WantedBy=default.target), so systemd auto-starts it at
-# every login on its own regardless of what this script did last;
+# STATE_FILE persists the on/off choice across reboots:
 # swayidle-startup.sh (run from sway/config at startup) reads this same
-# file to re-apply whatever was chosen here, rather than caffeine mode
-# silently resetting to off on every reboot.
+# file and only starts swayidle.service when it's absent.
 STATE_DIR="$HOME/.local/state/caffeine"
 STATE_FILE="$STATE_DIR/enabled"
 mkdir -p "$STATE_DIR"

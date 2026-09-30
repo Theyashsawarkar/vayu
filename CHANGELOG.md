@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-09-30 (idle units start with sway, not before it)
+
+- `swayidle.service` and `swaylock-on-sleep.service` were
+  `WantedBy=default.target`, so the user manager started them at login
+  before sway existed: each crash-looped ~9 times ("Unable to connect to
+  the compositor") until sway restarted them, and `swayidle-startup.sh`
+  needed `reset-failed` to get past the start limit. They, and
+  `sway-audio-idle-inhibit.service`, now have no `[Install]` (the
+  `bar-events` pattern) and are started only by sway's config.
+  `swayidle-startup.sh` is now "start unless caffeine is on".
+- Gotcha: `systemctl --user disable` on a stow-symlinked unit also deletes
+  the unit's own symlink in `~/.config/systemd/user` ("linked" unit).
+  `stow -R systemd` puts it back.
+- Tested both caffeine branches live. Pending: a cold boot should show
+  no swayidle/swaylock-on-sleep failures in `journalctl --user -b`.
+
 ## 2026-09-30 (post-reboot check; drop no-op cliphist exec)
 
 - Verified v1.14.0 after a cold boot: waybar, bar-events, phone-events,

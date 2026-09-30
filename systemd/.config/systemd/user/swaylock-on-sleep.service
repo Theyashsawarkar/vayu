@@ -1,5 +1,6 @@
 [Unit]
 Description=Lock screen before sleep/suspend (always on, independent of caffeine mode)
+PartOf=graphical-session.target
 
 [Service]
 Type=simple
@@ -7,5 +8,5 @@ ExecStart=/usr/bin/swayidle -w -C %h/.config/sway/idle/lock-on-sleep
 Restart=on-failure
 RestartSec=2
 
-[Install]
-WantedBy=default.target
+# No [Install]: a Wayland client (swayidle), started by sway's config --
+# see swayidle.service for why default.target was wrong.
