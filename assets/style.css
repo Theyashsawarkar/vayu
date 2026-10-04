@@ -5,6 +5,11 @@
    only -- no light variant, matches the desktop itself. */
 
 :root {
+  /* One width for the whole site: the navbar pill, the hero card, the
+     homepage sections and the docs layout all span exactly this, so their
+     edges line up on every page. Containers add their own padding on top
+     (calc below), keeping the visible edges at this width. */
+  --site-width: 1480px;
   --base: #1e1e2e;
   --crust: #11111b;
   --mantle: #181825;
@@ -97,7 +102,7 @@ code {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1180px;
+  max-width: var(--site-width);
   margin: 0 auto;
   padding: 0.65rem 1.25rem;
   border-radius: 999px;
@@ -167,7 +172,7 @@ code {
    needing the two numbers to match exactly. */
 .hero {
   position: relative;
-  max-width: 1280px;
+  max-width: calc(var(--site-width) + 4rem); /* + its 2rem side padding */
   margin: 0 auto;
   padding: 3rem 2rem 5rem;
   min-height: calc(100vh - 6rem);
@@ -639,7 +644,7 @@ pre:hover .copy-btn, pre:focus-within .copy-btn, .copy-btn:focus {
 .copy-btn.copied { background: var(--green); color: var(--crust); opacity: 1; }
 
 /* --- Feature grid --- */
-main { max-width: 1180px; margin: 0 auto; padding: 0 2.5rem; }
+main { max-width: calc(var(--site-width) + 5rem); margin: 0 auto; padding: 0 2.5rem; }
 /* Direct bug report: clicking "Features" in the nav scrolled past the
    section's own title, since the sticky .topnav-wrap sits on top of
    whatever the browser's native anchor-jump lands on. scroll-margin-top

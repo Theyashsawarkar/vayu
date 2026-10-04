@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (site: one width everywhere, more room for content)
+
+- The site used four widths: navbar 1180px, hero 1280px, homepage
+  sections 1180px, docs layout 1280px, with the docs article ~900px on a
+  1920px screen (so wide tables wrapped). Now one `--site-width` (1480px,
+  `assets/style.css`) sets them all, each container adding its own padding
+  on top so the visible edges match: navbar pill, hero card, feature and
+  docs grids, docs sidebar and article all span 203-1683px at 1900px wide.
+- The docs article is now ~1190px; prose lines are capped at 100ch (was
+  78ch) so text stays readable.
+- Fixed along the way: the docs content area is a `<main>`, so the
+  homepage's `main { padding: 0 2.5rem }` also applied there and pushed the
+  article 40px in from the navbar's edge.
+- Measured in Chrome on a local build (element edges via
+  getBoundingClientRect); neither Troubleshooting table scrolls any more.
+
 ## 2026-10-04 (site: real tables, clickable tool rows, a structured Tools page)
 
 - Tables on every docs page were bare columns (no table styling existed).
