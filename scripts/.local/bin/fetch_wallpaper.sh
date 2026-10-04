@@ -27,6 +27,20 @@
 # Now picks a random recent index and a random market on every run, so a
 # click is genuinely likely to differ from the last one instead of being
 # pinned to one fixed day+country.
+#
+# Random picks still repeated a lot, though: an md5sum of Archive/ showed
+# one photo saved 12 times and a dozen more saved 2-3 times, because
+# markets share photos and an index points at a different day every day.
+# So every applied wallpaper is now recorded in $SEEN_FILE (Bing's own
+# image ID, e.g. "GrizzlySwim" out of OHR.GrizzlySwim_EN-US5133524829 --
+# the same across every market, unlike the bytes -- plus the file's md5),
+# and a run only applies an image whose ID and md5 aren't in it.
+# Every index+market pair is looked up in the API's JSON mode, all in
+# one parallel curl (no image downloads), then walked shuffled, recent
+# days before older ones; only the chosen image is downloaded. The history is
+# never pruned with the archive, so "seen" means seen ever, not just
+# within the last $MAX_ARCHIVE_FILES. If every candidate has been seen,
+# the current wallpaper simply stays -- a repeat is never applied.
 
 set -uo pipefail
 # Deliberately not `-e`: this script must always be able to reach its own
@@ -37,6 +51,7 @@ ACTIVE_DIR="$BASE_DIR/Active"
 ARCHIVE_DIR="$BASE_DIR/Archive"
 CURRENT="$BASE_DIR/current.jpg"
 LAST_GOOD="$BASE_DIR/.last_good.jpg"
+SEEN_FILE="$BASE_DIR/.seen"  # TSV: bing-id, md5, date applied, filename
 LOCK_FILE="/tmp/fetch_wallpaper.lock"
 LOG_DIR="$HOME/.local/state/fetch-wallpaper"
 LOG_FILE="$LOG_DIR/fetch-wallpaper.log"
@@ -61,16 +76,17 @@ ICON_ERROR=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png
 # across this many real markets makes repeated fetches land on a
 # genuinely different image far more often than not.
 WALLPAPER_MARKETS=(en-US en-GB en-CA en-AU en-IN de-DE fr-FR fr-CA ja-JP zh-CN es-ES es-MX it-IT pt-BR ru-RU ko-KR nl-NL pl-PL tr-TR sv-SE)
-# 0-3 = today through 3 days ago -- stays "recent", not reaching deep into
-# Bing's archive, while still adding a second axis of variety alongside
-# the market choice.
-WALLPAPER_MAX_INDEX=3
-MAX_RETRIES=3
+# 0-3 = today through 3 days ago -- tried first, so a new wallpaper stays
+# "recent" when it can. 4-7 (Bing's API goes no further back) are only
+# reached once every recent market+day combination has been seen.
+WALLPAPER_RECENT_MAX_INDEX=3
+WALLPAPER_MAX_INDEX=7
+MAX_RETRIES=3    # lookup rounds / image download failures before giving up
 RETRY_DELAY=5
 
-wallpaper_url() {
+wallpaper_info_url() {
   local idx="$1" mkt="$2"
-  printf 'https://bing.biturl.top/?resolution=1920&format=image&index=%s&mkt=%s' "$idx" "$mkt"
+  printf 'https://bing.biturl.top/?resolution=1920&format=json&index=%s&mkt=%s' "$idx" "$mkt"
 }
 
 mkdir -p "$ACTIVE_DIR" "$ARCHIVE_DIR" "$LOG_DIR"
@@ -172,43 +188,136 @@ if command -v nmcli >/dev/null 2>&1; then
   fi
 fi
 
-# --- Download, with retries and real validation -----------------------------
-TMP_FILE=$(mktemp "$ACTIVE_DIR/.download.XXXXXX")
-downloaded=false
-chosen_idx=""
-chosen_mkt=""
+# --- History of applied wallpapers -------------------------------------------
+# First run with this history: seed it with the md5 of everything already
+# on disk (no Bing ID known for those, hence "-"), so the archive that
+# predates it counts as seen too. A plain TSV read into two hash tables
+# once per run: it grows by a line a day, so a database would buy nothing.
+if [ ! -f "$SEEN_FILE" ]; then
+  find "$ACTIVE_DIR" "$ARCHIVE_DIR" -maxdepth 1 -type f -name '*.jpg' -print0 \
+    | xargs -0 -r md5sum \
+    | awk -v d="$(date +%Y%m%d)" '!seen[$1]++ { n = $2; sub(/.*\//, "", n); printf "-\t%s\t%s\t%s\n", $1, d, n }' \
+    > "$SEEN_FILE"
+  log INFO "seeded $SEEN_FILE with $(wc -l < "$SEEN_FILE") existing wallpaper(s)"
+fi
 
-for attempt in $(seq 1 "$MAX_RETRIES"); do
-  # Re-rolled every attempt, not just once up front -- a retry after a
-  # validation failure gets a genuinely fresh index+market to try instead
-  # of hammering the same (possibly bad) combination three times.
-  chosen_idx=$((RANDOM % (WALLPAPER_MAX_INDEX + 1)))
-  chosen_mkt="${WALLPAPER_MARKETS[$((RANDOM % ${#WALLPAPER_MARKETS[@]}))]}"
-  url=$(wallpaper_url "$chosen_idx" "$chosen_mkt")
-  log INFO "download attempt $attempt/$MAX_RETRIES (index=$chosen_idx, mkt=$chosen_mkt)"
-  if curl -fsSL --connect-timeout 10 --max-time 20 -o "$TMP_FILE" "$url"; then
-    if is_valid_image "$TMP_FILE"; then
-      downloaded=true
-      break
-    fi
-    log WARN "attempt $attempt: response wasn't an image (got $(file -b --mime-type "$TMP_FILE" 2>/dev/null || echo unknown)) -- API is up but returned something unusable, discarding"
-  else
-    log WARN "attempt $attempt: download failed (curl exit $?)"
-  fi
-  [ "$attempt" -lt "$MAX_RETRIES" ] && sleep "$RETRY_DELAY"
+declare -A SEEN_IDS=() SEEN_MD5S=()
+while IFS=$'\t' read -r s_id s_md5 _; do
+  [ -n "$s_id" ] && [ "$s_id" != "-" ] && SEEN_IDS[$s_id]=1
+  [ -n "$s_md5" ] && SEEN_MD5S[$s_md5]=1
+done < "$SEEN_FILE"
+
+remember() {  # $1 = id, $2 = md5, $3 = filename
+  printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$(date +%Y%m%d)" "$3" >> "$SEEN_FILE"
+  SEEN_IDS[$1]=1; SEEN_MD5S[$2]=1
+}
+
+# --- Look up every index+market at once ---------------------------------------
+# One lookup takes ~1.5s, so walking candidates one by one until an
+# unseen one turns up could take a minute and a half once most are seen.
+# A single parallel curl fetches all of them (8 days x 20 markets) in
+# about the time of one -- measured 1.4s for all 160.
+LOOKUP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/fetch_wallpaper.XXXXXX")
+TMP_FILE=""
+trap 'rm -rf "$LOOKUP_DIR"; [ -n "$TMP_FILE" ] && rm -f "$TMP_FILE"' EXIT
+
+# Shuffled, recent days (0..RECENT_MAX) first, older ones after.
+candidates() {
+  local lo="$1" hi="$2" i m
+  for i in $(seq "$lo" "$hi"); do
+    for m in "${WALLPAPER_MARKETS[@]}"; do echo "$i $m"; done
+  done | shuf
+}
+mapfile -t CANDIDATES < <(
+  candidates 0 "$WALLPAPER_RECENT_MAX_INDEX"
+  candidates $((WALLPAPER_RECENT_MAX_INDEX + 1)) "$WALLPAPER_MAX_INDEX"
+)
+
+curl_args=()
+for cand in "${CANDIDATES[@]}"; do
+  read -r idx mkt <<<"$cand"
+  curl_args+=(-o "$LOOKUP_DIR/$idx-$mkt.json" "$(wallpaper_info_url "$idx" "$mkt")")
 done
 
-# Filename reflects what was actually fetched (day index + market) rather
-# than just today's date -- clicking twice in one day now legitimately
-# produces two different files instead of the second overwriting the
-# first in Active/ before archiving even sees it.
-FILEPATH="$ACTIVE_DIR/wallpaper-$(date +%Y%m%d)-idx${chosen_idx}-${chosen_mkt}.jpg"
-
-if [ "$downloaded" != true ]; then
-  rm -f "$TMP_FILE"
-  use_fallback "no valid image after $MAX_RETRIES attempts"
+answered=0
+for attempt in $(seq 1 "$MAX_RETRIES"); do
+  # -f: a failed lookup leaves no file; the rest still land.
+  curl -fsS -Z --parallel-max 50 --connect-timeout 10 --max-time 30 "${curl_args[@]}" 2>/dev/null
+  answered=$(find "$LOOKUP_DIR" -name '*.json' -size +0 | wc -l)
+  [ "$answered" -gt 0 ] && break
+  log WARN "lookup attempt $attempt/$MAX_RETRIES: no answers"
+  [ "$attempt" -lt "$MAX_RETRIES" ] && sleep "$RETRY_DELAY"
+done
+if [ "$answered" -eq 0 ]; then
+  use_fallback "network errors"
   exit 0
 fi
+
+# Unseen images, in candidate order, one entry per photo: markets share
+# photos, and Bing's ID is the same across them.
+picks=()
+declare -A listed=()
+for cand in "${CANDIDATES[@]}"; do
+  read -r idx mkt <<<"$cand"
+  img_url=$(jq -r '.url // empty' "$LOOKUP_DIR/$idx-$mkt.json" 2>/dev/null)
+  [ -n "$img_url" ] || continue
+  # .../th?id=OHR.GrizzlySwim_EN-US5133524829_1920x1080.jpg -> GrizzlySwim;
+  # if Bing ever changes that format, the whole id= value still works as
+  # an ID (just per-market rather than shared).
+  img_id=$(sed -n 's/.*[?&]id=OHR\.\([^_&]*\)_.*/\1/p' <<<"$img_url")
+  [ -n "$img_id" ] || img_id=$(sed -n 's/.*[?&]id=\([^&]*\).*/\1/p' <<<"$img_url")
+  [ -n "$img_id" ] || img_id="$img_url"
+  [ -n "${listed[$img_id]:-}" ] && continue
+  listed[$img_id]=1
+  [ -n "${SEEN_IDS[$img_id]:-}" ] && continue
+  picks+=("$img_id $idx $mkt $img_url")
+done
+log INFO "$answered/${#CANDIDATES[@]} lookups answered: ${#listed[@]} distinct image(s), ${#picks[@]} not used before"
+
+# --- Download the first unseen one that really is new ------------------------
+TMP_FILE=$(mktemp "$ACTIVE_DIR/.download.XXXXXX")
+downloaded=false
+net_failures=0
+for pick in "${picks[@]}"; do
+  read -r img_id idx mkt img_url <<<"$pick"
+  log INFO "downloading $img_id (index=$idx, mkt=$mkt)"
+  if ! curl -fsSL --connect-timeout 10 --max-time 30 -o "$TMP_FILE" "$img_url"; then
+    net_failures=$((net_failures + 1))
+    log WARN "download of $img_id failed, $net_failures/$MAX_RETRIES"
+    [ "$net_failures" -ge "$MAX_RETRIES" ] && break
+    sleep "$RETRY_DELAY"
+    continue
+  fi
+  if ! is_valid_image "$TMP_FILE"; then
+    log WARN "$img_id: response wasn't an image (got $(file -b --mime-type "$TMP_FILE" 2>/dev/null || echo unknown)), discarding"
+    continue
+  fi
+  img_md5=$(md5sum "$TMP_FILE" | cut -d' ' -f1)
+  if [ -n "${SEEN_MD5S[$img_md5]:-}" ]; then
+    # Same bytes as a wallpaper from before the history had IDs. Record
+    # the ID too, so next time it's skipped without downloading.
+    log INFO "skip $img_id: identical to an earlier wallpaper (md5 $img_md5)"
+    remember "$img_id" "$img_md5" "-"
+    continue
+  fi
+  downloaded=true
+  break
+done
+
+if [ "$downloaded" != true ]; then
+  if [ "$net_failures" -ge "$MAX_RETRIES" ]; then
+    use_fallback "network errors"
+  else
+    # Not an error: Bing just hasn't published anything not already used.
+    # Leave the current wallpaper alone rather than repeat an old one.
+    log INFO "no unseen wallpaper available -- keeping the current one"
+    notify-send -u low -i "$ICON_WALLPAPER" "Wallpaper" "No new wallpaper available yet -- keeping the current one"
+  fi
+  exit 0
+fi
+
+# Named after Bing's image ID, so the archive says which photo it is.
+FILEPATH="$ACTIVE_DIR/wallpaper-$(date +%Y%m%d)-${img_id//[^A-Za-z0-9_-]/_}.jpg"
 
 # --- Success: archive the old one, promote the new one ---------------------
 log INFO "download OK: $(file -b --mime-type "$TMP_FILE"), $(stat -c%s "$TMP_FILE") bytes"
@@ -219,6 +328,7 @@ mv -f "$TMP_FILE" "$FILEPATH"
 chmod 644 "$FILEPATH"
 cp -f "$FILEPATH" "$LAST_GOOD"
 ln -sf "$FILEPATH" "$CURRENT"
+remember "$img_id" "$img_md5" "$(basename "$FILEPATH")"
 
 archive_count=$(find "$ARCHIVE_DIR" -maxdepth 1 -type f -name '*.jpg' | wc -l)
 if [ "$archive_count" -gt "$MAX_ARCHIVE_FILES" ]; then

@@ -5,6 +5,42 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (wallpaper never repeats an image)
+
+- `Archive/` was about half duplicates: 61 files, 32 distinct images,
+  one saved 12 times. Random index+market picks kept landing on the
+  same photo, since markets share photos and an index points at a
+  different day every day. The lock screen shows `current.jpg`, so it
+  repeated them too.
+- `fetch_wallpaper.sh` now keeps a history in
+  `~/Pictures/Wallpapers/.seen` (TSV): Bing's image ID (`GrizzlySwim`
+  from `OHR.GrizzlySwim_EN-US...`, the same in every market) and the md5
+  of every wallpaper applied. It isn't pruned with the archive. It's
+  read into two bash hash tables once per run. It grows a line a day,
+  so SQLite would add a dependency and no speed. A first run seeds it
+  with the md5s already on disk. It skips any image whose ID or md5 is
+  in the history. If everything Bing offers has been used, it keeps the
+  current wallpaper and says "No new wallpaper available yet".
+  Network failures still fall back to the last good wallpaper.
+- Speed: one lookup takes ~1.5 s, so going through candidates one at a
+  time could take ~90 s once most were used. All 160 index+market
+  lookups now go out as one parallel curl (`-Z`, measured 1.4 s), and
+  only the chosen image is downloaded. A run takes ~3.5 s. Those 160
+  lookups cover only ~27 distinct photos, a few new each day, so
+  repeated clicks will eventually hit "No new wallpaper".
+- Archive files are now named after the image ID
+  (`wallpaper-20261004-BearsEars.jpg`).
+- On this machine: deleted the 29 duplicates (kept the oldest copy of
+  each md5) and seeded `.seen` with the 32 remaining images. The 4 of
+  them still among Bing's current 27 got their IDs by downloading those
+  27 and matching md5s.
+- Verified in a throwaway home with a copy of the archive: 5 runs gave 5
+  new images, and AmberHall/GrizzlySwim were skipped as md5 matches with
+  old files. A one-market build showed "No new wallpaper available
+  yet". With curl stubbed to fail, it fell back after 3 lookup rounds.
+  Then a live `systemctl --user start wallpaper.service` applied
+  BearsEars in 3.5 s.
+
 ## v1.15.1-nightly -- 2026-10-01
 
 ## 2026-10-01 (update check runs with sway and waits for the network)
