@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (splash on reboot/power-off, Mocha login border)
+
+- Reboot and power-off now show the Vayu logo through to the end:
+  `splash/vayu-splash-hold.service` (installed and enabled by
+  `splash/apply.sh`) starts once Plymouth's shutdown splash is up and
+  holds the final reboot/power-off until the intro has played (2.6 s),
+  even when everything else has already stopped. Skipped if Plymouth isn't
+  running.
+- The text that flashed before the shutdown splash was tty1 showing
+  through between sway exiting and Plymouth starting, with old boot
+  messages still on it. `vt-palette.service` now clears tty1 and hides its
+  cursor before greetd starts.
+- Login box border was VGA red: `vt-palette.service` ran before
+  `plymouth-quit`, and Plymouth restores the kernel's default palette as it
+  quits. It now runs after `plymouth-quit`, so `border = "red"` is Mocha's
+  red again.
+
 ## 2026-10-04 (faster, flicker-free boot: early amdgpu, splash ordering, sway log off tty1)
 
 - Measured after the splash reboot: greeter at 14.3 s after kernel start.

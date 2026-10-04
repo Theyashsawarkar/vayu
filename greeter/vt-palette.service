@@ -1,13 +1,24 @@
 # /etc/systemd/system/vt-palette.service -- installed by greeter/apply.sh.
 # Catppuccin Mocha with a true black background for the text consoles
 # (tuigreet's colour names index this palette). Loaded before greetd.
+#
+# After plymouth-quit: Plymouth restores the palette it found when it
+# started (the kernel default) as it quits, so a palette set earlier is
+# lost and the login box border shows VGA red instead of Mocha's.
+#
+# Also clears tty1 and hides its cursor. tty1 shows through, as text, in
+# the moment between sway exiting and the shutdown splash appearing, and
+# whatever was printed there before the greeter (boot messages) would
+# flash up.
 [Unit]
 Description=Catppuccin Mocha console palette
+After=plymouth-quit.service plymouth-quit-wait.service
 Before=greetd.service
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/setvtrgb /etc/vtrgb
+ExecStart=/bin/sh -c "printf '\\033[H\\033[2J\\033[3J\\033[?25l' > /dev/tty1"
 
 [Install]
 WantedBy=greetd.service

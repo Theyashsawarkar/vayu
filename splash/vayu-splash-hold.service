@@ -1,0 +1,20 @@
+# /etc/systemd/system/vayu-splash-hold.service -- installed by splash/apply.sh.
+# On reboot/power-off, keeps the machine up until the Vayu intro has played
+# to the end, however fast the rest of shutdown finishes. Starts once
+# Plymouth's shutdown splash is showing and runs alongside the stop jobs;
+# the final reboot/power-off waits for it. 2.6 s = the 2.2 s intro
+# (55 frames at 25 fps, see theme/vayu.script) plus a moment of the finished
+# logo. Skipped when Plymouth isn't running (Esc, plymouth.enable=0).
+[Unit]
+Description=Let the Vayu shutdown splash finish its intro
+DefaultDependencies=no
+After=plymouth-reboot.service plymouth-poweroff.service plymouth-halt.service
+Before=systemd-reboot.service systemd-poweroff.service systemd-halt.service
+
+[Service]
+Type=oneshot
+ExecCondition=/usr/bin/plymouth --ping
+ExecStart=/usr/bin/sleep 2.6
+
+[Install]
+WantedBy=reboot.target poweroff.target halt.target

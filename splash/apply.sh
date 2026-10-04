@@ -21,8 +21,10 @@ themes=/usr/share/plymouth/themes
 # firmware framebuffer instead of showing a blank screen.
 cmdline_opts=(quiet splash loglevel=3 rd.udev.log_level=3 plymouth.use-simpledrm)
 
-changed=()
+# changed: what lives in the UKI (needs a rebuild); outside: what doesn't.
+changed=() outside=()
 differs() { changed+=("$1"); if $check; then echo "differs: $1"; fi; }
+differs_outside() { outside+=("$1"); if $check; then echo "differs: $1"; fi; }
 
 if ! pacman -Q plymouth >/dev/null 2>&1; then
   differs "plymouth is not installed"
@@ -49,6 +51,17 @@ done
 if ! cmp -s "$here/plymouthd.conf" /etc/plymouth/plymouthd.conf 2>/dev/null; then
   differs /etc/plymouth/plymouthd.conf
   $check || sudo install -Dm644 "$here/plymouthd.conf" /etc/plymouth/plymouthd.conf
+fi
+
+# Reboot/power-off wait for the splash intro to finish (see the unit).
+hold=vayu-splash-hold.service
+if ! cmp -s "$here/$hold" "/etc/systemd/system/$hold" 2>/dev/null; then
+  differs_outside "/etc/systemd/system/$hold"
+  $check || { sudo install -Dm644 "$here/$hold" "/etc/systemd/system/$hold"; sudo systemctl daemon-reload; }
+fi
+if ! systemctl is-enabled -q "$hold" 2>/dev/null; then
+  differs_outside "$hold is not enabled"
+  $check || sudo systemctl enable "$hold"
 fi
 
 # The plymouth hook goes after keymap/consolefont and before block (so
@@ -107,13 +120,14 @@ if [ "${#missing[@]}" -gt 0 ]; then
   $check || sudo sed -i "1s/\$/ ${missing[*]}/" /etc/kernel/cmdline
 fi
 
+total=$(( ${#changed[@]} + ${#outside[@]} ))
 if $check; then
-  [ "${#changed[@]}" -eq 0 ] && echo "boot splash matches the repo"
-  [ "${#changed[@]}" -eq 0 ]
+  [ "$total" -eq 0 ] && echo "boot splash matches the repo"
+  [ "$total" -eq 0 ]
   exit
 fi
-[ "${#changed[@]}" -eq 0 ] && { echo "boot splash already up to date"; exit 0; }
+[ "$total" -eq 0 ] && { echo "boot splash already up to date"; exit 0; }
 
 # The theme, the hook and the command line all live inside the UKI.
-sudo mkinitcpio -P
-echo "Boot splash installed: ${#changed[@]} change(s). Reboot to see it."
+[ "${#changed[@]}" -gt 0 ] && sudo mkinitcpio -P
+echo "Boot splash installed: $total change(s). Reboot to see it."
