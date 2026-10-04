@@ -12,9 +12,10 @@ GTK CSS can hide a row). See ai/README.md for the threat model.
     dialog.py <request-dir>     reads request.json, writes result.json
 
 Keys:
-# keybind: Vayu/root approval | Esc | Cancel the root request (deny everything)
+# keybind: Vayu/root approval | Esc | Cancel the root request (deny everything; closes the window after a run)
 # keybind: Vayu/root approval | Enter (password field) | Run the selected commands as root
 # keybind: Vayu/root approval | Space | Toggle the focused command
+# keybind: Vayu/root approval | Enter (after a failed run) | Close the window
 """
 import ctypes
 import json
@@ -36,6 +37,7 @@ RUNNER = "/usr/local/lib/vayu-elevate/runner.py"
 SUDO = "/usr/bin/sudo"
 EXPIRES_AFTER = 600          # seconds the request stays open (then: denied)
 MAX_ATTEMPTS = 3             # wrong passwords before the request fails
+AUTO_CLOSE_MS = 1500         # after a fully successful run
 STATE_LOG = os.path.join(pwd.getpwuid(os.getuid()).pw_dir, ".local/state/vayu-elevate/requests.jsonl")
 
 CSS = """
@@ -119,7 +121,10 @@ class ElevateWindow(Adw.ApplicationWindow):
         self.set_default_size(780, -1)
         self.connect("close-request", self.on_close)
 
+        # Capture phase: the window sees Esc/Enter before any child, so a
+        # widget that was disabled while focused can't swallow them.
         keys = Gtk.EventControllerKey()
+        keys.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         keys.connect("key-pressed", self.on_key)
         self.add_controller(keys)
 
@@ -240,11 +245,17 @@ class ElevateWindow(Adw.ApplicationWindow):
     def on_key(self, _ctrl, keyval, _code, _state):
         if keyval == Gdk.KEY_Escape:
             if self.done:
-                self.close()
+                self.quit()
             elif not self.running:
                 self.finish_denied("denied", "The user denied the request.")
             return True
-        return False
+        if keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter) and self.done:
+            self.quit()
+            return True
+        return False  # Enter before a run reaches the password field (activate = Run)
+
+    def quit(self):
+        self.get_application().quit()
 
     def tick(self):
         if self.done or self.running:
@@ -263,6 +274,9 @@ class ElevateWindow(Adw.ApplicationWindow):
             return
         pw = self.password.get_text()
         self.running = True
+        # Move focus off the password field before disabling it: disabling the
+        # focused widget left GTK's focus broken and the keys stopped working.
+        self.set_focus(None)
         for w in (*self.checks, self.password, self.deny_btn):
             w.set_sensitive(False)
         self.update_run_label()
@@ -390,18 +404,25 @@ class ElevateWindow(Adw.ApplicationWindow):
             print(f"vayu-elevate dialog: can't write the result: {e}", file=sys.stderr)
         self.log(result)
         if close:
-            self.get_application().quit()
+            self.quit()
             return
         ok = sum(r["state"] == "ok" for r in self.results)
         bad = sum(r["state"] == "failed" for r in self.results)
-        self.error.set_label(f"Done: {ok} succeeded" + (f", {bad} failed" if bad else "")
-                             + (". " + message if status == "error" else ". The agent has the full output."))
-        self.error.remove_css_class("error")
-        self.error.set_visible(True)
         self.run_btn.set_label("Close")
         self.run_btn.set_sensitive(True)
-        self.run_btn.connect("clicked", lambda *_: self.get_application().quit())
+        self.run_btn.connect("clicked", lambda *_: self.quit())
         self.run_btn.grab_focus()
+        if status == "completed" and not bad:
+            # All good: the agent has the output; show the ticks for a moment.
+            self.error.set_label(f"Done: {ok} succeeded. Closing…")
+            self.error.remove_css_class("error")
+            self.error.set_visible(True)
+            GLib.timeout_add(AUTO_CLOSE_MS, lambda: self.quit() or False)
+            return
+        # Something failed: stay open with the output until Enter/Esc/Close.
+        self.error.set_label((f"Done: {ok} succeeded, {bad} failed" if status == "completed" else message)
+                             + ". Enter or Esc closes.")
+        self.error.set_visible(True)
 
     def log(self, result):
         try:

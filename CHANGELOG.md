@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (vayu-elevate: the window closes after a run)
+
+- After approving, the window stayed open and neither Enter nor Esc
+  closed it. Two causes: by design it stayed open to show results, and
+  disabling the password field while it had focus left GTK's focus broken
+  ("GtkText - did not receive a focus-out event"), so the keys never
+  reached the window's handler.
+- Now: after a fully successful run it shows the ticks and closes itself
+  after 1.5 s; after a failure it stays open with the error, and Enter,
+  Esc or Close closes it. The key handler runs in the capture phase (sees
+  keys before any widget), and focus leaves the password field before it
+  is disabled.
+- Tested with a fake sudo/runner (success closes itself; failure stays,
+  then Enter and Esc each close it) and live: `id -un` returned `root`
+  and the window closed on its own. The fix itself was installed through
+  vayu-elevate (one `install -o root` command, approved in the window).
+
 ## 2026-10-04 (vayu-elevate: AI agents ask for root, you approve once)
 
 - New `ai/` (not stowed; `ai/apply.sh` installs it root-owned, wired into

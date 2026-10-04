@@ -22,13 +22,16 @@ desktop:
 
 Press **Run** (or Enter in the password field). The ticked commands run as
 root, one after another, stopping at the first one that fails, and each
-card shows its result. The agent gets everything back: which commands you
-approved or declined, and each one's exit code and output.
+card shows its result. If they all succeed, the window closes by itself a
+moment later; if one fails, it stays open with the error until you press
+Enter, Esc or Close. The agent gets everything back either way: which
+commands you approved or declined, and each one's exit code and output.
 
 | Key | Does |
 |---|---|
 | `Enter` (in the password field) | Run the ticked commands |
 | `Esc` | Deny the whole request (nothing runs) |
+| `Enter` / `Esc` (after a failed run) | Close the window |
 | `Space` | Tick or untick the focused command |
 
 A request you don't answer expires after 10 minutes and counts as denied.
