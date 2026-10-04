@@ -32,6 +32,26 @@ because here everything was already in place:
   `/usr/sbin` ahead of `/usr/bin` in PATH. That path isn't in
   `/etc/shells`, so pam_shells-style checks refuse it. The installer now
   uses the path `/etc/shells` lists.
+- **The installer wrote app data into its own repo.** On a fresh home,
+  stow "folds": a directory that doesn't exist yet becomes one link into
+  the repo. So `~/.local/share` (and with it nvim's plugins),
+  `~/.config/systemd` (`systemctl --user enable`'s `.wants` links),
+  `~/.claude`, `~/.tmux` (TPM plugins) and the GTK dirs all pointed into
+  `~/dotfiles`. The test run moved 52 files of nvim data back out of
+  `kdeconnect/.local/share`. Worse, the dirty tree made every later run
+  skip `git pull`, so the machine silently stopped updating. Now:
+  - `STOW_REAL_DIRS` (manifest.sh), copied from this machine's layout,
+    is created before stowing.
+  - A folded link from an earlier run is replaced, and any app data
+    that got into the repo is moved back to `~`.
+  - `vayu-verify` checks each one.
+- **Pulls with local changes.** nvim rewrites `lazy-lock.json` on every
+  plugin update, so the tree is rarely clean. `git pull --ff-only` itself
+  refuses when a change would be overwritten, and only then is the pull
+  skipped, with a warning.
+- **A pulled install.sh is re-executed.** bash keeps reading the file it
+  started with, so a run that pulled a newer installer carried on with
+  the old code.
 - **The summary could die halfway.** It ran with errexit still on, so the
   first failing diagnostic ended the run before the footer and log path
   printed, which is exactly when you need them.
