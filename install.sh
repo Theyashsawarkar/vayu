@@ -392,6 +392,29 @@ bootstrap_yay() {
   rm -rf "$tmp"
 }
 
+# An AUR package with packages/aur-patches/<pkg>.sed gets that sed run on
+# its PKGBUILD before building, for when upstream's PKGBUILD is broken (a
+# dependency renamed, say) and the fix is known. Built with makepkg, then
+# installed with pacman --ask=4, which says yes to replacing a conflicting
+# package (stock sway, from the fallback below, when swayfx builds again).
+build_patched_aur() {
+  local p=$1 patch="$DOTFILES_DIR/packages/aur-patches/$1.sed" tmp aurver
+  aurver=$(curl -fsS --max-time 30 "https://aur.archlinux.org/rpc/v5/info?arg[]=$p" | jq -r '.results[0].Version // empty') || aurver=""
+  if [ -n "$aurver" ] && [ "$(pacman -Q "$p" 2>/dev/null | cut -d' ' -f2)" = "$aurver" ]; then
+    info "$p $aurver already installed (patched build)"
+    return 0
+  fi
+  tmp=$(mktemp -d)
+  git clone --depth=1 "https://aur.archlinux.org/$p.git" "$tmp/$p"
+  sed -i -f "$patch" "$tmp/$p/PKGBUILD"
+  info "patched $p's PKGBUILD with packages/aur-patches/$p.sed:"
+  git -C "$tmp/$p" --no-pager diff --stat
+  (cd "$tmp/$p" && makepkg -s --noconfirm --needed) || { rm -rf "$tmp"; return 1; }
+  # shellcheck disable=SC2046
+  sudo pacman -U --noconfirm --ask=4 $(find "$tmp/$p" -maxdepth 1 -name "*.pkg.tar.*" ! -name "*-debug-*" ! -name "*.sig")
+  rm -rf "$tmp"
+}
+
 install_aur() {
   cd "$DOTFILES_DIR"
   local want=() avail=() failed=() found p q=""
@@ -412,10 +435,20 @@ install_aur() {
   # installed. Without it ~/.cache/yay kept every version ever built (14G).
   yay -Y --save --cleanafter
   local yay_opts=(--needed --noconfirm --answerdiff None --answerclean None --removemake)
-  info "${#avail[@]}/${#want[@]} packages available, building/installing"
-  if ! yay -S "${yay_opts[@]}" "${avail[@]}"; then
+  # Patched packages first, and kept out of yay's batch (it would build the
+  # broken PKGBUILD).
+  local plain=()
+  for p in "${avail[@]}"; do
+    if [ -f "packages/aur-patches/$p.sed" ]; then
+      build_patched_aur "$p" || { failed+=("$p"); note_failure "aur: '$p' failed to build even with packages/aur-patches/$p.sed (see https://aur.archlinux.org/packages/$p comments)"; }
+    else
+      plain+=("$p")
+    fi
+  done
+  info "${#plain[@]} more to build/install with yay"
+  if [ "${#plain[@]}" -gt 0 ] && ! yay -S "${yay_opts[@]}" "${plain[@]}"; then
     warn "batch install failed; retrying one package at a time to find the culprit"
-    for p in "${avail[@]}"; do
+    for p in "${plain[@]}"; do
       yay -S "${yay_opts[@]}" "$p" || { failed+=("$p"); note_failure "aur: '$p' failed to build/install (retry: yay -S $p; see https://aur.archlinux.org/packages/$p)"; }
     done
   fi
@@ -423,7 +456,7 @@ install_aur() {
   # to start. Stock sway reads the same config (swayfx-only lines like
   # blur/corner_radius just get flagged) and keeps the machine usable.
   if ! command -v sway >/dev/null 2>&1; then
-    note_failure "no sway after the AUR step (swayfx failed); installed stock sway as a fallback -- replace it later: yay -S swayfx"
+    note_failure "no sway after the AUR step (swayfx failed); installed stock sway as a fallback -- re-run install.sh later to swap swayfx back in"
     sudo pacman -S --needed --noconfirm sway || note_failure "pacman: fallback 'sway' failed to install too"
   fi
   mark_explicit "${avail[@]}"
@@ -644,10 +677,11 @@ cd "$DOTFILES_DIR"
 source "$DOTFILES_DIR/packages/manifest.sh"
 
 run_step "Installing official packages (packages/pacman.txt)" install_official
+# Before the AUR builds: system/ carries makepkg.conf.d (-j$(nproc), !debug).
+run_step "Installing system files (system/ -> /)" apply_system_files
 run_step --critical "Bootstrapping yay (AUR helper)" bootstrap_yay
 run_step "Installing AUR packages (packages/aur.txt)" install_aur
 run_step --critical "Stowing configs into ~ (conflicts backed up to $BACKUP_DIR)" stow_all
-run_step "Installing system files (system/ -> /)" apply_system_files
 run_step "Installing the login screen (greetd + tuigreet, greeter/)" apply_greeter
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux

@@ -36,6 +36,26 @@ AUR package, say) doesn't stop the rest; the summary at the end lists exactly wh
 failed. Its last step is `vayu-verify`, which you can run any time to see whether the
 machine still matches the repo.
 
+**Before you run it**, the few things it can't do for you (it checks each one first
+and stops with the fix if one is missing):
+- your user can use `sudo` (archinstall's "superuser" user, or as root:
+  `usermod -aG wheel <user>` and uncomment `%wheel ALL=(ALL:ALL) ALL` via `EDITOR=nano visudo`)
+- networking is up and archlinux.org, github.com and aur.archlinux.org are reachable
+- about 15G free in `$HOME`
+
+**If something fails:**
+- The summary prints a `fix:` line under every failed step, saying what to check or run.
+- In `latest.log`, search for `command failed` to find the exact failing command and its exit code.
+- A failed run also appends a `diagnostics` section at the end of the log: clock,
+  disk, memory, network, the pacman lock and log, journal errors and failed units.
+- Fix the problem and run the installer again. It skips anything that's already
+  done. If you need to clone the repo again, move `~/dotfiles` aside first.
+- There are fallbacks so you can still log in to a desktop:
+  - If `swayfx` (AUR) fails to build, stock `sway` gets installed.
+  - If yay won't build, the prebuilt `yay-bin` is used instead.
+  - The login screen is installed before its patched build, so if that build
+    fails you get stock `tuigreet`.
+
 When it finishes: reboot and log in at the tuigreet prompt on tty1 (it starts Sway).
 
 Secrets (API keys, tokens) are never in this repo — see
