@@ -64,6 +64,15 @@ if ! systemctl is-enabled -q "$hold" 2>/dev/null; then
   $check || sudo systemctl enable "$hold"
 fi
 
+# Keeps text off the screen after the shutdown logo (see the script). The
+# only directory systemd-shutdown reads hooks from is under /usr/lib.
+blank=vayu-splash-blank.shutdown
+blank_dst=/usr/lib/systemd/system-shutdown/$blank
+if ! cmp -s "$here/$blank" "$blank_dst" 2>/dev/null || [ ! -x "$blank_dst" ]; then
+  differs_outside "$blank_dst"
+  $check || sudo install -Dm755 "$here/$blank" "$blank_dst"
+fi
+
 # The plymouth hook goes after keymap/consolefont and before block (so
 # before encrypt, if a machine has it). Plymouth puts the console in
 # graphics mode, where setfont fails: placed before consolefont, the console

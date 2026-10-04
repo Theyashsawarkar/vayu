@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (no text after the shutdown logo)
+
+- Reboot showed the logo, then a screen of white text, then black, then the
+  Acer logo. The journal and Plymouth's log both end at the switch into the
+  shutdown ramfs, so the likely cause came from systemd's source: right after
+  that switch `systemd-shutdown` calls `make_console_stdio()`, which puts
+  `/dev/console` back in text mode (`KDSETMODE KD_TEXT`) and only erases
+  from the cursor line down. The console was redrawn over the logo with
+  whatever was still on it.
+- New `splash/vayu-splash-blank.shutdown`, installed by `splash/apply.sh`
+  to `/usr/lib/systemd/system-shutdown/` (the only place
+  `systemd-shutdown` runs hooks from, just before that switch): clears the
+  console, hides the cursor and sets all 16 console colours to black, so
+  anything drawn after the logo, including the kernel's "reboot:
+  Restarting system", is black on black. Expected flow on reboot: logo,
+  black, Acer, logo, login. Power-off: logo, off.
+- Not fully explained: on SIGTERM Plymouth hands its DRM fd (still DRM
+  master, frame still scanned out) to `plymouthd-fd-escrow`, which is in
+  the shutdown ramfs at the path `plymouthd` execs, so the text console
+  shouldn't reach the screen at all. Something releases it anyway. The
+  blanking doesn't depend on what: black on black stays black. Not yet
+  confirmed by a reboot.
+
 ## v1.16.0-nightly -- 2026-10-04
 
 ## 2026-10-04 (splash on reboot/power-off, Mocha login border)

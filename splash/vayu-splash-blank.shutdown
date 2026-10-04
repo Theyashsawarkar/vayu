@@ -1,0 +1,22 @@
+#!/bin/sh
+# /usr/lib/systemd/system-shutdown/vayu-splash-blank.shutdown -- installed
+# by splash/apply.sh. systemd-shutdown runs this as the very last step on the
+# real root, just before it switches into the shutdown ramfs.
+#
+# Right after that switch it resets /dev/console and puts it back in text
+# mode (make_console_stdio), so the console was redrawn over the Vayu logo:
+# a screen of white text between the logo and the firmware. Its reset only
+# erases from the cursor line down, so anything above stayed.
+#
+# Clear the console, hide the cursor and make all 16 console colours black.
+# Whatever is drawn after the logo (the redraw, the kernel's "reboot:
+# Restarting system") is then black on black, until the power goes. The
+# palette is the kernel's, so the next boot starts with the normal one.
+for tty in /dev/console /dev/tty1; do
+  [ -w "$tty" ] || continue
+  printf '\033[0m\033[H\033[2J\033[3J\033[?25l' > "$tty"
+  for i in 0 1 2 3 4 5 6 7 8 9 A B C D E F; do
+    printf '\033]P%s000000' "$i" > "$tty"
+  done
+done 2>/dev/null
+exit 0
