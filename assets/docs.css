@@ -64,7 +64,7 @@
   scroll-margin-top: 5.5rem; /* so the sticky topnav doesn't cover the target when jumped to */
 }
 #docs-article h2:first-of-type { border-top: none; margin-top: 0; }
-#docs-article h3 { font-size: 1.15rem; color: var(--sky); margin: 2rem 0 0.75rem; }
+#docs-article h3 { font-size: 1.15rem; color: var(--sky); margin: 2rem 0 0.75rem; scroll-margin-top: 5.5rem; }
 #docs-article p, #docs-article li { color: var(--text); font-size: 0.96rem; max-width: 78ch; }
 #docs-article a { word-break: break-word; }
 #docs-article ul, #docs-article ol { padding-left: 1.4rem; }
@@ -146,3 +146,77 @@
   border: 1px solid rgba(203, 166, 247, 0.18);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
+
+/* Tables: a framed grid in the Mocha palette instead of bare columns.
+   display:block + overflow-x lets a wide table scroll on a phone instead
+   of pushing the page sideways. */
+#docs-article table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem 0 1.5rem;
+  border: 1px solid var(--surface0);
+  border-radius: 10px;
+  background: var(--mantle);
+  font-size: 0.92rem;
+}
+#docs-article thead th {
+  background: var(--surface0);
+  color: var(--subtext);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 0.7rem 1rem;
+  white-space: nowrap;
+}
+#docs-article td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--surface0);
+  vertical-align: top;
+  color: var(--text);
+}
+#docs-article tbody tr:first-child td { border-top: none; }
+#docs-article td code { overflow-wrap: anywhere; } /* long commands wrap instead of forcing a scroll */
+/* Two-column tables are label/value lists ("At a glance", keys): the
+   label column reads as a label. */
+#docs-article table:has(thead th:nth-child(2):last-child) td:first-child {
+  color: var(--subtext);
+  font-weight: 600;
+  white-space: nowrap;
+  width: 1%;
+}
+
+/* Rows that point at a section on this page (docs.js adds .row-link):
+   the whole row is the link. */
+#docs-article tr.row-link { cursor: pointer; transition: background 0.15s ease; }
+#docs-article tr.row-link:hover,
+#docs-article tr.row-link:focus-visible { background: rgba(203, 166, 247, 0.08); }
+#docs-article tr.row-link:focus-visible { outline: 2px solid var(--mauve); outline-offset: -2px; }
+#docs-article tr.row-link td:first-child { white-space: nowrap; }
+#docs-article tr.row-link td:first-child a { font-weight: 700; }
+#docs-article tr.row-link td:last-child::after {
+  content: "\2192";
+  float: right;
+  margin-left: 0.75rem;
+  color: var(--overlay1, #7f849c);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+#docs-article tr.row-link:hover td:last-child::after { color: var(--mauve); transform: translateX(3px); }
+
+/* The heading a row (or any in-page link) jumped to glows briefly. */
+@keyframes heading-flash {
+  0% { background: rgba(203, 166, 247, 0.22); }
+  100% { background: transparent; }
+}
+#docs-article .flash { animation: heading-flash 1.6s ease-out; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  #docs-article .flash { animation: none; }
+}
+
+/* Nested sidebar entries (h3s on short pages). */
+#toc-list .toc-sub { margin: 0.15rem 0 0.4rem; padding-left: 0.85rem; border-left: 1px solid var(--surface0); }
+#toc-list .toc-sub a { font-size: 0.82em; opacity: 0.85; }

@@ -5,6 +5,31 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (site: real tables, clickable tool rows, a structured Tools page)
+
+- Tables on every docs page were bare columns (no table styling existed).
+  Now a framed grid in the Mocha palette: header row, row dividers,
+  rounded border, label-style first column on two-column tables, long
+  inline commands wrap inside their cell, and a too-wide table scrolls by
+  itself on a phone instead of the page.
+- Table rows with exactly one link to a section on the same page become
+  clickable as a whole (`assets/docs.js`): click, or Tab to the row and
+  Enter, and the page smooth-scrolls to the section and the heading glows
+  briefly; an arrow shows on hover. Selecting text in a row doesn't
+  navigate. Rows without such a link (Troubleshooting's) are unchanged.
+- The sidebar lists subsections (h3) nested under their section on short
+  pages (8 sections or fewer: Tools, Keybindings); Architecture and the
+  Changelog stay sections-only.
+- Tools page restructured: the overview table, then one section per tool
+  (`vayu-elevate`) with a lead, an "At a glance" table (command, MCP,
+  runs as, expiry, logs, install paths, source) and subsections: What you
+  see, Keys, What's recorded, For agents (sending a request, reading the
+  result, over MCP), Letting agents know, Security. Status, state and exit
+  codes are tables instead of run-on sentences.
+- Checked in Chrome on a local build: clicking the row's text lands the
+  heading under the navbar with the glow and the sidebar entry active;
+  Enter on the focused row navigates; Troubleshooting's tables wrap.
+
 ## v1.18.0-nightly -- 2026-10-04
 
 ## 2026-10-04 (site: a Tools section, with vayu-elevate screenshots)
