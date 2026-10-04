@@ -5,6 +5,46 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (system audit: swap tuning, package hygiene, caches, greeter PAM)
+
+A full pass over the running system after the first real `install.sh`
+run. Idle CPU, waybar (already signal-driven), power settings and the
+portals were fine and left alone.
+
+- **Swap tuned for zram.** `vm.swappiness=10` is a disk-swap value. With
+  zram as the main swap it kept zram nearly unused, so memory pressure
+  dropped page cache instead. Now `swappiness=180`, `page-cluster=0` and
+  the watermark tweaks, per the ArchWiki zram page. zram moves from lz4
+  to zstd (better ratio), and its size from the default min(ram/2, 4G)
+  to min(ram, 8G). `/swapfile` stays as overflow. The zram change takes
+  effect at the next boot.
+- **makepkg** (`system/etc/makepkg.conf.d/vayu.conf`): builds use
+  `-j$(nproc)` instead of one core, and `!debug` stops the `-debug` split
+  packages. Three were installed for nothing: swayfx-, bruno-bin- and
+  mongosh-bin-debug.
+- **Journal** capped at 300M (`journald.conf.d/size.conf`); it had grown
+  to 635M. `apply.sh` restarts journald when that file changes.
+- **Greeter PAM** (`pam.d/greetd-greeter`): greetd uses this for the
+  tuigreet session when it exists. It's the same as `pam.d/greetd`
+  without `pam_gnome_keyring`, which had started a keyring daemon for the
+  `greeter` user with `HOME=/` on every boot.
+- **Packages:**
+  - Added `pacman-contrib`, for `paccache.timer`: weekly, it keeps 3
+    versions in the pacman cache, which held 2636 packages (7.4G).
+  - Added `wireless-regdb`. Without it the kernel logged "regulatory.db
+    failed" and wifi stayed on the restrictive world domain.
+  - `systemd-boot-update.service` is enabled. The ESP still had
+    systemd-boot 260 under systemd 262.
+- **Listed packages marked explicit.** `--needed` skipped 13 listed
+  packages already present as dependencies (mpv, curl, jq, python...), so
+  they stayed "dependency" installs, and an orphan cleanup would have
+  removed them. `install.sh` now runs `pacman -D --asexplicit` on those,
+  and `vayu-verify` flags any that are left.
+- **yay**: `install.sh` sets `cleanAfter`. `~/.cache/yay` held every
+  version ever built (14G, cleared).
+- **zsh**: `ZSH_DISABLE_COMPFIX=true` skips compaudit (~10-25 ms per
+  shell).
+
 ## 2026-10-04 (tmux.service -> tmux-main.service: the link that kept vanishing)
 
 - **Why `~/.config/systemd/user/tmux.service` kept disappearing** (it's

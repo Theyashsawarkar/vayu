@@ -88,6 +88,10 @@ plugins=(
   zsh-syntax-highlighting
 )
 
+# Skip compaudit's ownership scan of every fpath dir (~25 ms per shell,
+# a quarter of oh-my-zsh's startup); single-user machine, nothing to catch.
+ZSH_DISABLE_COMPFIX=true
+
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
