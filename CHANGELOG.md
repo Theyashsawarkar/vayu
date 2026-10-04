@@ -13,6 +13,11 @@ full branch/release process.
   `splash/logo.svg` so the hairlines hold up at that size; the link is
   labelled "Vayu home" for screen readers. Checked on a local build
   (homepage and Troubleshooting page).
+- First push showed an empty brand in a browser that still had the
+  previous `style.css` cached (Pages sends `max-age=600`): the SVG had no
+  size without the new rule and collapsed to 0x0. It now carries
+  `width="76" height="30"` itself; checked live with the stale stylesheet
+  still loaded (76x30, logo visible).
 
 ## 2026-10-04 (site: the splash logo and a shlok in the hero)
 
