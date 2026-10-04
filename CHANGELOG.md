@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.17.0 -- 2026-10-04
+
+## 2026-10-04 (pre-release check for v1.17.0 Stable)
+
+- Settled the four "Pending" items since v1.14.0, on this machine after
+  today's reboots: login goes through greetd (session `Service=greetd`)
+  with the patched `/usr/local/bin/tuigreet-ace`; sddm is uninstalled and
+  its unit gone; a cold boot shows no swayidle/swaylock-on-sleep failures
+  in `journalctl --user -b`.
+- Machine state: `vayu-verify` 91 passed / 0 failed; no failed system or
+  user units; boot errors are only the known benign ones (TDX not
+  supported, wpa_supplicant multicast notice, gkr-pam control file,
+  kdeconnect duplicate D-Bus name).
+- Not tested here: a fresh install of the splash on hardware other than
+  this Raven APU laptop (no `vayu-kms` there; Plymouth uses simpledrm until
+  the GPU driver loads). Covered in `docs/TROUBLESHOOTING.md`.
+
 ## v1.17.0-nightly -- 2026-10-04
 
 ## 2026-10-04 (the docs site builds from development)
