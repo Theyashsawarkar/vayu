@@ -5,6 +5,8 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.17.0-nightly -- 2026-10-04
+
 ## 2026-10-04 (the docs site builds from development)
 
 - GitHub Pages now builds from `development` instead of `main`. Docs
