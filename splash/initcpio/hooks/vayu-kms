@@ -1,0 +1,8 @@
+#!/usr/bin/ash
+# /etc/initcpio/hooks/vayu-kms -- installed by splash/apply.sh. Runs right
+# after udevd starts and before udev triggers anything, so amdgpu loads with
+# the CPU to itself. See /etc/initcpio/install/vayu-kms.
+
+run_earlyhook() {
+    modprobe -qa acpi_cpufreq amdgpu
+}

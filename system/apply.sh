@@ -81,6 +81,8 @@ fi
 # Without it the driver loads from the root filesystem a moment later, and
 # systemd-vconsole-setup reapplies the console font when it does. The
 # preset's --splash only paints a logo during that wait, so it goes too.
+# (splash/apply.sh's vayu-kms hook brings amdgpu back early with only this
+# APU's firmware, ~6 MB instead of ~35 MB.)
 rebuild_initramfs=false
 if grep -qE '^HOOKS=\(.*\bkms\b' /etc/mkinitcpio.conf 2>/dev/null; then
   changed+=("mkinitcpio kms hook")

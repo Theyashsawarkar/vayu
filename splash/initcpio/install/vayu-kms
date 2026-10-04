@@ -1,0 +1,36 @@
+#!/bin/bash
+# /etc/initcpio/install/vayu-kms -- installed by splash/apply.sh on AMD
+# Raven-family APUs (PCI 1002:15d8/15dd) only. Early KMS without the bloat.
+#
+# amdgpu costs ~3 s of CPU to load whatever we do (measured: the kernel's
+# own module processing, not decompression or disk). Loaded from the root
+# filesystem it lands in the middle of userspace start-up, stalls it for
+# 5-8 s and swaps the framebuffer under the login screen. Loaded here it
+# runs first, alone, and Plymouth, the console font and tuigreet all start
+# on the final display.
+#
+# The stock kms hook does the same but packs firmware for every AMD GPU
+# (~30 MB, ~3 s more firmware read time in the "loader" phase). This keeps
+# only the files whose names start with VAYU_AMDGPU_FIRMWARE (set in
+# /etc/mkinitcpio.conf.d/vayu-kms.conf), ~400 KB for Raven/Picasso.
+
+build() {
+    local f keep p
+    add_module acpi_cpufreq     # CPU boost before the ~3 s load, not after it
+    add_module amdgpu
+    for f in "$BUILDROOT"/usr/lib/firmware/amdgpu/*; do
+        keep=false
+        for p in "${VAYU_AMDGPU_FIRMWARE[@]}"; do
+            [[ ${f##*/} == "$p"* ]] && keep=true
+        done
+        $keep || rm -f -- "$f"
+    done
+    add_runscript
+}
+
+help() {
+    cat <<HELPEOF
+Loads amdgpu (and acpi_cpufreq) first thing in the initramfs, packing only
+the firmware named by VAYU_AMDGPU_FIRMWARE.
+HELPEOF
+}

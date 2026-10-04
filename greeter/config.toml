@@ -4,7 +4,10 @@
 # below (build-console-font.py). Colour names index that palette.
 
 [session]
-command = "env XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway:wlroots:swayfx XDG_SESSION_DESKTOP=sway DESKTOP_SESSION=sway sway"
+# systemd-cat sends sway's log (and whatever its execs print) to the journal
+# (journalctl -t sway). Without it they print on tty1, and sway's
+# "00:00:00.123 [INFO] ..." lines flash up between login and the desktop.
+command = "systemd-cat -t sway env XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=sway:wlroots:swayfx XDG_SESSION_DESKTOP=sway DESKTOP_SESSION=sway sway"
 
 [display]
 show_time = true

@@ -15,10 +15,10 @@ check=false
 
 themes=/usr/share/plymouth/themes
 # Kernel options: quiet + splash hand the console to Plymouth; the log
-# levels keep the few remaining kernel/udev lines off it. Without
-# plymouth.use-simpledrm, Plymouth ignores the firmware framebuffer and
-# waits for amdgpu, which (no kms hook, see system/apply.sh) only loads
-# from the root filesystem: the first ~2 s would be a blank screen.
+# levels keep the few remaining kernel/udev lines off it. On Raven APUs
+# vayu-kms (below) has amdgpu up before Plymouth starts; elsewhere, and if
+# amdgpu ever fails, plymouth.use-simpledrm lets Plymouth draw on the
+# firmware framebuffer instead of showing a blank screen.
 cmdline_opts=(quiet splash loglevel=3 rd.udev.log_level=3 plymouth.use-simpledrm)
 
 changed=()
@@ -51,12 +51,48 @@ if ! cmp -s "$here/plymouthd.conf" /etc/plymouth/plymouthd.conf 2>/dev/null; the
   $check || sudo install -Dm644 "$here/plymouthd.conf" /etc/plymouth/plymouthd.conf
 fi
 
-# The plymouth hook goes right after udev (Plymouth needs udev to find the
-# display), as the Arch wiki has it.
-if ! grep -qE '^HOOKS=\(.*\bplymouth\b' /etc/mkinitcpio.conf; then
-  differs "/etc/mkinitcpio.conf (no plymouth hook)"
-  $check || sudo sed -i -E '/^HOOKS=/s/\budev\b/udev plymouth/' /etc/mkinitcpio.conf
+# The plymouth hook goes after keymap/consolefont and before block (so
+# before encrypt, if a machine has it). Plymouth puts the console in
+# graphics mode, where setfont fails: placed before consolefont, the console
+# font was skipped and only applied once tuigreet was already up, which
+# re-laid it out on screen. Plymouth only needs udev to have run first.
+mapfile -t hooks < <(sed -nE 's/^HOOKS=\((.*)\)/\1/p' /etc/mkinitcpio.conf | tr -s ' ' '\n' | grep .)
+want=() placed=false
+for h in "${hooks[@]}"; do
+  [ "$h" = plymouth ] && continue
+  if ! $placed && [[ $h =~ ^(block|sd-encrypt|encrypt|filesystems)$ ]]; then want+=(plymouth); placed=true; fi
+  want+=("$h")
+done
+$placed || want+=(plymouth)
+if [ "${hooks[*]}" != "${want[*]}" ]; then
+  differs "/etc/mkinitcpio.conf (HOOKS should be: ${want[*]})"
+  $check || sudo sed -i -E "s/^HOOKS=.*/HOOKS=(${want[*]})/" /etc/mkinitcpio.conf
 fi
+
+# Early KMS for AMD Raven-family APUs (this laptop): see initcpio/install/
+# vayu-kms. Hardware-specific (the firmware list), so other machines get
+# nothing here and any copy is removed.
+kms_files=(
+  "initcpio/install/vayu-kms:/etc/initcpio/install/vayu-kms"
+  "initcpio/hooks/vayu-kms:/etc/initcpio/hooks/vayu-kms"
+  "mkinitcpio-vayu-kms.conf:/etc/mkinitcpio.conf.d/vayu-kms.conf"
+)
+raven=false
+for d in /sys/bus/pci/devices/*; do
+  [ "$(cat "$d/vendor" 2>/dev/null)" = 0x1002 ] || continue
+  case $(cat "$d/device" 2>/dev/null) in 0x15d8|0x15dd) raven=true ;; esac
+done
+for pair in "${kms_files[@]}"; do
+  src=$here/${pair%%:*} dst=${pair#*:}
+  if $raven; then
+    cmp -s "$src" "$dst" 2>/dev/null && continue
+    differs "$dst"
+    $check || sudo install -Dm644 "$src" "$dst"
+  elif [ -e "$dst" ]; then
+    differs "$dst (only for Raven-family APUs; remove)"
+    $check || sudo rm -f "$dst"
+  fi
+done
 
 # /etc/kernel/cmdline also holds per-machine options (root=), so the splash
 # options are appended in place rather than shipping a copy.

@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (faster, flicker-free boot: early amdgpu, splash ordering, sway log off tty1)
+
+- Measured after the splash reboot: greeter at 14.3 s after kernel start.
+  amdgpu loaded from the root filesystem at 14.3 s and stalled nearly all
+  of userspace from 8.2 s (greeter PAM, Wi-Fi auth and power-profiles all
+  resumed in the same 40 ms). Loading `i915` as a test takes ~1 s whether
+  compressed or not, so amdgpu (3x the size) is ~3 s of in-kernel CPU
+  however it's loaded; the fix is to pay it early and alone.
+- New `vayu-kms` mkinitcpio hook (`splash/initcpio/`, installed by
+  `splash/apply.sh` on Raven-family APUs only): loads `acpi_cpufreq`, then
+  amdgpu, as the initramfs's first job, and packs only the `raven*` and
+  `picasso*` firmware (~400 KB) instead of the `kms` hook's ~30 MB. Test
+  image: 22 MB vs 16 MB today and 47 MB with `kms`.
+- `plymouth` hook moved after `consolefont`: Plymouth puts the console in
+  graphics mode, so setfont was skipped ("All allocated virtual consoles are
+  busy"), and tuigreet drew first on the firmware framebuffer, then again
+  at 240x67 after amdgpu, then again once the font landed: the login-screen
+  flicker.
+- The "0"s between login and desktop were sway's own log lines
+  (`00:00:00.123 [INFO] ...`) on tty1: greetd gives the session the VT as
+  stdout/stderr. The session command now starts with `systemd-cat -t sway`,
+  so they go to the journal (`journalctl -t sway`).
+
 ## 2026-10-04 (boot splash: the Vayu logo, animated, instead of boot text)
 
 - New `splash/` (not stowed): a Plymouth script theme that shows the Vayu
