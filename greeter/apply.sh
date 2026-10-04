@@ -76,6 +76,6 @@ fi
 if $rebuild_initramfs; then sudo mkinitcpio -P; fi
 
 
-sudo systemctl daemon-reload
+sudo systemctl daemon-reload || echo "warning: systemctl daemon-reload failed; vt-palette.service is picked up at the next boot" >&2
 sudo systemctl enable vt-palette.service
 echo "Login screen installed. Reboot (or log out of sway) to see it."

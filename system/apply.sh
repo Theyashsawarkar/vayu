@@ -56,13 +56,16 @@ fi
 
 # Reload what changed. zram-generator only acts at boot, so its config
 # takes effect on the next reboot.
-printf '%s\n' "${changed[@]}" | grep -q '^etc/sysctl.d/' && sudo sysctl --system >/dev/null
-printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/' && sudo systemctl daemon-reload
+# Live reloads are a bonus: the files are what count, and all of them apply
+# at the next boot anyway. So a failed reload warns rather than fails.
+reload() { "$@" || echo "warning: '$*' failed; the change applies at the next reboot" >&2; }
+printf '%s\n' "${changed[@]}" | grep -q '^etc/sysctl.d/' && reload sudo sysctl --system >/dev/null
+printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/' && reload sudo systemctl daemon-reload
 if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/logind.conf.d/'; then
   # HUP makes logind re-read its config without ending any session.
-  sudo systemctl kill -s HUP systemd-logind.service
+  reload sudo systemctl kill -s HUP systemd-logind.service
 fi
 if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/journald.conf.d/'; then
-  sudo systemctl restart systemd-journald.service
+  reload sudo systemctl restart systemd-journald.service
 fi
 echo "system files applied: ${#changed[@]} change(s)"

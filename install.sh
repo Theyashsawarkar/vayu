@@ -84,7 +84,12 @@ note_failure() { echo "$1" >> "$FAILURES_FILE"; err "$1"; }
 on_err() {  # ERR trap: the exact command that failed, and where
   local rc=$1 line=$2 cmd=$3
   { set +x; } 2>/dev/null
-  printf '\033[1;31m  x command failed (exit %s) at %s line %s: %s\033[0m\n' "$rc" "${BASH_SOURCE[1]##*/}" "$line" "$cmd"
+  case "$cmd" in
+    # A step function handing back its own status (return "$bad", or a
+    # final [ test ]): the items that failed were already listed above.
+    return*|\[*) printf '\033[1;31m  x step reported failure (exit %s); the x lines above say what failed\033[0m\n' "$rc" ;;
+    *) printf '\033[1;31m  x command failed (exit %s) at %s line %s: %s\033[0m\n' "$rc" "${BASH_SOURCE[1]##*/}" "$line" "$cmd" ;;
+  esac
   set -x
 }
 trap 'on_err $? $LINENO "$BASH_COMMAND"' ERR
@@ -512,8 +517,12 @@ clone_if_missing() {  # url dest: also replaces a clone an interrupted run left 
 }
 
 setup_shell() {
+  # The path /etc/shells lists (pam_shells and some login paths refuse any
+  # other). Not `command -v zsh`: with /usr/sbin ahead of /usr/bin in PATH
+  # (a symlink on Arch) that gives /usr/sbin/zsh, which isn't listed.
   local zsh
-  zsh=$(command -v zsh)
+  if grep -qx /usr/bin/zsh /etc/shells; then zsh=/usr/bin/zsh
+  else zsh=$(grep -m1 -xE '/(usr/)?bin/zsh' /etc/shells || command -v zsh); fi
   if [ "$(getent passwd "$USER" | cut -d: -f7)" != "$zsh" ]; then
     sudo chsh -s "$zsh" "$USER"
   fi
@@ -631,7 +640,9 @@ first_wallpaper() {
   # The timer's first run is at midnight; sway and swaylock both read
   # current.jpg, so fetch one now. (No sway yet: it just saves the file.)
   [ -s "$HOME/Pictures/Wallpapers/current.jpg" ] && { info "already have a wallpaper"; return 0; }
-  timeout 180 "$HOME/.local/bin/fetch_wallpaper.sh"
+  # Judged by the file, not the exit code: with no sway running yet the
+  # script can't apply it live, which is expected here.
+  timeout 180 "$HOME/.local/bin/fetch_wallpaper.sh" || warn "fetch_wallpaper.sh exited $?; checking whether it saved one anyway"
   [ -s "$HOME/Pictures/Wallpapers/current.jpg" ]
 }
 

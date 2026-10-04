@@ -352,8 +352,11 @@ fi
 
 if apply_background image "$CURRENT"; then
   log INFO "applied new wallpaper: $FILEPATH"
-  notify-send -u low -i "$CURRENT" "Wallpaper" "New wallpaper applied"
+  notify-send -u low -i "$CURRENT" "Wallpaper" "New wallpaper applied" || true
 else
   log WARN "couldn't reach sway IPC to apply immediately; current.jpg is updated and will show on next sway start/reload"
-  notify-send -u normal -i "$ICON_WARNING" "Wallpaper" "Fetched a new one, but couldn't apply it live -- will show on next sway reload"
+  notify-send -u normal -i "$ICON_WARNING" "Wallpaper" "Fetched a new one, but couldn't apply it live -- will show on next sway reload" || true
 fi
+# The wallpaper is saved either way; a missing sway (install.sh, from a TTY)
+# or notification daemon isn't a failed fetch.
+exit 0

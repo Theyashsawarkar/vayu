@@ -89,7 +89,7 @@ section "User setup"
 for g in "${USER_GROUPS[@]}"; do
   check "in group $g (takes effect at next login)" bash -c "getent group '$g' | cut -d: -f4 | tr , '\n' | grep -qx '$USER'"
 done
-check "login shell is zsh" bash -c "[ \"\$(getent passwd '$USER' | cut -d: -f7)\" = /usr/bin/zsh ]"
+check "login shell is zsh (as listed in /etc/shells)" bash -c "sh=\$(getent passwd '$USER' | cut -d: -f7); case \$sh in /usr/bin/zsh|/bin/zsh) grep -qx \"\$sh\" /etc/shells ;; *) false ;; esac"
 check "oh-my-zsh installed" test -d "$HOME/.oh-my-zsh"
 for c in "${ZSH_CLONES[@]}"; do
   dest=${c#* }
