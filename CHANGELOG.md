@@ -5,6 +5,8 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.16.0-nightly -- 2026-10-04
+
 ## 2026-10-04 (splash on reboot/power-off, Mocha login border)
 
 - Reboot and power-off now show the Vayu logo through to the end:
