@@ -43,6 +43,10 @@ DOTFILES_DIR="$HOME/dotfiles"
 REPO_URL="https://github.com/Theyashsawarkar/vayu.git"
 BACKUP_DIR="$HOME/.dotfiles-backup"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/vayu/install-logs"
+# Set by login, but not by every way of starting a shell (su -c, docker exec,
+# systemd-run): with set -u an unset USER ended the run in preflight.
+USER=${USER:-$(id -un)}
+export USER
 
 # --- Logging ------------------------------------------------------------------
 # A re-exec (see "Hand over to the repo's installer" below) inherits the

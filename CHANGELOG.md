@@ -5,6 +5,13 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (install.sh: don't depend on $USER being set)
+
+- A fresh-container run of the one-line Nightly install stopped in
+  preflight: `USER: unbound variable`. Login sets USER, but `docker exec`,
+  `su -c` and `systemd-run` don't, and install.sh runs with `set -u`. It
+  now falls back to `id -un` and exports it for the apply scripts.
+
 ## 2026-10-04 (fresh installs get the AI tools' packages explicitly)
 
 - `packages/pacman.txt`: `gtk4`, `libadwaita`, `adwaita-icon-theme`.
