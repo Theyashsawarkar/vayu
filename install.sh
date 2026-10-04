@@ -34,7 +34,8 @@
 # What it sets up lives in the repo, not here: packages/pacman.txt and
 # aur.txt (packages), packages/manifest.sh (services, masks, groups,
 # user-level tools), system/ (root-owned files under /), greeter/ (login
-# screen), splash/ (boot splash), and every other top-level directory (stowed into ~).
+# screen), splash/ (boot splash), ai/ (AI tools: vayu-elevate), and every other
+# top-level directory (stowed into ~).
 
 set -Eeuo pipefail
 
@@ -167,6 +168,7 @@ remedy() {
     apply_splash)
       echo "~/dotfiles/splash/apply.sh --check lists what differs; run it without --check for the error."
       echo "Booting is unaffected until mkinitcpio -P succeeds; a failed run leaves the old text boot" ;;
+    apply_ai) echo "~/dotfiles/ai/apply.sh --check lists what differs; run it without --check for the error" ;;
     setup_shell|setup_tmux) echo "a git clone failed (network/GitHub); re-run" ;;
     setup_nvim) echo "open nvim and run :Lazy restore to see which plugin failed" ;;
     setup_node) echo "sudo corepack enable (needs the corepack package)" ;;
@@ -542,6 +544,8 @@ apply_greeter() {
 
 apply_splash() { "$DOTFILES_DIR/splash/apply.sh"; }
 
+apply_ai() { "$DOTFILES_DIR/ai/apply.sh"; }
+
 clone_if_missing() {  # url dest: also replaces a clone an interrupted run left broken
   if [ -d "$2" ] && git -C "$2" rev-parse --verify -q HEAD >/dev/null 2>&1; then
     info "already present: $2"
@@ -732,6 +736,7 @@ run_step "Installing AUR packages (packages/aur.txt)" install_aur
 run_step --critical "Stowing configs into ~ (conflicts backed up to $BACKUP_DIR)" stow_all
 run_step "Installing the login screen (greetd + tuigreet, greeter/)" apply_greeter
 run_step "Installing the boot splash (Plymouth, splash/)" apply_splash
+run_step "Installing the AI tools (vayu-elevate, ai/)" apply_ai
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
 run_step "Installing Neovim plugins (lazy.nvim)" setup_nvim

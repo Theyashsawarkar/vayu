@@ -211,6 +211,9 @@ bindsym $mod+Shift+m exec ~/.local/bin/rmpc-toggle.sh
 # regular floating window blurring what's actually behind it (the
 # wallpaper, since this one is centered above everything else) is
 # already the right result without it.
+# vayu-elevate's approval window (ai/): float it centred with the glass
+# blur the other popups have, above whatever is on screen.
+for_window [app_id="^io\.github\.theyashsawarkar\.VayuElevate$"] floating enable, move position center, blur enable, sticky enable
 for_window [app_id="^rmpc$"] floating enable, resize set 1152 648, move position center, move scratchpad, scratchpad show, blur enable
 
 # mpv's video window (music-search.py's play action, audio-only mode

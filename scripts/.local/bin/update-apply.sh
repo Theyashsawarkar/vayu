@@ -82,6 +82,11 @@ if ! git diff --quiet "$OLD_HEAD" HEAD -- splash/; then
     notify-send -u normal -i "$ICON_OK" "Boot splash changed" \
         "Run ~/dotfiles/splash/apply.sh in a terminal (needs sudo) to install it."
 fi
+if ! git diff --quiet "$OLD_HEAD" HEAD -- ai/; then
+    log "ai/ changed: run ai/apply.sh"
+    notify-send -u normal -i "$ICON_OK" "AI tools changed" \
+        "Run ~/dotfiles/ai/apply.sh in a terminal (needs sudo) to install them."
+fi
 # Same for new packages, services (packages/) and files under / (system/):
 # install.sh is the one place that applies those, and it's safe to re-run.
 if ! git diff --quiet "$OLD_HEAD" HEAD -- packages/ system/; then

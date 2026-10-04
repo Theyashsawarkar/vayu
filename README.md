@@ -65,6 +65,8 @@ Secrets (API keys, tokens) are never in this repo — see
 📖 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** explains how the stow packages map
 to `$HOME`, what `install.sh` does step by step, and what's deliberately excluded.
 **[CHANGELOG.md](CHANGELOG.md)** is the detailed log of what changed and why.
+🤖 **[docs/AI-TOOLS.md](docs/AI-TOOLS.md)**: tools for AI agents, like `vayu-elevate`
+(an agent asks to run root commands; you see why, tick which, and approve once).
 🩺 **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** lists known problems by symptom
 (a shutdown that hangs, text after the logo, a login that won't start) and how to fix each.
 
@@ -129,6 +131,7 @@ Each directory represents an independent package managed by GNU Stow.
 ├── packages/        # pacman.txt + aur.txt + manifest.sh (services, groups...; not stowed)
 ├── system/          # root-owned files under / (sysctl, logind, lid hook...), system/apply.sh
 ├── splash/          # Plymouth boot splash (the animated logo), splash/apply.sh; not stowed
+├── ai/              # tools for AI agents (vayu-elevate: approved root commands), ai/apply.sh; not stowed
 ├── gtk/             # GTK 3/4 settings.ini (Catppuccin Mocha theme)
 ├── kitty/
 ├── mako/

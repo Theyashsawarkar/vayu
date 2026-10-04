@@ -55,6 +55,11 @@ defaults:
       layout: "docs"
       title: "Keybindings"
   - scope:
+      path: "docs/AI-TOOLS.md"
+    values:
+      layout: "docs"
+      title: "AI tools"
+  - scope:
       path: "docs/TROUBLESHOOTING.md"
     values:
       layout: "docs"
@@ -87,5 +92,7 @@ exclude:
   - zed/
   - zsh/
   - install.sh
+  # AI tools' source (installed root-owned by ai/apply.sh); docs/AI-TOOLS.md is the page
+  - ai/
   # tmux palette swatchbooks (reference, moved out of the tmux stow package)
   - docs/tmux-palettes/

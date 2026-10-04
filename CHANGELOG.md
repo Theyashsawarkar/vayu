@@ -5,6 +5,44 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (vayu-elevate: AI agents ask for root, you approve once)
+
+- New `ai/` (not stowed; `ai/apply.sh` installs it root-owned, wired into
+  `install.sh`, `vayu-verify` and the update notices): tools the desktop
+  gives AI agents. The first is `vayu-elevate`. Instead of an agent asking
+  you to paste sudo commands, it sends them (JSON: `requester`, `reason`,
+  `commands: [{cmd, why}]`) and blocks. A GTK4/libadwaita window in
+  Catppuccin Mocha (floating, glass, `sticky`) shows each command under
+  its reason with a checkbox; you untick what you don't want, type your
+  password once and press Run. The ticked ones run as root (`bash -c`,
+  from `/`, no stdin, 30 min each), stopping at the first failure; the
+  agent gets JSON back with each command's decision, state, exit code and
+  output. Exit codes 0/1/3/4/2 (all ok / one failed / nothing ran / some
+  declined / error). Expires after 10 min; 3 wrong passwords or Esc deny.
+- `vayu-elevate --mcp` serves the same as an MCP tool
+  (`request_root_commands`) for agents without a shell. Claude Code is
+  told about the tool in the global `~/.claude/CLAUDE.md`.
+- Hardening: the window and runner are root-owned; the window starts as a
+  transient user service with `env -i` (not a child of the agent),
+  non-dumpable, Python `-I`, root-owned XDG dirs so user GTK CSS can't
+  hide a row; requests with control or invisible characters (bidi
+  overrides, zero-width) are refused; the password goes to `sudo -S -k`
+  through a pipe, never to disk, and `-k` leaves no cached credentials.
+  Every command run as root is logged to `/var/log/vayu-elevate.log`;
+  every request to `~/.local/state/vayu-elevate/requests.jsonl`. Threat
+  model (a consent gate, not a sandbox against malicious same-user code):
+  `ai/README.md`.
+- Docs: new **AI tools** page (`docs/AI-TOOLS.md`: user guide, agent
+  protocol, MCP setup, security), three Troubleshooting entries, README.
+  The window's keys (Esc, Enter, Space) are in the keybinding search
+  (source "Vayu", scanned from `/usr/local/lib/vayu-elevate`).
+- Verified live: a three-command request with the third unticked returned
+  exit 4; `id` ran as uid 0, `ls -ld /root` read the root-only directory,
+  the declined `echo` didn't run; `sudo -n` still asks for a password
+  afterwards; the request directory was cleaned up. Denial with Esc, bad
+  requests (no `why`, a U+202E override, bad JSON) and the MCP handshake
+  were tested too.
+
 ## 2026-10-04 (site and README: new screenshots)
 
 - Replaced the landing page's five screenshots (from early September,
