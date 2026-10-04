@@ -3528,6 +3528,15 @@ public, stable state" — see `docs/VERSIONING.md`), then verified the real buil
 succeeded and the site was actually reachable (`curl` the resulting URL, not
 just trusted the API call returning success) before considering this done.
 
+**Since 2026-10-04 the site builds from `development`, not `main`.** Built
+from `main`, docs written during a nightly (`docs/TROUBLESHOOTING.md` was the
+case that showed it) stayed off the site until the next Stable release, and
+the Changelog page's Stable/Nightly toggle did nothing: `main`'s changelog
+never has unreleased entries on top for it to hide. `development` is always
+even with or ahead of `main`, so Stable visitors lose nothing; the toggle
+defaults to Stable. The install commands are unaffected (each fetches
+`install.sh` straight from its own branch).
+
 ## Renamed to Vayu, and a real custom dark hero-layout homepage
 
 Direct follow-up, same evening: rename the repo to something from Hindu

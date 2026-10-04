@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (the docs site builds from development)
+
+- GitHub Pages now builds from `development` instead of `main`. Docs
+  written during a nightly reached the site only at the next Stable
+  release, and the Changelog page's Stable/Nightly toggle had nothing to
+  hide on `main`. Install commands are unchanged. Why and what it means:
+  `docs/ARCHITECTURE.md` ("A public docs site...") and
+  `docs/VERSIONING.md`.
+
 ## 2026-10-04 (Troubleshooting page; SysRq as the way out of a hung shutdown)
 
 - New `docs/TROUBLESHOOTING.md`, on the site as **Troubleshooting** (top
@@ -29,6 +38,10 @@ full branch/release process.
 - The SysRq combos are in the keybinding search: `keybind-search.py` also
   reads `# keybind:` lines from `/etc/sysctl.d` (new source "Kernel"), and
   `force` is now an allowed first verb. Row added to `CLAUDE.md`.
+- Verified after `system/apply.sh`: `sysctl kernel.sysrq` = 176,
+  `vayu-verify` 91 passed / 0 failed, and the keybinding search lists both
+  Kernel combos. The keys themselves weren't pressed: B and O reboot or
+  power off on the spot.
 
 ## 2026-10-04 (no watchdog line after the shutdown logo)
 

@@ -1,4 +1,6 @@
-# GitHub Pages config -- sourced from main branch, repo root.
+# GitHub Pages config -- sourced from the development branch, repo root
+# (main until 2026-10-04): the site always shows the newest docs, and the
+# Changelog page's Stable/Nightly toggle has nightly entries to hide.
 #
 # index.html (repo root) is a fully custom static page -- no Jekyll
 # front matter, so Pages serves it untouched instead of wrapping it in

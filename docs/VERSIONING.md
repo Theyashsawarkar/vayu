@@ -41,6 +41,10 @@ notification/prompt straight from the branch name (`main` -> Stable,
 `development` -> Nightly) -- there's no separate channel-preference file to
 drift out of sync with what's genuinely on disk.
 
+The docs site (GitHub Pages) builds from `development`, so new docs go live
+with each push there. Its Changelog page defaults to the Stable view (only
+what's in the latest Stable release) and has a Nightly toggle for the rest.
+
 ## Cutting a release
 
 1. Make sure `development` is in a state that's actually been tested live on
