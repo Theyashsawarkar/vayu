@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (boot: 5.8 s in the loader came from a 47 MB initramfs)
+
+- `systemd-analyze` showed 5.8 s of "loader" with the menu timeout already
+  0. The cause was the `kms` hook in `/etc/mkinitcpio.conf`: for amdgpu it
+  packs the driver plus firmware for every AMD GPU generation, so the
+  initramfs was ~47 MB unpacked, and this Insyde firmware reads the UKI off
+  the ESP slowly.
+- `system/apply.sh` now removes `kms` from `HOOKS` and `--splash` from the
+  mkinitcpio presets, then runs `mkinitcpio -P`. amdgpu loads from the root
+  filesystem instead, and systemd-vconsole-setup reapplies the console font
+  (the greeter's `ter-v24n-ace`) when the new framebuffer console appears.
+  `apply.sh --check` (and so `vayu-verify`) flags either if it comes back.
+
 ## 2026-10-04 (swappiness: a leftover sysctl file was overriding the repo)
 
 - After the install, `vm.swappiness` was still 10. `/etc/sysctl.d/99-sysctl.conf`

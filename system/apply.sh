@@ -75,6 +75,36 @@ if [ -f /etc/conf.d/wireless-regdom ] && ! grep -qx "WIRELESS_REGDOM=\"$regdom\"
   fi
 fi
 
+# Initramfs size. The kms hook packs the GPU driver plus firmware for every
+# chip it supports; for amdgpu that made the UKI ~47 MB unpacked, which the
+# firmware reads slowly off the ESP (~5.8 s "loader" in systemd-analyze).
+# Without it the driver loads from the root filesystem a moment later, and
+# systemd-vconsole-setup reapplies the console font when it does. The
+# preset's --splash only paints a logo during that wait, so it goes too.
+rebuild_initramfs=false
+if grep -qE '^HOOKS=\(.*\bkms\b' /etc/mkinitcpio.conf 2>/dev/null; then
+  changed+=("mkinitcpio kms hook")
+  if $check; then
+    echo "differs: /etc/mkinitcpio.conf (kms hook still in HOOKS)"
+  else
+    sudo sed -i -E '/^HOOKS=/{s/ kms\b//;s/\(kms /(/}' /etc/mkinitcpio.conf
+    echo "removed the kms hook from /etc/mkinitcpio.conf"
+    rebuild_initramfs=true
+  fi
+fi
+for preset in /etc/mkinitcpio.d/*.preset; do
+  grep -qE '^[a-z]+_options=.*--splash' "$preset" 2>/dev/null || continue
+  changed+=("$(basename "$preset") splash")
+  if $check; then
+    echo "differs: $preset (UKI boot splash still set)"
+  else
+    sudo sed -i -E '/^[a-z]+_options=/s/ ?--splash [^ "]+//' "$preset"
+    echo "removed the boot splash from $preset"
+    rebuild_initramfs=true
+  fi
+done
+if $rebuild_initramfs; then sudo mkinitcpio -P; fi
+
 # pacman.conf: coloured output, as on the original machine.
 if ! grep -qx 'Color' /etc/pacman.conf; then
   changed+=("pacman.conf Color")
