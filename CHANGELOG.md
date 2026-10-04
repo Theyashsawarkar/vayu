@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (swappiness: a leftover sysctl file was overriding the repo)
+
+- After the install, `vm.swappiness` was still 10. `/etc/sysctl.d/99-sysctl.conf`
+  (hand-made in June, owned by no package, the real origin of the old
+  value) sorts after `99-custom.conf`, so it won. `vayu-verify` passed
+  anyway because it compared files, not the live values.
+- `system/apply.sh` has a `retired` list of leftovers that override the
+  repo. Each is removed only while it holds exactly the known old content;
+  otherwise it warns. `vayu-verify` now checks every value in
+  `system/etc/sysctl.d/` against the live `sysctl`, so the next override
+  like this shows up as a FAIL naming the key.
+
 ## 2026-10-04 (install.sh tested on a fresh Arch: remedies, diagnostics, fallbacks)
 
 Ran the whole installer in a clean `archlinux:latest` container as a normal

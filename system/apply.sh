@@ -34,6 +34,30 @@ for rel in "${files[@]}"; do
   fi
 done
 
+# Leftovers that override the repo's files: removed only while they still
+# hold exactly the old content, so a file someone has since edited is
+# reported, never deleted. Format: "path|exact content".
+#   99-sysctl.conf: a hand-made swappiness=10 from before system/ existed.
+#   Sorting after 99-custom.conf, it silently won over vm.swappiness=180.
+retired=(
+  "/etc/sysctl.d/99-sysctl.conf|vm.swappiness=10"
+)
+for r in "${retired[@]}"; do
+  f=${r%%|*} want=${r#*|}
+  [ -e "$f" ] || continue
+  if [ "$(cat "$f")" = "$want" ]; then
+    changed+=("${f#/} (retired)")
+    if $check; then
+      echo "differs: $f is a leftover that overrides the repo (to be removed)"
+    else
+      sudo rm -f "$f"
+      echo "removed leftover $f"
+    fi
+  else
+    echo "warning: $f exists but no longer holds the known leftover content; check it by hand" >&2
+  fi
+done
+
 # pacman.conf: coloured output, as on the original machine.
 if ! grep -qx 'Color' /etc/pacman.conf; then
   changed+=("pacman.conf Color")

@@ -58,6 +58,15 @@ done
 section "System files (system/ -> /)"
 if sys_out=$("$DOTFILES_DIR/system/apply.sh" --check 2>&1); then ok "$sys_out"
 else while read -r l; do bad "$l"; done <<<"$sys_out"; fi
+# The live values, not just the files: another file in sysctl.d sorting
+# later would override these silently (99-sysctl.conf did).
+while IFS='=' read -r k v; do
+  k=$(xargs <<<"$k") v=$(xargs <<<"$v")
+  [ -n "$k" ] || continue
+  live=$(sysctl -n "$k" 2>/dev/null)
+  if [ "$live" = "$v" ]; then ok "sysctl $k = $v"
+  else bad "sysctl $k is '$live', repo wants '$v' (overridden by a later /etc/sysctl.d file? grep -r ${k} /etc/sysctl.d)"; fi
+done < <(grep -hvE '^\s*(#|$)' "$DOTFILES_DIR"/system/etc/sysctl.d/*.conf)
 check "greetd uses tuigreet-launch" grep -q 'tuigreet-launch' /etc/greetd/config.toml
 check "tuigreet-ace built (/usr/local/bin/tuigreet-ace)" test -x /usr/local/bin/tuigreet-ace
 check "console font ter-v24n-ace set" grep -qx 'FONT=ter-v24n-ace' /etc/vconsole.conf
