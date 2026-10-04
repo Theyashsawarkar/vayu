@@ -5,6 +5,24 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.18.0-nightly -- 2026-10-04
+
+## 2026-10-04 (site: a Tools section, with vayu-elevate screenshots)
+
+- The navbar's "AI tools" is now **Tools** (every page), leading to the
+  Tools page (`docs/AI-TOOLS.md`, same URL): the tools the desktop
+  provides, starting with an **AI tools** overview table, then
+  vayu-elevate in full. The homepage card says Tools too.
+- Two screenshots of the approval window over the desktop, cropped to the
+  window so it reads at column width: a three-command request with the
+  password typed (`assets/elevate.jpg`), and the same window after the run
+  (`assets/elevate-done.jpg`; captioned as example output, since the run
+  shown used a stand-in runner, not a real pacman). Captured from the repo
+  copy of `dialog.py` (identical to the installed one) on a scratch
+  workspace with notifications in DND.
+- Docs pages style images: fit the column, rounded, framed like the
+  homepage slides (`assets/docs.css`).
+
 ## 2026-10-04 (vayu-elevate: the window closes after a run)
 
 - After approving, the window stayed open and neither Enter nor Esc

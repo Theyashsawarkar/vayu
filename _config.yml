@@ -58,7 +58,7 @@ defaults:
       path: "docs/AI-TOOLS.md"
     values:
       layout: "docs"
-      title: "AI tools"
+      title: "Tools"
   - scope:
       path: "docs/TROUBLESHOOTING.md"
     values:

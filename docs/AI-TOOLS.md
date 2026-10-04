@@ -1,9 +1,18 @@
-# AI tools
+# Tools
+
+Tools the Vayu desktop provides beyond its configs. The first set is for AI
+agents.
+
+## AI tools
 
 Vayu gives AI agents (Claude Code, Codex, Aider, or anything that can run a
-shell command or speak MCP) a set of desktop tools of their own, so working
-with an agent doesn't mean copying commands back and forth. Every tool keeps
-you in charge: an agent can ask, only you can approve.
+shell command or speak MCP) desktop tools of their own, so working with an
+agent doesn't mean copying commands back and forth. Every tool keeps you in
+charge: an agent can ask, only you can approve.
+
+| Tool | What it does | For agents |
+|---|---|---|
+| [**vayu-elevate**](#vayu-elevate-root-commands-approved-once) | An agent asks to run commands as root; you see each one and why, tick which to allow, and type your password once. | `vayu-elevate` (JSON on stdin) or MCP tool `request_root_commands` |
 
 The tools live in [`ai/`](https://github.com/Theyashsawarkar/vayu/tree/development/ai)
 and are installed root-owned by `~/dotfiles/ai/apply.sh` (part of
@@ -16,6 +25,8 @@ service, edit a file under `/etc`), it sends the commands to `vayu-elevate`
 instead of asking you to paste them into a terminal. A window opens on your
 desktop:
 
+![The vayu-elevate approval window over the desktop: Claude Code asks to run three commands to install Docker, each with its reason and a checkbox, and a password field with Deny and "Run 3 selected"](../assets/elevate.jpg)
+
 - every command, exactly as it will run, under the agent's reason for it;
 - a checkbox on each: untick anything you don't want run;
 - one password field: your password, typed once, for all the ticked commands.
@@ -26,6 +37,8 @@ card shows its result. If they all succeed, the window closes by itself a
 moment later; if one fails, it stays open with the error until you press
 Enter, Esc or Close. The agent gets everything back either way: which
 commands you approved or declined, and each one's exit code and output.
+
+![The same window after an approved run (example output): each command shows a tick and its duration, the install output is shown, and "Done: 3 succeeded. Closing…"](../assets/elevate-done.jpg)
 
 | Key | Does |
 |---|---|

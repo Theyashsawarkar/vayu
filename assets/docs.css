@@ -134,3 +134,15 @@
   .docs-sidebar { position: static; max-height: none; width: 100%; }
   .pkg-card:has(details) { grid-column: auto; }
 }
+
+/* Screenshots in the docs (e.g. the Tools page): fit the column, with the
+   same rounded, shadowed frame as the homepage slides. */
+.docs-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.25rem 0;
+  border-radius: 12px;
+  border: 1px solid rgba(203, 166, 247, 0.18);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
