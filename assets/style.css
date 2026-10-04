@@ -123,6 +123,11 @@ code {
   color: transparent;
 }
 .topnav .brand:hover { text-decoration: none; }
+/* The splash logo (splash/logo.svg), still and small; the hero animates
+   it. Strokes are thicker than the original's so the hairlines survive
+   at this size. */
+.topnav .brand { display: inline-flex; align-items: center; }
+.topnav .brand-logo { display: block; height: 1.9rem; width: auto; overflow: visible; }
 .topnav .navlinks a {
   margin-left: 0.35rem;
   color: var(--subtext);

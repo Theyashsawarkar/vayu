@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (site: the logo in the navbar)
+
+- The navbar brand on every page (homepage and the docs layout) is the
+  splash logo, still and 1.9rem tall, instead of the serif "Vayu" text,
+  so the name appears in one style across the site. Thicker strokes than
+  `splash/logo.svg` so the hairlines hold up at that size; the link is
+  labelled "Vayu home" for screen readers. Checked on a local build
+  (homepage and Troubleshooting page).
+
 ## 2026-10-04 (site: the splash logo and a shlok in the hero)
 
 - The homepage hero shows the boot splash logo instead of the plain
