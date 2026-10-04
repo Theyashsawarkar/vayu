@@ -19,6 +19,8 @@ check=false
 mapfile -t files < <(cd "$here" && find etc -type f | sort)
 
 changed=()
+# Live reloads are a bonus (see the end); a failed one warns, never fails.
+reload() { "$@" || echo "warning: '$*' failed; the change applies at the next reboot" >&2; }
 for rel in "${files[@]}"; do
   src="$here/$rel" dst="/$rel"
   mode=644; [ -x "$src" ] && mode=755
@@ -58,6 +60,21 @@ for r in "${retired[@]}"; do
   fi
 done
 
+# Wi-Fi regulatory country (wireless-regdb's /etc/conf.d/wireless-regdom,
+# read by its udev rule at boot). Unset, the kernel stays on the "world"
+# domain (00): fewer 5 GHz channels and lower transmit power.
+regdom=IN
+if [ -f /etc/conf.d/wireless-regdom ] && ! grep -qx "WIRELESS_REGDOM=\"$regdom\"" /etc/conf.d/wireless-regdom; then
+  changed+=("wireless-regdom $regdom")
+  if $check; then
+    echo "differs: /etc/conf.d/wireless-regdom (WIRELESS_REGDOM=\"$regdom\" not set)"
+  else
+    sudo sed -i -e 's/^WIRELESS_REGDOM=/#&/' -e "s/^#WIRELESS_REGDOM=\"$regdom\"/WIRELESS_REGDOM=\"$regdom\"/" /etc/conf.d/wireless-regdom
+    reload sudo set-wireless-regdom
+    echo "set Wi-Fi regulatory country $regdom in /etc/conf.d/wireless-regdom"
+  fi
+fi
+
 # pacman.conf: coloured output, as on the original machine.
 if ! grep -qx 'Color' /etc/pacman.conf; then
   changed+=("pacman.conf Color")
@@ -82,7 +99,6 @@ fi
 # takes effect on the next reboot.
 # Live reloads are a bonus: the files are what count, and all of them apply
 # at the next boot anyway. So a failed reload warns rather than fails.
-reload() { "$@" || echo "warning: '$*' failed; the change applies at the next reboot" >&2; }
 printf '%s\n' "${changed[@]}" | grep -q '^etc/sysctl.d/' && reload sudo sysctl --system >/dev/null
 printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/' && reload sudo systemctl daemon-reload
 if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/logind.conf.d/'; then

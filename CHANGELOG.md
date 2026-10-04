@@ -11,6 +11,10 @@ full branch/release process.
   (hand-made in June, owned by no package, the real origin of the old
   value) sorts after `99-custom.conf`, so it won. `vayu-verify` passed
   anyway because it compared files, not the live values.
+- Wi-Fi regulatory country: `wireless-regdb` alone left the kernel on the
+  "world" domain (`iw reg get`: country 00, fewer 5 GHz channels, lower
+  power). `system/apply.sh` now sets `WIRELESS_REGDOM="IN"` in
+  `/etc/conf.d/wireless-regdom`, which its udev rule reads at boot.
 - `system/apply.sh` has a `retired` list of leftovers that override the
   repo. Each is removed only while it holds exactly the known old content;
   otherwise it warns. `vayu-verify` now checks every value in
