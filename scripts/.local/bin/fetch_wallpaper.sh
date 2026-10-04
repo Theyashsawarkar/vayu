@@ -179,6 +179,17 @@ use_fallback() {
 # --- Network check ---------------------------------------------------------
 # Cheap pre-check to skip a doomed download outright; the real download's own
 # timeouts below are the authoritative check regardless of what this says.
+#
+# The timer's Persistent=true catch-up runs at boot, and the lingering
+# user manager gets there before Wi-Fi is up: 7 of 52 logged runs fell
+# back ("connectivity: none", or "unknown" then curl's "Could not resolve
+# host"), which with a daily timer means no new wallpaper that day.
+# After=network-online.target doesn't help -- in the user manager it
+# doesn't track the real network (same as update-check.sh). So wait for
+# NetworkManager first; when already online this returns at once.
+if command -v nm-online >/dev/null 2>&1; then
+  nm-online -q -t 60 || log WARN "no network after 60s of waiting"
+fi
 if command -v nmcli >/dev/null 2>&1; then
   connectivity=$(nmcli networking connectivity check 2>/dev/null || echo unknown)
   log INFO "network connectivity: $connectivity"

@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (wallpaper waits for the network at boot)
+
+- 7 of 52 logged wallpaper runs fell back instead of fetching. Each was
+  the timer's `Persistent=true` catch-up at boot, run by the lingering
+  user manager before Wi-Fi was up. The log shows "connectivity: none",
+  or "unknown" followed by curl's "Could not resolve host" (today,
+  07:38). With a daily timer, that means no new wallpaper for the day.
+  As with update-check, `After=network-online.target` in
+  `wallpaper.service` doesn't help in the user manager.
+- `fetch_wallpaper.sh` now waits up to 60 s with `nm-online` first. When
+  already online it returns in ~20 ms, so the waybar click doesn't get
+  slower.
+- Verified: online, a normal run applied a new image. With `nm-online`
+  stubbed to fail and `nmcli` reporting "none", it logged the wait,
+  then fell back to the last good wallpaper as before.
+
 ## 2026-10-04 (wallpaper never repeats an image)
 
 - `Archive/` was about half duplicates: 61 files, 32 distinct images,
