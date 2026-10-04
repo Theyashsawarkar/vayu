@@ -29,9 +29,11 @@ rebuilds the UKI (`mkinitcpio -P`).
 
 ## Why the boot is ordered this way
 
-amdgpu costs ~3 s of CPU to load on this Ryzen 3 3250U, however it's loaded
-(measured: `i915`, a third of its size, takes ~1 s compressed or not; the
-time is the kernel's own module processing). Loaded from the root
+amdgpu costs ~6 s of CPU to load on this Ryzen 3 3250U, however it's loaded
+(measured with `initcall_debug`: 6.1 s pass between the last helper module
+and `amdgpu_init` being called, then amdgpu's own init takes 0.3 s;
+decompression is 0.08 s, so the time is the kernel's own module
+processing, and only building amdgpu into the kernel would remove it). Loaded from the root
 filesystem it landed in the middle of userspace start-up: everything stalled
 for 5-8 s, the greeter appeared at ~14 s, and amdgpu then replaced the
 firmware framebuffer under it (console 160x50 -> 240x67 -> font applied ->

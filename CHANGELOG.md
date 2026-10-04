@@ -5,6 +5,17 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (where amdgpu's load time goes)
+
+- Booted once with `initcall_debug` to find out why the Acer logo stays up
+  ~16 s. amdgpu's own init (`amdgpu_init`, firmware included) takes 0.3 s;
+  the 6.1 s before it is the kernel loading the module file (decompression
+  is 0.08 s, the CPU was at full clock, warm and cold boots are the same).
+  The earlier ~3 s estimate was low. Nothing to tune in the hook or
+  driver options; building amdgpu into a custom kernel is the only fix,
+  not worth maintaining for now. `splash/README.md` updated with the
+  numbers; `initcall_debug` removed again.
+
 ## 2026-10-04 (no text after the shutdown logo)
 
 - Reboot showed the logo, then a screen of white text, then black, then the
