@@ -234,6 +234,20 @@ sync_repo() {
   info "at $(git -C "$DOTFILES_DIR" log -1 --format='%h %s (%cs)')"
 }
 
+# --needed skips a package that's already there as a dependency of another
+# one, so it stays "installed as a dependency" and the next orphan cleanup
+# (pacman -Rns $(pacman -Qdtq)) removes it -- mpv was one. Mark every listed
+# package that's installed as explicit. Groups (pacman -Sg) aren't packages.
+mark_explicit() {
+  local p deps=()
+  for p in "$@"; do
+    if pacman -Qdq "$p" >/dev/null 2>&1; then deps+=("$p"); fi
+  done
+  [ "${#deps[@]}" -eq 0 ] && return 0
+  info "marking as explicitly installed: ${deps[*]}"
+  sudo pacman -D --asexplicit "${deps[@]}" >/dev/null
+}
+
 install_official() {
   cd "$DOTFILES_DIR"
   local want=() avail=() failed=() p
@@ -254,6 +268,7 @@ install_official() {
       sudo pacman -S --needed --noconfirm "$p" || { failed+=("$p"); note_failure "pacman: '$p' failed to install"; }
     done
   fi
+  mark_explicit "${avail[@]}"
   [ "${#avail[@]}" -eq "${#want[@]}" ] && [ "${#failed[@]}" -eq 0 ]
 }
 
@@ -282,6 +297,9 @@ install_aur() {
     warn "AUR RPC unreachable, skipping the name check"
     avail=("${want[@]}")
   fi
+  # cleanAfter: drop each build dir's sources and built packages once
+  # installed. Without it ~/.cache/yay kept every version ever built (14G).
+  yay -Y --save --cleanafter
   local yay_opts=(--needed --noconfirm --answerdiff None --answerclean None --removemake)
   info "${#avail[@]}/${#want[@]} packages available, building/installing"
   if ! yay -S "${yay_opts[@]}" "${avail[@]}"; then
@@ -290,6 +308,7 @@ install_aur() {
       yay -S "${yay_opts[@]}" "$p" || { failed+=("$p"); note_failure "aur: '$p' failed to build/install"; }
     done
   fi
+  mark_explicit "${avail[@]}"
   [ "${#avail[@]}" -eq "${#want[@]}" ] && [ "${#failed[@]}" -eq 0 ]
 }
 

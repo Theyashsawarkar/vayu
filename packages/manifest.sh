@@ -13,6 +13,8 @@ SYSTEM_UNITS_NOW=(
   systemd-timesyncd.service
   fstrim.timer
   ufw.service
+  paccache.timer            # weekly: keep the last 3 versions in pacman's cache
+  systemd-boot-update.service  # copies a newer systemd-boot to the ESP at boot
 )
 # System units enabled only: they take over the console (greetd) or only
 # matter at boot (vt-palette, enabled by greeter/apply.sh).

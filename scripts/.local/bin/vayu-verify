@@ -34,6 +34,12 @@ missing=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packa
 total=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } | wc -l)
 if [ -z "$missing" ]; then ok "all $total packages installed"
 else for p in $missing; do bad "package not installed: $p"; done; fi
+# A listed package installed only as a dependency gets removed by an orphan
+# cleanup once nothing needs it (install.sh marks them explicit).
+asdeps=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } \
+  | while read -r p; do pacman -Qdq "$p" 2>/dev/null; done | xargs)
+if [ -z "$asdeps" ]; then ok "all listed packages marked explicitly installed"
+else bad "listed but installed as a dependency (orphan cleanup would remove them): $asdeps"; fi
 
 section "Stow links (~ -> ~/dotfiles)"
 mapfile -t PKGS < <("$DOTFILES_DIR/scripts/.local/bin/dotfiles-stow-packages" "$DOTFILES_DIR")
