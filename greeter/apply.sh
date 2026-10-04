@@ -20,6 +20,24 @@ if ! cmp -s <(zcat "$tmp") <(zcat "$fonts/ter-v24n-ace.psf.gz" 2>/dev/null); the
   rebuild_initramfs=true
 fi
 
+# Launcher and greetd config first, before the ~3 min tuigreet-ace build:
+# tuigreet-launch falls back to stock tuigreet, so if the build below fails
+# the next boot still gets a working login screen.
+sudo install -Dm644 "$here/config.toml" /etc/tuigreet/config.toml
+sudo install -Dm755 "$here/tuigreet-launch" /usr/local/bin/tuigreet-launch
+sudo install -Dm644 "$here/vtrgb" /etc/vtrgb
+sudo install -Dm644 "$here/vt-palette.service" /etc/systemd/system/vt-palette.service
+sudo mkdir -p /etc/greetd
+# The session command lives in /etc/tuigreet/config.toml.
+sudo tee /etc/greetd/config.toml >/dev/null <<'TOML'
+[terminal]
+vt = 1
+
+[default_session]
+command = "/usr/local/bin/tuigreet-launch"
+user = "greeter"
+TOML
+
 # tuigreet-ace: tuigreet with the box centred on the screen instead of lifted
 # by window_padding (tuigreet-center-box.patch). A separate binary, so a
 # pacman update of greetd-tuigreet doesn't undo it; tuigreet-launch falls
@@ -42,10 +60,6 @@ else
   echo "$build_id" | sudo install -Dm644 /dev/stdin "$stamp"
 fi
 
-sudo install -Dm644 "$here/config.toml" /etc/tuigreet/config.toml
-sudo install -Dm755 "$here/tuigreet-launch" /usr/local/bin/tuigreet-launch
-sudo install -Dm644 "$here/vtrgb" /etc/vtrgb
-sudo install -Dm644 "$here/vt-palette.service" /etc/systemd/system/vt-palette.service
 
 # Console font for every tty (systemd-vconsole-setup reads this at boot).
 if ! grep -qx 'FONT=ter-v24n-ace' /etc/vconsole.conf 2>/dev/null; then
@@ -61,15 +75,6 @@ fi
 # has already happened by then, so the initramfs must carry the new font.
 if $rebuild_initramfs; then sudo mkinitcpio -P; fi
 
-# The session command now lives in /etc/tuigreet/config.toml.
-sudo tee /etc/greetd/config.toml >/dev/null <<'TOML'
-[terminal]
-vt = 1
-
-[default_session]
-command = "/usr/local/bin/tuigreet-launch"
-user = "greeter"
-TOML
 
 sudo systemctl daemon-reload
 sudo systemctl enable vt-palette.service

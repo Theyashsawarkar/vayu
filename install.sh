@@ -103,15 +103,86 @@ summary() {
     sed 's/^/      - /' "$FAILURES_FILE"
   fi
   rm -f "$FAILURES_FILE"
+  if [ "$rc" -ne 0 ] || [ "$FAILED_STEPS" -gt 0 ]; then
+    diagnostics
+  fi
   if [ "$rc" -eq 0 ] && [ "$FAILED_STEPS" -eq 0 ]; then
     printf '\n\033[1;32mDone.\033[0m Reboot and log in at the tuigreet prompt on tty1 (it starts Sway).\n'
     echo "Group changes (docker, input) take effect at that next login."
   else
     printf '\n\033[1;31mFinished with problems.\033[0m Fix what is listed above and re-run: it skips what is already done.\n'
+    echo "In the log: search \"command failed\" for each failing command, and the"
+    echo "diagnostics section at the end for clock, disk, network and pacman state."
   fi
   echo "Full log: $LOG_FILE"
   [ "$rc" -eq 0 ] && [ "$FAILED_STEPS" -gt 0 ] && rc=1
   exit "$rc"
+}
+
+# What to do when a step fails, printed under it in the summary. The log
+# has the exact failing command (search it for "command failed").
+remedy() {
+  case "$1" in
+    preflight) echo "fix what the 'x' line above says, then re-run" ;;
+    prerequisites)
+      echo "usually a mirror, the keyring or the clock. Try, then re-run:"
+      echo "  timedatectl set-ntp true          (wrong clock breaks signatures/TLS)"
+      echo "  sudo pacman -Sy archlinux-keyring (\"invalid or corrupted package\")"
+      echo "  sudo reflector -c <country> -l 10 --sort rate --save /etc/pacman.d/mirrorlist"
+      echo "                                    (slow/404 mirrors; pacman -S reflector)" ;;
+    sync_repo)
+      echo "github.com unreachable, or ~/dotfiles diverged: cd ~/dotfiles && git status"
+      echo "to start clean: mv ~/dotfiles ~/dotfiles.old and re-run" ;;
+    install_official)
+      echo "see Failed items. 'not in the repos': the package was renamed/dropped --"
+      echo "fix packages/pacman.txt. 'failed to install': sudo pacman -S <pkg> shows why"
+      echo "(file conflict: pacman -Qo <file>; PGP error: sudo pacman -Sy archlinux-keyring)" ;;
+    bootstrap_yay)
+      echo "needs base-devel + git. By hand: git clone https://aur.archlinux.org/yay-bin.git"
+      echo "  && cd yay-bin && makepkg -si, then re-run" ;;
+    install_aur)
+      echo "AUR builds break upstream now and then. For each failed package:"
+      echo "  yay -S <pkg>   (full error)   rm -rf ~/.cache/yay/<pkg>   (stale build dir)"
+      echo "  https://aur.archlinux.org/packages/<pkg> (comments usually have the fix)" ;;
+    stow_all)
+      echo "see what's in the way: stow -n -v -R -d ~/dotfiles -t ~ <package>"
+      echo "move that file aside and re-run (earlier conflicts are in ~/.dotfiles-backup/)" ;;
+    apply_system_files) echo "~/dotfiles/system/apply.sh --check lists what differs; run it without --check for the error" ;;
+    apply_greeter)
+      echo "re-run ~/dotfiles/greeter/apply.sh for the error. Login still works: tuigreet-launch"
+      echo "falls back to stock tuigreet (or greetd's text login) if tuigreet-ace didn't build" ;;
+    setup_shell|setup_tmux) echo "a git clone failed (network/GitHub); re-run" ;;
+    setup_nvim) echo "open nvim and run :Lazy restore to see which plugin failed" ;;
+    setup_node) echo "sudo corepack enable (needs the corepack package)" ;;
+    setup_brew) echo "Homebrew's own error is above; after installing it, 'brew doctor' explains most failures" ;;
+    setup_claude_hooks) echo "~/dotfiles/scripts/.local/bin/claude-hooks-install.sh shows the error (needs jq)" ;;
+    setup_system_services) echo "for each failed unit: systemctl status <unit>; journalctl -b -u <unit>" ;;
+    setup_groups) echo "sudo usermod -aG <group> \$USER, then log out and back in" ;;
+    setup_user_services)
+      echo "needs a real login session (a TTY login, not su/sudo -i/ssh without lingering):"
+      echo "  systemctl --user status <unit>; journalctl --user -b -u <unit>" ;;
+    apply_theme) echo "dconf needs a D-Bus session: re-run from a TTY login, or let it be -- only GTK theming" ;;
+    first_wallpaper) echo "harmless: wallpaper.timer fetches one later, or run ~/.local/bin/fetch_wallpaper.sh" ;;
+    verify) echo "each FAIL above names what drifted; a re-run fixes most, vayu-verify -v lists everything" ;;
+  esac
+}
+
+# On failure: the state that explains most install problems, into the log
+# only (the terminal already has the summary).
+diagnostics() {
+  {
+    echo
+    echo "==================== diagnostics (failed run) ===================="
+    echo "--- date / clock";      date; timedatectl 2>&1 | head -8
+    echo "--- disk";              df -h / "$HOME" /boot 2>&1
+    echo "--- memory";            free -h
+    echo "--- network";           ip -br addr 2>&1; getent hosts archlinux.org github.com 2>&1
+    echo "--- pacman lock";       ls -l /var/lib/pacman/db.lck 2>&1
+    echo "--- pacman.log (last 40)"; tail -n 40 /var/log/pacman.log 2>&1
+    echo "--- journal errors this boot (last 40)"; journalctl -b -p err -n 40 --no-pager 2>&1
+    echo "--- failed units";      systemctl --failed --no-legend 2>&1; systemctl --user --failed --no-legend 2>&1
+    echo "=================================================================="
+  } >> "$LOG_FILE" 2>&1
 }
 
 # run_step [--critical] "title" function
@@ -137,6 +208,11 @@ run_step() {
     STEP_RESULTS+=("ok    $title (${took}s)")
   else
     STEP_RESULTS+=("FAIL  $title (exit $rc, ${took}s)")
+    local l first=true
+    while IFS= read -r l; do
+      if $first; then STEP_RESULTS+=("        fix: $l"); first=false
+      else STEP_RESULTS+=("             $l"); fi
+    done < <(remedy "$fn")
     FAILED_STEPS=$((FAILED_STEPS + 1))
     err "step failed: $title -- details in $LOG_FILE"
     if $critical; then
@@ -163,7 +239,34 @@ preflight() {
   info "installer: ${BASH_SOURCE[0]} args: ${SCRIPT_ARGS:-none}"
   local avail_gb
   avail_gb=$(df -BG --output=avail "$HOME" | tail -1 | tr -dc 0-9)
+  if [ "$avail_gb" -lt 8 ]; then
+    err "only ${avail_gb}G free in \$HOME; a full install needs roughly 15G -- free space or grow the partition"
+    return 1
+  fi
   [ "$avail_gb" -ge 15 ] || warn "only ${avail_gb}G free; a full install needs roughly 15G"
+  # The single password prompt of the run (kept fresh afterwards). A fresh
+  # archinstall user may not be allowed sudo yet.
+  if ! command -v sudo >/dev/null 2>&1; then
+    err "sudo isn't installed. As root: pacman -S sudo, then the wheel step below"
+    return 1
+  fi
+  if ! sudo -v; then
+    err "$USER can't use sudo. As root: usermod -aG wheel $USER, then EDITOR=nano visudo"
+    err "and uncomment '%wheel ALL=(ALL:ALL) ALL'; log out, log back in, re-run"
+    return 1
+  fi
+  # A wrong clock fails TLS (curl, git) and package signatures with
+  # confusing errors; turn on NTP and give it a moment.
+  if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" = "no" ]; then
+    warn "clock not NTP-synchronized ($(date)); enabling NTP"
+    sudo timedatectl set-ntp true || true
+    local i
+    for i in $(seq 15); do
+      [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" = "yes" ] && break
+      sleep 1
+    done
+    info "clock now: $(date) (synchronized: $(timedatectl show -p NTPSynchronized --value 2>/dev/null || echo unknown))"
+  fi
   local host
   for host in https://archlinux.org https://github.com https://aur.archlinux.org; do
     curl -fsS --max-time 15 -o /dev/null "$host" || { err "can't reach $host -- check networking (nmtui) and re-run"; return 1; }
@@ -265,7 +368,7 @@ install_official() {
   if ! sudo pacman -S --needed --noconfirm "${avail[@]}"; then
     warn "batch install failed; retrying one package at a time to find the culprit"
     for p in "${avail[@]}"; do
-      sudo pacman -S --needed --noconfirm "$p" || { failed+=("$p"); note_failure "pacman: '$p' failed to install"; }
+      sudo pacman -S --needed --noconfirm "$p" || { failed+=("$p"); note_failure "pacman: '$p' failed to install (sudo pacman -S $p shows why)"; }
     done
   fi
   mark_explicit "${avail[@]}"
@@ -277,7 +380,12 @@ bootstrap_yay() {
   local tmp
   tmp=$(mktemp -d)
   git clone --depth=1 https://aur.archlinux.org/yay.git "$tmp/yay"
-  (cd "$tmp/yay" && makepkg -si --noconfirm --needed)
+  if ! (cd "$tmp/yay" && makepkg -si --noconfirm --needed); then
+    # yay builds from source with Go; yay-bin is the same program prebuilt.
+    warn "building yay failed; trying the prebuilt yay-bin"
+    git clone --depth=1 https://aur.archlinux.org/yay-bin.git "$tmp/yay-bin"
+    (cd "$tmp/yay-bin" && makepkg -si --noconfirm --needed)
+  fi
   rm -rf "$tmp"
 }
 
@@ -305,8 +413,15 @@ install_aur() {
   if ! yay -S "${yay_opts[@]}" "${avail[@]}"; then
     warn "batch install failed; retrying one package at a time to find the culprit"
     for p in "${avail[@]}"; do
-      yay -S "${yay_opts[@]}" "$p" || { failed+=("$p"); note_failure "aur: '$p' failed to build/install"; }
+      yay -S "${yay_opts[@]}" "$p" || { failed+=("$p"); note_failure "aur: '$p' failed to build/install (retry: yay -S $p; see https://aur.archlinux.org/packages/$p)"; }
     done
+  fi
+  # swayfx is the compositor: without it the login screen has no session
+  # to start. Stock sway reads the same config (swayfx-only lines like
+  # blur/corner_radius just get flagged) and keeps the machine usable.
+  if ! command -v sway >/dev/null 2>&1; then
+    note_failure "no sway after the AUR step (swayfx failed); installed stock sway as a fallback -- replace it later: yay -S swayfx"
+    sudo pacman -S --needed --noconfirm sway || note_failure "pacman: fallback 'sway' failed to install too"
   fi
   mark_explicit "${avail[@]}"
   [ "${#avail[@]}" -eq "${#want[@]}" ] && [ "${#failed[@]}" -eq 0 ]
@@ -426,7 +541,7 @@ setup_claude_hooks() {
 setup_system_services() {
   local u bad=0
   for u in "${SYSTEM_UNITS_NOW[@]}"; do
-    sudo systemctl enable --now "$u" || { note_failure "systemctl enable --now $u"; bad=1; }
+    sudo systemctl enable --now "$u" || { note_failure "systemctl enable --now $u (systemctl status $u)"; bad=1; }
   done
   # Enabled, not started: greetd would take over this TTY mid-script; it
   # starts on the reboot the summary asks for.
@@ -495,9 +610,9 @@ if [ -z "${VAYU_INSTALL_REEXEC:-}" ]; then
   # channel fails in the first second, not after the upgrade.
   [ -d "$DOTFILES_DIR/.git" ] || choose_branch "${1:-}"
   run_step --critical "Preflight checks" preflight
-  # One password prompt, then kept fresh: AUR builds can outlast sudo's
-  # 5-minute timeout, and a prompt mid-build would stall an unattended run.
-  sudo -v
+  # Preflight asked for the password once; keep it fresh: AUR builds can
+  # outlast sudo's 5-minute timeout, and a prompt mid-build would stall
+  # an unattended run.
   MAIN_PID=$$
   ( { set +x; } 2>/dev/null; while kill -0 "$MAIN_PID" 2>/dev/null; do sudo -n -v 2>/dev/null; sleep 50; done ) &
   SUDO_KEEPALIVE_PID=$!
