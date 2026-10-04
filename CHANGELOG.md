@@ -5,6 +5,32 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (system/: root-owned files the installer never set up)
+
+- An audit of `/etc` against the repo (unowned files, and `pacman -Qkk`
+  for modified package configs) found settings no installer step
+  created. A fresh install would silently have lacked them:
+  - the lid-close auto-poweroff hook and its config: kept in `systemd/`
+    as "reference copies", installed by hand, never by `install.sh`;
+  - `vm.swappiness=10` (`/etc/sysctl.d/99-custom.conf`);
+  - the zram config (`/etc/systemd/zram-generator.conf`, lz4);
+  - pacman's `Color`.
+- New non-stow `system/` dir mirrors `/`: `system/etc/X` installs to
+  `/etc/X`. `system/apply.sh` installs what differs (755 if executable
+  in the repo, else 644), reloads what changed (`sysctl --system`,
+  `daemon-reload`, logind HUP) and enables `Color`. `--check` lists the
+  differences without sudo. The lid hook and its config moved there
+  (`git mv`). So did the logind lid drop-in and greetd's PAM file,
+  which `install.sh` used to write from heredocs.
+- `systemd/.stow-local-ignore` existed only to keep the lid files out
+  of `~`, so it's gone. `dotfiles-stow-packages` skips `system/`.
+- On this machine, logind's lid setting lives in `logind.conf` itself.
+  The drop-in sets the same values, so applying it changes nothing.
+  `99-sysctl.conf` duplicates `99-custom.conf` and isn't carried over.
+- Verified: `system/apply.sh --check` flags exactly the 3 expected
+  differences here: the lid files (header comments updated) and the
+  logind drop-in that isn't installed yet.
+
 ## 2026-10-04 (wallpaper waits for the network at boot)
 
 - 7 of 52 logged wallpaper runs fell back instead of fetching. Each was

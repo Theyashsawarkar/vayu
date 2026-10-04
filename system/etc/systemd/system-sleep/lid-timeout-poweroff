@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Installed as /etc/systemd/system-sleep/lid-timeout-poweroff (root-owned,
-# executable, NOT stow-managed -- system-sleep hooks only work from /etc,
-# see install instructions).
+# executable, NOT stow-managed -- system-sleep hooks only work from /etc)
+# by system/apply.sh, which install.sh runs.
 #
 # Auto-poweroff if the lid stays closed for 30+ minutes straight.
 #
