@@ -125,6 +125,7 @@ Each directory represents an independent package managed by GNU Stow.
 ├── install.sh       # one-command bootstrap, see Quick Start above
 ├── packages/        # pacman.txt + aur.txt + manifest.sh (services, groups...; not stowed)
 ├── system/          # root-owned files under / (sysctl, logind, lid hook...), system/apply.sh
+├── splash/          # Plymouth boot splash (the animated logo), splash/apply.sh; not stowed
 ├── gtk/             # GTK 3/4 settings.ini (Catppuccin Mocha theme)
 ├── kitty/
 ├── mako/

@@ -34,7 +34,7 @@
 # What it sets up lives in the repo, not here: packages/pacman.txt and
 # aur.txt (packages), packages/manifest.sh (services, masks, groups,
 # user-level tools), system/ (root-owned files under /), greeter/ (login
-# screen), and every other top-level directory (stowed into ~).
+# screen), splash/ (boot splash), and every other top-level directory (stowed into ~).
 
 set -Eeuo pipefail
 
@@ -164,6 +164,9 @@ remedy() {
     apply_greeter)
       echo "re-run ~/dotfiles/greeter/apply.sh for the error. Login still works: tuigreet-launch"
       echo "falls back to stock tuigreet (or greetd's text login) if tuigreet-ace didn't build" ;;
+    apply_splash)
+      echo "~/dotfiles/splash/apply.sh --check lists what differs; run it without --check for the error."
+      echo "Booting is unaffected until mkinitcpio -P succeeds; a failed run leaves the old text boot" ;;
     setup_shell|setup_tmux) echo "a git clone failed (network/GitHub); re-run" ;;
     setup_nvim) echo "open nvim and run :Lazy restore to see which plugin failed" ;;
     setup_node) echo "sudo corepack enable (needs the corepack package)" ;;
@@ -537,6 +540,8 @@ apply_greeter() {
   "$DOTFILES_DIR/greeter/apply.sh"
 }
 
+apply_splash() { "$DOTFILES_DIR/splash/apply.sh"; }
+
 clone_if_missing() {  # url dest: also replaces a clone an interrupted run left broken
   if [ -d "$2" ] && git -C "$2" rev-parse --verify -q HEAD >/dev/null 2>&1; then
     info "already present: $2"
@@ -726,6 +731,7 @@ run_step --critical "Bootstrapping yay (AUR helper)" bootstrap_yay
 run_step "Installing AUR packages (packages/aur.txt)" install_aur
 run_step --critical "Stowing configs into ~ (conflicts backed up to $BACKUP_DIR)" stow_all
 run_step "Installing the login screen (greetd + tuigreet, greeter/)" apply_greeter
+run_step "Installing the boot splash (Plymouth, splash/)" apply_splash
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
 run_step "Installing Neovim plugins (lazy.nvim)" setup_nvim

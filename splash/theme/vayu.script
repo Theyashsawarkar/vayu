@@ -1,0 +1,87 @@
+# Vayu boot splash (Plymouth script theme), installed by splash/apply.sh.
+# Plays the intro once (the letters write themselves, the wind line sweeps
+# out and curls), then loops a light running along the wind line until the
+# login screen takes over. Frames come from splash/make-frames.py, drawn
+# for a 1080-pixel-high screen and scaled here to any other height.
+
+INTRO = 55;   # intro-000.png .. intro-054.png
+GLOW = 60;    # glow-000.png .. glow-059.png
+# Plymouth calls refresh() 50 times a second; the frames are 25 fps.
+TICKS_PER_FRAME = 2;
+
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+
+scale = Window.GetHeight() / 1080;
+
+fun load(name) {
+  img = Image(name);
+  if (global.scale != 1)
+    img = img.Scale(Math.Int(img.GetWidth() * global.scale), Math.Int(img.GetHeight() * global.scale));
+  return img;
+}
+
+fun pad(n) {
+  if (n < 10) return "00" + n;
+  if (n < 100) return "0" + n;
+  return "" + n;
+}
+
+for (i = 0; i < INTRO; i++) intro[i] = load("intro-" + pad(i) + ".png");
+for (i = 0; i < GLOW; i++) glow[i] = load("glow-" + pad(i) + ".png");
+logo = load("logo.png");
+
+x = Window.GetX() + Math.Int((Window.GetWidth() - logo.GetWidth()) / 2);
+y = Window.GetY() + Math.Int((Window.GetHeight() - logo.GetHeight()) / 2);
+
+base = Sprite(intro[0]);
+base.SetPosition(x, y, 1);
+light = Sprite(glow[0]);
+light.SetPosition(x, y, 2);
+light.SetOpacity(0);
+
+tick = 0;
+fun refresh() {
+  f = Math.Int(global.tick / global.TICKS_PER_FRAME);
+  if (f < global.INTRO) {
+    global.base.SetImage(global.intro[f]);
+  } else {
+    global.base.SetImage(global.logo);
+    global.light.SetImage(global.glow[(f - global.INTRO) % global.GLOW]);
+    global.light.SetOpacity(1);
+  }
+  global.tick++;
+}
+Plymouth.SetRefreshFunction(refresh);
+
+# Prompts and messages (a password, an fsck note) as one quiet line of
+# Mocha "subtext" text below the logo. Esc still switches to the full
+# boot log.
+text = Sprite();
+text.SetOpacity(0);
+
+fun show(line) {
+  if (line == "") {
+    global.text.SetOpacity(0);
+  } else {
+    img = Image.Text(line, 0.65, 0.68, 0.78);
+    global.text.SetImage(img);
+    global.text.SetPosition(Window.GetX() + Math.Int((Window.GetWidth() - img.GetWidth()) / 2),
+                            global.y + global.logo.GetHeight() + Math.Int(40 * global.scale), 3);
+    global.text.SetOpacity(1);
+  }
+}
+
+fun password_cb(prompt, bullets) {
+  line = prompt + "  ";
+  for (i = 0; i < bullets; i++) line = line + "•";
+  show(line);
+}
+fun question_cb(prompt, entry) { show(prompt + "  " + entry); }
+fun message_cb(line) { show(line); }
+fun normal_cb() { show(""); }
+
+Plymouth.SetDisplayPasswordFunction(password_cb);
+Plymouth.SetDisplayQuestionFunction(question_cb);
+Plymouth.SetMessageFunction(message_cb);
+Plymouth.SetDisplayNormalFunction(normal_cb);

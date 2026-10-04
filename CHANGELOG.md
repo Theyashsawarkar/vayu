@@ -5,6 +5,37 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (boot splash: the Vayu logo, animated, instead of boot text)
+
+- New `splash/` (not stowed): a Plymouth script theme that shows the Vayu
+  logo between the firmware logo and the login screen. The logo
+  (`splash/logo.svg`) is hairline spaced capitals -- the A has no
+  crossbar, so air passes through it -- over a wind line that curls off at
+  the end, in Mocha mauve to rosewater. Picked from several styles and
+  motions previewed in the browser.
+- Motion: the letters write themselves one after another, the wind line
+  sweeps out and curls, then a soft light keeps running along the wind
+  line until tuigreet starts. `splash/make-frames.py` renders it into 116
+  transparent 25 fps PNGs (828 KB). It measures dash lengths itself rather
+  than relying on SVG `pathLength`, and draws the Y's stem as its own
+  stroke, since cairo restarts the dash at every moveto (that left a stray
+  dot).
+- `splash/apply.sh` installs `plymouth`, the theme and
+  `/etc/plymouth/plymouthd.conf` (`ShowDelay=0`), puts the `plymouth` hook
+  after `udev`, appends `quiet splash loglevel=3 rd.udev.log_level=3
+  plymouth.use-simpledrm` to `/etc/kernel/cmdline`, then runs
+  `mkinitcpio -P`. `plymouth.use-simpledrm` is needed because there's no
+  `kms` hook: without it Plymouth waits for amdgpu, which loads from the
+  root filesystem, so the first seconds would be blank.
+- Wired in like `greeter/`: an `install.sh` step, a `vayu-verify` section
+  (`apply.sh --check`), an update notice in `update-apply.sh`, excluded in
+  `dotfiles-stow-packages`, `plymouth` added to `packages/pacman.txt`.
+- Measured before this change: the 4.3 s that NetworkManager seemed to take
+  is amdgpu loading. hostnamed (`PrivateNetwork=yes`) can't set up its
+  namespace until the driver finishes, and NetworkManager waits on hostnamed.
+  The time moved from "kernel" to "userspace" when the `kms` hook went; the
+  total is the same. The splash now covers it.
+
 ## 2026-10-04 (boot: 5.8 s in the loader came from a 47 MB initramfs)
 
 - `systemd-analyze` showed 5.8 s of "loader" with the menu timeout already

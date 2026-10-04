@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -8 318 126" width="636" height="252">
+  <!-- The Vayu logo: hairline capitals (the A has no crossbar, so air
+       passes through it) over a wind line that curls off at the end.
+       Catppuccin Mocha mauve to rosewater. Same geometry as make-frames.py. -->
+  <defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0">
+    <stop offset="0" stop-color="#cba6f7"/><stop offset="1" stop-color="#f5e0dc"/></linearGradient></defs>
+  <g fill="none" stroke="url(#g)" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke-width="4">
+      <path d="M0 0 L22 52 L44 0"/>
+      <path d="M84 52 L106 0 L128 52"/>
+      <path d="M168 0 L190 27 L212 0 M190 27 V52"/>
+      <path d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/>
+    </g>
+    <path stroke-width="3" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/>
+  </g>
+</svg>

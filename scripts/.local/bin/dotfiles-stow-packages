@@ -8,11 +8,12 @@
 #   packages/          package lists
 #   docs/              documentation
 #   greeter/           login screen, installed by greeter/apply.sh
+#   splash/            boot splash, installed by splash/apply.sh
 #   system/            root-owned files under /, installed by system/apply.sh
 #   assets/ _layouts/  the docs site's JS/CSS/templates
 #   .*                 .git, .github...
 set -euo pipefail
 cd "${1:-$HOME/dotfiles}"
 find . -maxdepth 1 -mindepth 1 -type d \
-  ! -name packages ! -name docs ! -name greeter ! -name system ! -name assets ! -name _layouts \
+  ! -name packages ! -name docs ! -name greeter ! -name splash ! -name system ! -name assets ! -name _layouts \
   ! -name '.*' -printf '%f\n' | sort

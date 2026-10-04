@@ -230,6 +230,7 @@ reproducing the machine means keeping these in sync with it, not editing the scr
 | `packages/manifest.sh` | system/user units to enable, start, disable or mask; groups; ufw rules; Homebrew formulae; zsh plugin clones; dconf keys. Sourced by both `install.sh` and `vayu-verify` |
 | `system/` | root-owned files, mirrored from `/` (`system/etc/sysctl.d/99-custom.conf` -> `/etc/sysctl.d/99-custom.conf`), installed by `system/apply.sh` |
 | `greeter/` | the login screen (`greeter/apply.sh`) |
+| `splash/` | the Plymouth boot splash (`splash/apply.sh`; frames rendered by `splash/make-frames.py`) |
 | every other top-level dir | a stow package (`dotfiles-stow-packages` lists them) |
 
 **Logging.** All output goes to the terminal and to
@@ -269,7 +270,9 @@ Steps:
    then `stow -R` (restow also drops links to files removed from the repo).
 8. `system/apply.sh`: install what differs under `/`, then reload what changed
    (`sysctl --system`, `daemon-reload`, logind HUP), plus pacman's `Color`.
-9. `greeter/apply.sh` (greetd + tuigreet-ace, console font and palette).
+9. `greeter/apply.sh` (greetd + tuigreet-ace, console font and palette), then
+   `splash/apply.sh` (Plymouth, the Vayu theme, the `plymouth` hook and the quiet-boot
+   kernel options; rebuilds the UKI).
 10. zsh as login shell, oh-my-zsh (downloaded to a file first, so a failed download
     can't run as an empty script), Powerlevel10k and plugins.
 11. tmux plugins: every `@plugin` in `tmux.conf` cloned into `~/.tmux/plugins/` (not

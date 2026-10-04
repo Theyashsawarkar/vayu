@@ -55,6 +55,10 @@ for d in "${STOW_REAL_DIRS[@]}"; do
   check "~/$d is a real directory, not a link into the repo" bash -c "[ -d '$HOME/$d' ] && [ ! -L '$HOME/$d' ]"
 done
 
+section "Boot splash (splash/)"
+if splash_out=$("$DOTFILES_DIR/splash/apply.sh" --check 2>&1); then ok "$splash_out"
+else while read -r l; do bad "$l"; done <<<"$splash_out"; fi
+
 section "System files (system/ -> /)"
 if sys_out=$("$DOTFILES_DIR/system/apply.sh" --check 2>&1); then ok "$sys_out"
 else while read -r l; do bad "$l"; done <<<"$sys_out"; fi

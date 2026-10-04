@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Vayu
+Description=The Vayu logo writes itself, then a light runs along the wind line.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/vayu
+ScriptFile=/usr/share/plymouth/themes/vayu/vayu.script

@@ -65,6 +65,7 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 playerctl
+plymouth
 power-profiles-daemon
 python
 python-gobject
