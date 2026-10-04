@@ -283,12 +283,18 @@ This setup prioritizes:
 
 ## 📸 Screenshots
 
-Add screenshots here to showcase the desktop environment.
+![Neovim, rmpc and btop tiled over the wallpaper, with compositor glass and the Catppuccin Mocha bar](assets/desktop.jpg)
 
-```markdown
-![Desktop](./assets/desktop.png)
-![Neovim](./assets/nvim.png)
-```
+| | |
+|---|---|
+| ![Wofi app launcher](assets/wofi.jpg) | ![Keybinding search, filtered to window keys](assets/keybindsearch.jpg) |
+| App launcher (`Super+d`) | Keybinding search (`Super+Shift+/`) |
+| ![Emoji picker searching for wind](assets/emoji.jpg) | ![Power menu](assets/powermenu.jpg) |
+| Emoji picker (`Super+.`) | Power menu (`Super+Shift+p`) |
+
+![The Vayu boot splash on black](assets/splash.jpg)
+
+The boot splash, shown on boot, reboot and power-off (`splash/`).
 
 ---
 

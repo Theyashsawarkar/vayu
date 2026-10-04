@@ -5,6 +5,26 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (site and README: new screenshots)
+
+- Replaced the landing page's five screenshots (from early September,
+  before the login, splash and logo work) and added a sixth, the boot
+  splash. Captured with `grim` at 1920x1080 on a scratch workspace with
+  notifications in DND, scaled to 1600x900 with `vips` (Q86, metadata
+  stripped; 1.5 MB for all six): the tiled desktop (Neovim on
+  `splash/make-frames.py`, rmpc on a paused track with its art, btop's
+  CPU/memory/disk panels), the launcher, keybinding search ("window"),
+  emoji picker ("wind") and power menu. The splash slide is
+  `splash/theme/logo.png` centred on black, i.e. the frame Plymouth holds.
+- Kept out of the shots: browser and tmux contents, notifications, and
+  btop's network panel (it shows the LAN IP). rmpc played silently with
+  MPD's output disabled, then was stopped and the output re-enabled.
+- Gotcha for next time: `swaymsg kill` on a kitty running a program
+  opens kitty's "close this window?" prompt instead of closing it; close
+  scratch windows by killing their PIDs from `swaymsg -t get_tree`.
+- The carousel styles a sixth offset; README's placeholder Screenshots
+  section now shows the images with their keys.
+
 ## 2026-10-04 (site: the logo in the navbar)
 
 - The navbar brand on every page (homepage and the docs layout) is the
