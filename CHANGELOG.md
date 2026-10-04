@@ -5,6 +5,24 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (tmux.service -> tmux-main.service: the link that kept vanishing)
+
+- **Why `~/.config/systemd/user/tmux.service` kept disappearing** (it's
+  in this changelog five times as "never linked"/"missing"): with
+  `@continuum-boot 'off'`, tmux-continuum runs
+  `systemctl --user disable tmux.service` every time a tmux server starts.
+  For a unit file that is itself a symlink to outside the unit path (a
+  stow link), `disable` deletes the symlink. So every login undid every
+  restow. Caught by the first real `install.sh` run: `vayu-verify` passed
+  at the end of the install, then failed after the reboot. The journal
+  showed a `systemctl` reload from the first kitty/tmux window at the
+  exact second the directory changed. Reproduced by hand.
+- The unit is now `tmux-main.service`, a name continuum doesn't manage.
+  Its `disable` call now just reports "Unit tmux.service does not exist".
+  Checked on an isolated tmux server: nothing shows in tmux, and the link
+  stays. Still not enabled; nothing referenced the old name.
+- After the rename, `vayu-verify` passes all 68 checks on this machine.
+
 ## 2026-10-04 (install.sh: full log, per-step failure handling, reproducible)
 
 - **Log file.** Every run writes

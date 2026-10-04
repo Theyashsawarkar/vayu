@@ -1,3 +1,7 @@
+# Not named tmux.service: tmux-continuum, with @continuum-boot off, runs
+# `systemctl --user disable tmux.service` on every tmux server start, and
+# disabling a symlinked unit file deletes the symlink -- that is how the
+# stow link kept vanishing after each login.
 [Unit]
 Description=tmux default session (detached)
 Documentation=man:tmux(1)
