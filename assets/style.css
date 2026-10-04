@@ -348,6 +348,49 @@ code {
    outside the h1's background-clip. Sits empty (zero visual weight)
    until the fetch resolves, rather than a "vX.Y.Z" placeholder that
    might briefly show something wrong. */
+/* The boot splash logo in the hero h1, animated the way
+   splash/make-frames.py renders it for Plymouth (same timings and
+   easings): letters write in 0.9 s each, 0.15 s apart; the wind line
+   sweeps out from 0.9 s for 1.2 s; from 2.2 s a soft light runs along it
+   every 2.4 s. pathLength="1" on every path, so dashes are fractions. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.vayu-logo {
+  display: inline-block;
+  width: 17rem;
+  height: auto;
+  vertical-align: bottom;
+  overflow: visible;
+}
+.vayu-logo + .version-badge { vertical-align: bottom; margin-bottom: 0.4rem; }
+.vayu-logo .draw {
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  animation: vayu-draw 0.9s cubic-bezier(.6, 0, .3, 1) var(--d, 0s) forwards;
+}
+/* The Y is two paths (arms, then stem) so the stroke reads as one line:
+   arms are ~74% of its length, so they get that share of the 0.9 s. */
+.vayu-logo .y-arms { animation-duration: 0.66s; animation-timing-function: cubic-bezier(.6, 0, .6, 1); }
+.vayu-logo .y-stem { animation-duration: 0.3s; animation-timing-function: cubic-bezier(.3, 0, .3, 1); }
+.vayu-logo .wind { animation: vayu-draw 1.2s cubic-bezier(.5, 0, .2, 1) 0.9s forwards; }
+@keyframes vayu-draw { to { stroke-dashoffset: 0; } }
+.vayu-logo .glow {
+  stroke-dasharray: 0.12 2;
+  stroke-dashoffset: 0.12;
+  opacity: 0;
+  animation:
+    vayu-glow-run 2.4s cubic-bezier(.45, 0, .25, 1) 2.2s infinite,
+    vayu-glow-fade 2.4s linear 2.2s infinite;
+}
+@keyframes vayu-glow-run { from { stroke-dashoffset: 0.12; } to { stroke-dashoffset: -1; } }
+@keyframes vayu-glow-fade { 0% { opacity: 0; } 15%, 85% { opacity: 0.9; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .vayu-logo .draw { animation: none; stroke-dashoffset: 0; }
+  .vayu-logo .glow { animation: none; }
+}
+
 .version-badge {
   display: inline-block;
   /* h1 has line-height: 1 and a huge font-size -- "middle" would sink
@@ -366,6 +409,20 @@ code {
   font-weight: 600;
   color: var(--mauve);
 }
+/* The opening of the Taittiriya Upanishad (1.1.1), a salutation to Vayu,
+   the wind the project is named after. System Devanagari fonts only (Noto
+   on Linux/Android, Kohinoor on macOS/iOS, Nirmala UI on Windows), no
+   web font to load. The translation is only in the title (hover). */
+.shlok { margin: -0.25rem 0 1.25rem; }
+.shlok blockquote {
+  margin: 0;
+  font-family: "Noto Serif Devanagari", "Tiro Devanagari Sanskrit", "Kohinoor Devanagari", "Nirmala UI", "Noto Sans Devanagari", serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--mauve);
+}
+
 .hero-text .tagline {
   font-size: 1.2rem;
   color: var(--subtext);
@@ -679,6 +736,7 @@ footer {
     border-radius: 20px;
   }
   .hero-text h1 { font-size: 2.8rem; }
+  .vayu-logo { width: 12rem; }
   .hero-image { flex: none; width: 100%; }
   .topnav { flex-direction: column; gap: 0.6rem; align-items: flex-start; border-radius: 20px; }
   .topnav .navlinks { display: flex; flex-wrap: wrap; }

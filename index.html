@@ -27,7 +27,29 @@
   <div class="hero-glow" aria-hidden="true"></div>
   <div class="hero-card">
     <div class="hero-text">
-      <h1>Vayu <span class="version-badge" id="version-badge"></span></h1>
+      <h1><span class="sr-only">Vayu</span><svg class="vayu-logo" viewBox="-12 -8 318 126" aria-hidden="true" focusable="false">
+        <!-- The boot splash logo (splash/logo.svg), animated like
+             splash/make-frames.py: the letters write themselves, the wind
+             line sweeps out and curls, then a light runs along it. -->
+        <defs>
+          <linearGradient id="vayu-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0">
+            <stop offset="0" stop-color="#cba6f7"/><stop offset="1" stop-color="#f5e0dc"/>
+          </linearGradient>
+          <filter id="vayu-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+        </defs>
+        <g fill="none" stroke="url(#vayu-g)" stroke-linecap="round" stroke-linejoin="round">
+          <path class="draw letter" style="--d:0s" pathLength="1" stroke-width="4" d="M0 0 L22 52 L44 0"/>
+          <path class="draw letter" style="--d:.15s" pathLength="1" stroke-width="4" d="M84 52 L106 0 L128 52"/>
+          <path class="draw y-arms" style="--d:.3s" pathLength="1" stroke-width="4" d="M168 0 L190 27 L212 0"/>
+          <path class="draw y-stem" style="--d:.9s" pathLength="1" stroke-width="4" d="M190 27 V52"/>
+          <path class="draw letter" style="--d:.45s" pathLength="1" stroke-width="4" d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/>
+          <path class="draw wind" pathLength="1" stroke-width="3" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/>
+        </g>
+        <path class="glow" pathLength="1" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" filter="url(#vayu-blur)" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/>
+      </svg><span class="version-badge" id="version-badge"></span></h1>
+      <figure class="shlok">
+        <blockquote lang="sa" title="Salutations to you, Vāyu. You alone are the visible Brahman. (Taittirīya Upaniṣad 1.1.1)">नमस्ते वायो । त्वमेव प्रत्यक्षं ब्रह्मासि ॥</blockquote>
+      </figure>
       <p class="tagline">A minimal, keyboard-driven desktop, with aesthetics.</p>
       <p class="eyebrow">Arch Linux • Wayland • Sway</p>
       <div class="cta-row">

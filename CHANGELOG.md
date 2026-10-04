@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (site: the splash logo and a shlok in the hero)
+
+- The homepage hero shows the boot splash logo instead of the plain
+  "Vayu" heading, animated in CSS with the same timings and easings as
+  `splash/make-frames.py`: the letters write themselves, the wind line
+  sweeps out and curls, then a light runs along it every 2.4 s. The Y is
+  two paths (arms, then stem), as in the Plymouth frames. Reduced-motion
+  visitors get the finished logo; screen readers still read "Vayu".
+- Under it, the opening salutation to Vayu from the Taittiriya Upanishad
+  (1.1.1): नमस्ते वायो । त्वमेव प्रत्यक्षं ब्रह्मासि ॥ ("Salutations to you,
+  Vayu. You alone are the visible Brahman."). Devanagari only; the
+  translation and source are in its hover title. System Devanagari fonts,
+  no web font.
+- Checked in Chrome against a local Jekyll build: mid-draw, finished, and
+  the light on the wind line.
+
 ## v1.17.0 -- 2026-10-04
 
 ## 2026-10-04 (pre-release check for v1.17.0 Stable)
