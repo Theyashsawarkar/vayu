@@ -3,7 +3,9 @@
 Stow-managed: `~/dotfiles/<pkg>/...` is symlinked into `~`. Edit files here
 (the symlink targets), never a copy in `~`. Branch/release process:
 `docs/VERSIONING.md` (day-to-day work on `development`; every change gets a
-dated `CHANGELOG.md` entry).
+dated `CHANGELOG.md` entry). A change with a trade-off, failure mode or
+known glitch also gets a symptom-first section in `docs/TROUBLESHOOTING.md`
+(on the site as Troubleshooting); see VERSIONING.md.
 
 ## Keybindings: one registry, always in sync
 
@@ -38,6 +40,7 @@ same change:
    | Zed | `zed/.config/zed/keymap.json` | trailing `// Description` (else the action name is shown) |
    | rmpc | `rmpc/.config/rmpc/config.ron` | nothing -- action names are shown humanized |
    | Keys inside a script/popup (fzf `--bind`, pickers) | the script, in `~/.tmux/scripts`, `~/.local/bin` or `~/.config/sway/scripts` | `# keybind: <Source>/<scope> \| <keys> \| <description>`, e.g. `# keybind: Tmux/session picker \| Ctrl+x \| Kill the highlighted session` |
+| Kernel Magic SysRq | `system/etc/sysctl.d/99-sysrq.conf` (scanned at `/etc/sysctl.d`, so run `system/apply.sh` first) | `# keybind: Kernel \| <keys> \| <description>` |
 
    A new tool with its own keybinding config gets a parser in
    `keybind-search.py` (and a row here) rather than going unlisted.

@@ -5,6 +5,48 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (Troubleshooting page; SysRq as the way out of a hung shutdown)
+
+- New `docs/TROUBLESHOOTING.md`, on the site as **Troubleshooting** (top
+  nav on every page, a card on the homepage, linked from the README's
+  install-failure notes and `splash/README.md`). One section per symptom,
+  each with why it happens and commands to run as-is: a shutdown stuck on
+  the logo, a black screen that doesn't power off, getting the 10-min
+  watchdog reset back, which text after the logo means which part is
+  missing, the ~15 s firmware logo, a boot stuck on the Vayu logo, text
+  instead of the logo, login and sway failures, the still-open lock-screen
+  black-out after a lid close, the 30-min lid power-off, install failures,
+  and what to include in a bug report.
+- New `system/etc/sysctl.d/99-sysrq.conf`: `kernel.sysrq = 176` (sync,
+  remount read-only, reboot/power-off; systemd's default 16 allows only
+  sync). It replaces the reset that `RebootWatchdogSec=0` (below) took away:
+  if the last stage of a shutdown hangs, hold Alt+PrtSc and press S U B
+  (or O) instead of holding the power button. Nothing that dumps memory or
+  kills processes is enabled. What's still automatic without the watchdog:
+  each service gets 90 s to stop, and the reboot/poweroff targets force the
+  action after 30 min (`JobTimeoutAction=reboot-force`/`poweroff-force`).
+  Only a hang in the kernel's final stage has no timer now.
+- The SysRq combos are in the keybinding search: `keybind-search.py` also
+  reads `# keybind:` lines from `/etc/sysctl.d` (new source "Kernel"), and
+  `force` is now an allowed first verb. Row added to `CLAUDE.md`.
+
+## 2026-10-04 (no watchdog line after the shutdown logo)
+
+- Reboot still showed a line or two of text (with a kernel timestamp)
+  between the Vayu logo and power-off, although the blanking hook was
+  installed. Every recent shutdown's kernel log has one crit-level line,
+  `watchdog: watchdog0: watchdog did not stop!`, printed when PID 1 closes
+  the hardware watchdog it armed for shutdown (`RebootWatchdogSec`, default
+  10 min) on handing over to `systemd-shutdown`. Crit passes `loglevel=3`,
+  and it lands before the blanking hook runs.
+- New `system/etc/systemd/system.conf.d/no-reboot-watchdog.conf`:
+  `RebootWatchdogSec=0`, so the watchdog isn't armed for shutdown. A hung
+  shutdown is no longer reset after 10 min (see the SysRq entry above, and
+  "Shutdown: I want the automatic 10-minute reset back" in
+  `docs/TROUBLESHOOTING.md` to undo it).
+- Confirmed by a reboot: logo, then black, then the firmware logo, with no
+  text in between.
+
 ## 2026-10-04 (where amdgpu's load time goes)
 
 - Booted once with `initcall_debug` to find out why the Acer logo stays up
@@ -36,8 +78,9 @@ full branch/release process.
   master, frame still scanned out) to `plymouthd-fd-escrow`, which is in
   the shutdown ramfs at the path `plymouthd` execs, so the text console
   shouldn't reach the screen at all. Something releases it anyway. The
-  blanking doesn't depend on what: black on black stays black. Not yet
-  confirmed by a reboot.
+  blanking doesn't depend on what: black on black stays black. Confirmed
+  by reboots: the screen of text is gone (the one line left was the
+  watchdog, fixed in the entry above).
 
 ## v1.16.0-nightly -- 2026-10-04
 

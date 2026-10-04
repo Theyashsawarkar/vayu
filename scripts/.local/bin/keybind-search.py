@@ -23,6 +23,8 @@ tool's own annotation mechanism:
   Scripts `# keybind: <Source>/<scope> | <keys> | <description>` lines in
           the popup/picker scripts, for keys that only exist inside them
           (fzf --bind etc.), e.g. the tmux session picker's Ctrl+x.
+          Same annotation in /etc/sysctl.d (source Kernel): the Magic
+          SysRq combos.
 
 Front-ends:
   (no args)          wofi popup, Super+Shift+/ in sway. Enter copies the line.
@@ -54,6 +56,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".tmux/scripts",
     HOME / ".local/bin",
     HOME / ".config/sway/scripts",
+    # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
+    Path("/etc/sysctl.d"),
 ]
 
 # Same Catppuccin Mocha hues the wifi/bluetooth pickers use, one per source.
@@ -63,6 +67,7 @@ SOURCE_COLORS = {
     "Kitty": "#F5C2E7",  # Pink
     "Zed": "#89B4FA",    # Blue
     "rmpc": "#CBA6F7",   # Mauve
+    "Kernel": "#F38BA8", # Red
 }
 SCOPE_COLOR = "#FAB387"   # Peach
 DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults
@@ -78,7 +83,7 @@ SEARCH_HINT = "action + object, e.g. kill window, open lazygit, raise volume"
 TMUX_SEARCH_HINT = "action + object, e.g. kill window, split pane, rename session"
 VERBS = set("""
 add alternate begin cancel clear close confirm continue copy create cut cycle delete
-describe detach edit enter evaluate exit focus format go grow hover install invert
+describe detach edit enter evaluate exit focus force format go grow hover install invert
 jump kill leave lock lower move normal open paste pick play quit raise rate record
 reload remove rename reopen rerun rescan reset resize restore rotate run save scroll
 search seek select send set show shrink shuffle split start step stop swap switch

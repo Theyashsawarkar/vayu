@@ -64,6 +64,9 @@ sudo sed -i -E 's/ (quiet|splash|loglevel=3|rd\.udev\.log_level=3|plymouth\.use-
 sudo mkinitcpio -P
 ```
 
+Shutdown/boot problems (a hang, text after the logo, the watchdog
+trade-off): see [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md).
+
 If a boot ever seems stuck on the logo, press Esc to see the log. The splash
 can't stop a boot by itself: if Plymouth or the theme fails, boot carries on
 in text mode.

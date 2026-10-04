@@ -48,6 +48,7 @@ and stops with the fix if one is missing):
 - In `latest.log`, search for `command failed` to find the exact failing command and its exit code.
 - A failed run also appends a `diagnostics` section at the end of the log: clock,
   disk, memory, network, the pacman lock and log, journal errors and failed units.
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) covers known failures and edge cases after install too.
 - Fix the problem and run the installer again. It skips anything that's already
   done. If you need to clone the repo again, move `~/dotfiles` aside first.
 - There are fallbacks so you can still log in to a desktop:
@@ -64,6 +65,8 @@ Secrets (API keys, tokens) are never in this repo — see
 📖 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** explains how the stow packages map
 to `$HOME`, what `install.sh` does step by step, and what's deliberately excluded.
 **[CHANGELOG.md](CHANGELOG.md)** is the detailed log of what changed and why.
+🩺 **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** lists known problems by symptom
+(a shutdown that hangs, text after the logo, a login that won't start) and how to fix each.
 
 ---
 

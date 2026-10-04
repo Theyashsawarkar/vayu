@@ -87,3 +87,14 @@ gets inserted directly above the dated entry it corresponds to, marking
 "everything from here down, up to the previous version marker, is what
 shipped in this version" -- without editing or collapsing any of the
 existing dated entries underneath it.
+
+## Known issues and edge cases
+
+Anything a user could run into because of a change -- a trade-off it makes
+(like `RebootWatchdogSec=0` giving up the automatic reset of a hung
+shutdown), a failure mode, a known glitch not yet fixed -- gets a section in
+`docs/TROUBLESHOOTING.md` in the same change: the symptom as the user sees
+it (that's the heading, since the page's sidebar lists headings), why, and
+the commands to fix or undo it. The `CHANGELOG.md` entry says what changed
+and links or names that section; the annotated tag message of a release
+lists the known issues it ships with.

@@ -52,6 +52,11 @@ defaults:
     values:
       layout: "docs"
       title: "Keybindings"
+  - scope:
+      path: "docs/TROUBLESHOOTING.md"
+    values:
+      layout: "docs"
+      title: "Troubleshooting"
 
 # Everything below is real config/dotfile content, not documentation --
 # excluded so the Jekyll build only ever processes the actual docs
