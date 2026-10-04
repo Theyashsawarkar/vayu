@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.18.0 -- 2026-10-04
+
+## 2026-10-04 (pre-release check for v1.18.0 Stable)
+
+- Everything since v1.17.0 was tested live: vayu-elevate on this laptop
+  with real approvals (approve, decline, deny with Esc, auto-close after a
+  run, failure staying open; its own updates installed through it), the
+  site on GitHub Pages, and a full fresh-container install of the Nightly
+  channel (entry below) with 37/37 checks on the result.
+- This machine before tagging: `vayu-verify` 92 passed / 0 failed (after
+  marking gtk4, libadwaita and adwaita-icon-theme explicitly installed,
+  via vayu-elevate, since they're now listed in `packages/pacman.txt`);
+  `ai/`, `splash/` and `system/apply.sh --check` all match the repo;
+  keybinding check OK; no failed system or user units.
+
 ## 2026-10-04 (fresh install verified: AI tools, shutdown fixes, docs)
 
 - Ran the one-line Nightly install in a clean `archlinux:latest`
