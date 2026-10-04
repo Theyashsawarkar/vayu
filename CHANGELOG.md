@@ -5,6 +5,36 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (package lists: missing runtime deps, stale scenefx0.4)
+
+- Audited the lists against what the configs run. Every command in the
+  repo's scripts and configs was mapped to its owning package, and each
+  was checked against the dependency closure of `pacman.txt` +
+  `aur.txt`. `pactree` isn't installed (pacman-contrib), so the closure
+  came from `pacman -Qi`.
+- Missing outright: `mpv`. `music-search.py`'s video mode runs it, but
+  it was only installed as an orphaned dependency (Required By: none),
+  so `pacman -Rns $(pacman -Qdtq)` would have removed it.
+- Present only as another package's dependency, now listed directly:
+  `playerctl` (sway media keys; via waybar), `wtype` (via wofi-emoji),
+  `upower`, `ffmpeg`, `curl`, `dconf`, `file`, `xdg-utils`,
+  `python-gobject` + `gtk3` (`bar-events.py`,
+  `notification-history.py`).
+- Installed by hand here and now listed: `7zip`, `dart`. Not listed:
+  `sddm`, `sddm-sugar-dark` and `qt6-virtualkeyboard`, left from the
+  SDDM setup that greetd replaced, and `wlogout`, which nwg-bar
+  replaced (nothing references it).
+- `scenefx0.4` dropped from `aur.txt`: swayfx 0.6 depends on
+  `scenefx0.5`, and 0.4 (plus `wlroots0.19`, which only it needs) was a
+  leftover orphan. A fresh install would have built both from source
+  for nothing.
+- Not installed on this machine though listed (on purpose, see their
+  entries): `zenity`, which the waybar brightness slider needs, so that
+  slider is broken here right now; and `terraform`. Re-running
+  `install.sh` installs them.
+- Every name still resolves: `pacman -Si` for each official one, the
+  AUR RPC for the AUR ones.
+
 ## 2026-10-04 (system/: root-owned files the installer never set up)
 
 - An audit of `/etc` against the repo (unowned files, and `pacman -Qkk`

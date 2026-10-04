@@ -1,3 +1,4 @@
+7zip
 amd-ucode
 base
 base-devel
@@ -11,6 +12,9 @@ btop
 chromium
 cliphist
 corepack
+curl
+dart
+dconf
 dmidecode
 docker
 docker-compose
@@ -18,6 +22,8 @@ dosfstools
 efibootmgr
 eza
 fd
+ffmpeg
+file
 firefox
 foot
 fzf
@@ -27,6 +33,7 @@ greetd
 greetd-tuigreet
 grim
 gst-plugin-pipewire
+gtk3
 inxi
 iwd
 jq
@@ -41,6 +48,7 @@ linux-firmware
 mako
 mesa-utils
 mpd
+mpv
 neovim
 networkmanager
 network-manager-applet
@@ -55,8 +63,10 @@ pipewire
 pipewire-alsa
 pipewire-jack
 pipewire-pulse
+playerctl
 power-profiles-daemon
 python
+python-gobject
 python-mutagen
 qt6ct
 qt6-multimedia-ffmpeg
@@ -81,6 +91,7 @@ ttf-jetbrains-mono-nerd
 ttf-nerd-fonts-symbols
 ufw
 unzip
+upower
 vulkan-radeon
 waybar
 wev
@@ -89,7 +100,9 @@ wget
 wireplumber
 wl-clipboard
 wofi
+wtype
 xdg-desktop-portal-wlr
+xdg-utils
 xorg-xwayland
 yazi
 ydotool

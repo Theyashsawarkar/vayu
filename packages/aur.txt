@@ -8,7 +8,6 @@ claude-code
 google-chrome
 mongosh-bin
 opencode-bin
-scenefx0.4
 sway-audio-idle-inhibit-git
 swayfx
 swaylock-effects
