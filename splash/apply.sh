@@ -57,7 +57,11 @@ fi
 hold=vayu-splash-hold.service
 if ! cmp -s "$here/$hold" "/etc/systemd/system/$hold" 2>/dev/null; then
   differs_outside "/etc/systemd/system/$hold"
-  $check || { sudo install -Dm644 "$here/$hold" "/etc/systemd/system/$hold"; sudo systemctl daemon-reload; }
+  # The reload is a bonus (the unit applies at the next boot anyway), so a
+  # failed one warns rather than skipping the rest of the splash: in a
+  # container, or a chroot, there's no running systemd to reload.
+  $check || { sudo install -Dm644 "$here/$hold" "/etc/systemd/system/$hold"
+              sudo systemctl daemon-reload 2>/dev/null || echo "warning: systemctl daemon-reload failed; $hold applies at the next boot" >&2; }
 fi
 if ! systemctl is-enabled -q "$hold" 2>/dev/null; then
   differs_outside "$hold is not enabled"

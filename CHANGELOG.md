@@ -5,6 +5,16 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (splash/apply.sh: a failed daemon-reload no longer skips the rest)
+
+- In the fresh-container install, `splash/apply.sh` stopped at
+  `systemctl daemon-reload` (no running systemd), so the shutdown blanking
+  hook, the initramfs hook order and the kernel options were never
+  installed. Like `system/apply.sh` and `greeter/apply.sh`, the live reload
+  now only warns: the files are what count, and they apply at the next
+  boot. A real install always has systemd, but a chroot install (from the
+  Arch ISO) doesn't either.
+
 ## 2026-10-04 (install.sh: don't depend on $USER being set)
 
 - A fresh-container run of the one-line Nightly install stopped in
