@@ -16,21 +16,27 @@ This repository contains the complete configuration for my daily development env
 ## ⚡ Quick Start (fresh Arch install)
 
 After `archinstall` finishes, reboot, log in on the TTY as your normal user, make
-sure networking is up (`iwctl` if it's Wi-Fi), and run:
+sure networking is up (`nmtui`, or `iwctl` if NetworkManager isn't installed yet), and run:
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Theyashsawarkar/vayu/main/install.sh)
 ```
 
-This installs every package (`packages/pacman.txt` + `packages/aur.txt`, bootstrapping
-`yay` if needed), stows every config in this repo, sets up zsh (oh-my-zsh, Powerlevel10k,
-plugins), tmux (TPM), the Nerd Font the status bars need, Homebrew (`gh`, `pnpm`), and
-enables the required services. It backs up any pre-existing conflicting dotfiles to
-`~/.dotfiles-backup` before stowing, and is safe to re-run.
+This upgrades the system, installs every package (`packages/pacman.txt` +
+`packages/aur.txt`, bootstrapping `yay`), stows every config in this repo, installs the
+root-owned files in `system/` and the login screen, sets up zsh (oh-my-zsh,
+Powerlevel10k, plugins), tmux and Neovim plugins, corepack (`pnpm`), Homebrew (`gh`),
+and enables the services, groups and firewall rules listed in `packages/manifest.sh`.
+It backs up any pre-existing conflicting dotfiles to `~/.dotfiles-backup/<date>/`
+before stowing, and is safe to re-run.
 
-When it finishes: reboot, log in at the tuigreet prompt on tty1 (it starts Sway), and
-inside a tmux pane press `prefix + I` (`Ctrl-a` then `Shift-i`) once to fetch the tmux
-plugins.
+Everything it does is logged to `~/.local/state/vayu/install-logs/` (`latest.log` is
+the newest run): the full output plus a trace of every command. A failing step (one
+AUR package, say) doesn't stop the rest; the summary at the end lists exactly what
+failed. Its last step is `vayu-verify`, which you can run any time to see whether the
+machine still matches the repo.
+
+When it finishes: reboot and log in at the tuigreet prompt on tty1 (it starts Sway).
 
 Secrets (API keys, tokens) are never in this repo — see
 [Local Configuration](#-local-configuration) below for where those go after a fresh install.
@@ -97,7 +103,8 @@ Each directory represents an independent package managed by GNU Stow.
 ```text
 .
 ├── install.sh       # one-command bootstrap, see Quick Start above
-├── packages/        # pacman.txt + aur.txt manifests (not a stow package)
+├── packages/        # pacman.txt + aur.txt + manifest.sh (services, groups...; not stowed)
+├── system/          # root-owned files under / (sysctl, logind, lid hook...), system/apply.sh
 ├── gtk/             # GTK 3/4 settings.ini (Catppuccin Mocha theme)
 ├── kitty/
 ├── mako/

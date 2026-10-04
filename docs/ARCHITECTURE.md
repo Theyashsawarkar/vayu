@@ -221,56 +221,89 @@ same pattern for anything else that needs a real secret.
 ## `install.sh`, step by step
 
 Entry point for a from-scratch machine (see README's Quick Start). Runs as your normal
-user, `sudo` where it needs root:
+user, `sudo` where it needs root. What it installs is all data in the repo, so
+reproducing the machine means keeping these in sync with it, not editing the script:
 
-1. Install `git`, `stow`, `base-devel`.
-2. Clone this repo to `~/dotfiles` (or `git pull --ff-only` if it's already there —
-   the whole script is meant to be re-run safely).
-3. Build the package list dynamically: every top-level directory except `packages/`
-   and dotfiles (`.git`, ...). This is why adding a new stow package to this repo
-   needs no change to `install.sh` itself.
-4. Install every package in `packages/pacman.txt`, then bootstrap `yay` if missing and
-   install `packages/aur.txt`. Both use `xargs -a file command` rather than piping a
-   package list on stdin — deliberate, see the changelog for why.
-5. Dry-run `stow -n` against every package first, to catch anything real (not a
-   symlink) already sitting at a target path — a fresh Arch install's skeleton
-   `.bashrc` etc. would otherwise make the real `stow` call abort. Anything real gets
-   moved to `~/.dotfiles-backup/` before the real `stow` runs.
-6. `stow` everything for real.
-7. `chsh` to zsh if it isn't already the shell.
-8. Bootstrap oh-my-zsh (official installer, `RUNZSH=no CHSH=no KEEP_ZSHRC=yes` so it
-   doesn't launch a shell or clobber the `.zshrc` stow just placed), then clone
-   Powerlevel10k + the two zsh plugins referenced in `.zshrc`'s `plugins=(...)` list.
-9. Clone TPM (tmux's plugin manager) if missing.
-10. Download the ZedMono Nerd Font straight from its own upstream release (the URL is
-    documented inside the font's own bundled `README.md` — this repo doesn't vendor
-    the ~700MB of font files, since none of the standard Arch/AUR packages ship this
-    particular one).
-11. Bootstrap Homebrew if missing, then `brew install gh pnpm`.
-12. Enable + start the services this machine actually runs (`NetworkManager`, `iwd`,
-    `bluetooth`, `docker`, `power-profiles-daemon`, `ufw`); `greetd` (tuigreet login, replacing SDDM) is *enabled* but not
-    started immediately, since starting a display manager mid-script would hijack the
-    console you're running the script from — it takes over on the reboot the script's
-    final message tells you to do anyway.
-13. Add yourself to the `docker` group.
-14. Enable the `wallpaper.timer` user unit.
-15. Apply the GTK theme via `dconf write` — the `gtk/` package's `settings.ini` sets
-    the theme *name*, but GNOME-aware apps actually read the active theme/color-scheme
-    from dconf, so both need to happen for the theme to actually show up.
+| Where | What |
+|---|---|
+| `packages/pacman.txt`, `packages/aur.txt` | every explicitly wanted package (direct runtime dependencies of the configs too, not left to come in as someone else's dependency) |
+| `packages/manifest.sh` | system/user units to enable, start, disable or mask; groups; ufw rules; Homebrew formulae; zsh plugin clones; dconf keys. Sourced by both `install.sh` and `vayu-verify` |
+| `system/` | root-owned files, mirrored from `/` (`system/etc/sysctl.d/99-custom.conf` -> `/etc/sysctl.d/99-custom.conf`), installed by `system/apply.sh` |
+| `greeter/` | the login screen (`greeter/apply.sh`) |
+| every other top-level dir | a stow package (`dotfiles-stow-packages` lists them) |
 
-It has been syntax-checked, had its trickier logic (the stow conflict-detection
-parser, the `.gitignore` glob, a full 13-package stow simulation against realistic
-`/etc/skel` files) verified in isolated sandboxes, every package name in
-`packages/*.txt` confirmed to actually resolve (`pacman -Si`/`yay -Si`), every external
-URL confirmed reachable, and every systemd service name it enables confirmed to exist.
-That verification pass found and fixed a real install-breaking bug: `pacman.txt` had
-15 AUR-only packages duplicated into it (from how the manifests were first generated —
-see the changelog), and `pacman -S` aborts its *entire* transaction if even one target
-doesn't exist in the official repos, so the original file would have failed to install
-anything at all on a truly fresh machine. What's still missing is a single, real,
-uninterrupted run against an actual blank machine — this machine already has
-everything it does in place, so a live run here would be a no-op, and that one gap
-genuinely needs a spare VM or drive to close.
+**Logging.** All output goes to the terminal and to
+`~/.local/state/vayu/install-logs/install-<date>.log` (`latest.log` links the newest),
+with colour codes and progress-bar redraws stripped. The log also gets a `set -x`
+trace (file and line of every command), and the ERR trap prints the exact command,
+line and exit code of anything that fails. Each step is timed.
+
+**Failure handling.** Each step runs in its own subshell with `errexit`, so its first
+failing command ends that step only. Critical steps (preflight, prerequisites, repo,
+yay, stow) stop the run, since everything after needs them; any other failure is
+recorded and the rest still runs. Package steps check every name first (`pacman -Si`;
+one AUR RPC call for `aur.txt`) and, if the batch install fails, retry one package at a
+time, so one renamed package is named in the summary instead of failing all 100+. The
+summary lists every step, every failed item and the log path; the exit code is non-zero
+if anything failed. A re-run skips whatever is already done.
+
+Steps:
+
+1. Ask for the update channel (or check the `stable`/`nightly` argument) when the repo
+   isn't cloned yet.
+2. Preflight: not root, Arch, free space, archlinux.org/github.com/AUR reachable, stale
+   pacman lock removed. Then one `sudo -v`, kept fresh in the background so a long AUR
+   build never stalls on a password prompt.
+3. Prerequisites: `archlinux-keyring` first (install images ship old keyrings), then a
+   full `pacman -Su` (Arch doesn't support partial upgrades), then git, stow,
+   base-devel, curl, jq.
+4. Clone the repo (or `git pull --ff-only`; with local changes or a diverged branch it
+   warns and installs from the checkout as it is).
+5. Hand over to the cloned `install.sh`: the copy `curl` fetched is always `main`'s,
+   which may not match a Nightly checkout's lists and layout. The step results and log
+   carry across.
+6. Official packages, then yay (built from the AUR if missing), then AUR packages.
+7. Stow: dry-run `stow -n -R` to find what's in the way — stow 2.4 reports a real file
+   as `... over existing target X since ...` and a symlink it doesn't own as `existing
+   target is not owned by stow: X`. Both get moved to `~/.dotfiles-backup/<date>/`,
+   then `stow -R` (restow also drops links to files removed from the repo).
+8. `system/apply.sh`: install what differs under `/`, then reload what changed
+   (`sysctl --system`, `daemon-reload`, logind HUP), plus pacman's `Color`.
+9. `greeter/apply.sh` (greetd + tuigreet-ace, console font and palette).
+10. zsh as login shell, oh-my-zsh (downloaded to a file first, so a failed download
+    can't run as an empty script), Powerlevel10k and plugins.
+11. tmux plugins: every `@plugin` in `tmux.conf` cloned into `~/.tmux/plugins/` (not
+    TPM's `install_plugins`, which asks a running tmux server for its path).
+12. Neovim plugins (`nvim --headless "+Lazy! restore"`, pinned by `lazy-lock.json`).
+13. `corepack enable` (the `pnpm`/`pnpx`/`yarn` shims), Homebrew + `gh`, Claude Code
+    hooks.
+14. Services from `packages/manifest.sh`: enable (and start) system units, disable
+    `docker.service`/`sddm`, mask hibernate and the NvPCR units, ufw rules and
+    `ufw --force enable` (ufw.service alone doesn't turn the firewall on). Groups
+    (`docker`, `input` for ydotool's `/dev/uinput`), then user units.
+15. dconf theme keys, a first wallpaper (the timer's first run is at midnight, and sway
+    and swaylock both read `current.jpg`).
+16. `vayu-verify`.
+
+## `vayu-verify`: does the machine match the repo?
+
+`scripts/.local/bin/vayu-verify` (on `PATH` once stowed) checks, read-only and without
+sudo: every listed package installed; a dry-run restow finds nothing to link and no
+conflicts; `system/apply.sh --check` finds no difference; greetd, tuigreet-ace and the
+console font in place; every unit in `packages/manifest.sh` enabled/active/disabled/
+masked as listed; ufw on with its rules; groups, login shell, oh-my-zsh and plugins,
+TPM, the pnpm shim, Homebrew formulae, the Claude Code hook, dconf keys, a wallpaper.
+It prints only failures (`-v` lists passes too) and exits 1 if there are any. Re-running
+`install.sh` fixes whatever it reports, except packages that left the repos (rename them
+in the list). `update-apply.sh` notifies you to run `install.sh` when an update touched
+`packages/` or `system/`.
+
+The installer was tested end to end in a sandbox (throwaway `$HOME` with a clone of
+the repo; sudo, pacman, yay, systemctl, nvim and dconf stubbed; stow, git, oh-my-zsh,
+the AUR RPC and the wallpaper fetch real), including the curl-style hand-over,
+planted failures (a package gone from the repos, one failing to install, files in
+stow's way) and an immediate re-run. What a sandbox can't cover is real root: the
+first real check is a run on a blank machine or VM.
 
 ## exec order matters: dbus-update-activation-environment must come first
 

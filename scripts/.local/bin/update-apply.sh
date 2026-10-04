@@ -77,3 +77,10 @@ if ! git diff --quiet "$OLD_HEAD" HEAD -- greeter/; then
     notify-send -u normal -i "$ICON_OK" "Login screen changed" \
         "Run ~/dotfiles/greeter/apply.sh in a terminal (needs sudo) to install it."
 fi
+# Same for new packages, services (packages/) and files under / (system/):
+# install.sh is the one place that applies those, and it's safe to re-run.
+if ! git diff --quiet "$OLD_HEAD" HEAD -- packages/ system/; then
+    log "packages/ or system/ changed: run install.sh"
+    notify-send -u normal -i "$ICON_OK" "Packages or system files changed" \
+        "Run ~/dotfiles/install.sh in a terminal (needs sudo) to apply them. vayu-verify shows what differs."
+fi

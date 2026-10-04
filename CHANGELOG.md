@@ -5,6 +5,73 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (install.sh: full log, per-step failure handling, reproducible)
+
+- **Log file.** Every run writes
+  `~/.local/state/vayu/install-logs/install-<date>.log` (`latest.log`
+  links the newest). It holds the whole output, without colour codes or
+  progress-bar redraws, plus a `set -x` trace with file:line for every
+  command. The ERR trap prints the failing command, line and exit code.
+  It starts with system info (kernel, CPU, RAM, free space, args), and
+  each step is timed.
+- **Failures.** Each step runs in a subshell with `errexit`, so the
+  first failing command ends that step only. Only preflight,
+  prerequisites, repo, yay and stow stop the run. The rest record the
+  failure and carry on. Package names are checked first (`pacman -Si`,
+  one AUR RPC call), and a failed batch is retried one package at a
+  time, so one renamed package gets named instead of failing all 114.
+  The summary lists every step, every failed item and the log path, and
+  the exit code reflects it. Previously one bad package name aborted the
+  whole install under `set -e`.
+- **Bugs fixed on the way:**
+  - The stow backup parsed stow 2.4's "existing target is not owned by
+    stow: X" as the file `is`, and skipped symlinks entirely. Any
+    foreign symlink in the way (checked in a sandbox) aborted the whole
+    install. Both message forms now move the file aside, into a
+    per-run `~/.dotfiles-backup/<date>/`.
+  - `pacman -Sy git stow base-devel` was a partial upgrade. Now it's the
+    keyring first (old install images), then a full `-Su`.
+  - `sh -c "$(curl ...)"` for oh-my-zsh and Homebrew ran an empty script
+    and "succeeded" if the download failed. Both now download to a file
+    first.
+  - `brew install pnpm` would have shadowed `/usr/bin/pnpm`, which here
+    is corepack's shim. Now it runs `corepack enable`, and brew installs
+    only `gh`, as on this machine.
+  - The tmux plugins needed a manual `prefix + I`. Now they're cloned
+    from tmux.conf's `@plugin` lines, not via TPM's `install_plugins`,
+    which asks a tmux server for its path and can get `/` when none is
+    running. Neovim plugins are restored headless from `lazy-lock.json`.
+  - No first wallpaper (the timer's first run is at midnight; sway and
+    swaylock need `current.jpg`).
+- **Hand-over.** The copy `curl` fetches is always main's. After
+  cloning, it re-runs the checked-out `install.sh`, so Nightly installs
+  run Nightly's installer. The log, step results and timing carry
+  across. A `sudo -v` keepalive stops long AUR builds stalling on a
+  password prompt. Stale pacman locks are cleared, and the channel
+  argument is checked before anything runs.
+- Also runs `system/apply.sh` (previous entries) and the manifest's
+  units, groups and firewall. Ends with `vayu-verify`.
+  `update-apply.sh` now notifies you to run `install.sh` when an update
+  touches `packages/` or `system/`.
+- Sandbox-tested: a throwaway `$HOME` with a clone of the repo; sudo,
+  pacman, yay, systemctl, nvim and dconf stubbed; stow, git,
+  oh-my-zsh, the AUR RPC and the wallpaper fetch real.
+  - Planted failures (a name gone from the repos, a package failing to
+    install, a real file and a foreign symlink in stow's way) were each
+    named in the summary, and the rest of the run completed.
+  - The curl-style `bash <(...)` hand-over worked.
+  - That test caught three more bugs, fixed above:
+    - `grep` with no matches under `pipefail` failed the stow step on
+      every re-run;
+    - an exported `ZSH` broke the oh-my-zsh installer;
+    - a missing `model name` in cpuinfo could fail preflight.
+  - A second run right after was clean.
+
+  Not covered: real root. The first real check is a blank machine or VM.
+- Docs: README Quick Start, `docs/ARCHITECTURE.md`'s step-by-step
+  (rewritten; it still described iwd, a ZedMono download and
+  `brew install pnpm`), plus a `vayu-verify` section.
+
 ## 2026-10-04 (vayu-verify: does this machine match the repo?)
 
 - New `packages/manifest.sh`, sourced by both `install.sh` and
