@@ -5,6 +5,13 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (fresh installs get the AI tools' packages explicitly)
+
+- `packages/pacman.txt`: `gtk4`, `libadwaita`, `adwaita-icon-theme`.
+  vayu-elevate's window needs them; until now they only arrived as
+  dependencies of zenity and pavucontrol (and `ai/apply.sh` would have
+  installed them), which breaks silently if those ever leave the list.
+
 ## 2026-10-04 (site: one width everywhere, more room for content)
 
 - The site used four widths: navbar 1180px, hero 1280px, homepage

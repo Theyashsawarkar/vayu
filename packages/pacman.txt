@@ -1,4 +1,5 @@
 7zip
+adwaita-icon-theme
 amd-ucode
 base
 base-devel
@@ -34,12 +35,14 @@ greetd-tuigreet
 grim
 gst-plugin-pipewire
 gtk3
+gtk4
 inxi
 iwd
 jq
 kdeconnect
 kitty
 lazygit
+libadwaita
 libnotify
 libpulse
 libqalculate
