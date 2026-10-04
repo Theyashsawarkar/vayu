@@ -5,6 +5,39 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (vayu-verify: does this machine match the repo?)
+
+- New `packages/manifest.sh`, sourced by both `install.sh` and
+  `vayu-verify`, so what gets set up and what gets checked can't drift
+  apart. It holds the system and user units to enable/start, disable or
+  mask, the user's groups, ufw rules, Homebrew formulae, zsh plugin
+  clones and dconf keys.
+- Compared with this machine, the old installer was missing: user units
+  `mpd.service` and `ydotool.service`; system `fstrim.timer` and
+  `systemd-timesyncd` (archinstall defaults, now explicit); the `input`
+  group, needed for ydotoold's `/dev/uinput` (ydotool's own udev rule);
+  and `ufw enable`. ufw.service alone doesn't turn the firewall on, so a
+  fresh install had the KDE Connect rules but no active firewall.
+- `scripts/.local/bin/vayu-verify` checks, read-only and without sudo:
+  - packages installed;
+  - a dry-run restow is clean;
+  - `system/apply.sh --check`;
+  - greetd and tuigreet-ace;
+  - every unit in the manifest is enabled, active, disabled or masked as
+    listed;
+  - ufw is on with its rules;
+  - groups, login shell, oh-my-zsh and plugins, TPM, the pnpm shim, brew
+    formulae, the Claude Code hook, dconf keys and a wallpaper.
+
+  It prints failures only (`-v` for everything), exit 1 if any.
+- First run here found real drift:
+  - `zenity` and `terraform` not installed;
+  - `~/.config/systemd/user/tmux.service` never linked (a restow since
+    the 2026-10-01 stow change didn't happen here);
+  - `docker.socket` failed. The kernel was upgraded to 7.2.8 at 08:28
+    while 7.2.7 is still running, so its modules (nf_nat) are gone and
+    dockerd can't set up iptables. A reboot fixes it.
+
 ## 2026-10-04 (package lists: missing runtime deps, stale scenefx0.4)
 
 - Audited the lists against what the configs run. Every command in the

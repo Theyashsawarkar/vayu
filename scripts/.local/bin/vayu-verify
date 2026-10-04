@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Checks that this machine matches ~/dotfiles: every listed package is
+# installed, every stow link is in place, the root-owned files under
+# system/ match, and the services, masks, groups and user-level tools in
+# packages/manifest.sh are set up. Read-only, needs no sudo.
+#
+#   vayu-verify            report problems only, exit 1 if there are any
+#   vayu-verify -v         also list every check that passed
+#
+# install.sh runs it as its last step; run it any time to see whether the
+# live system has drifted from the repo (and re-run install.sh to fix).
+set -uo pipefail
+
+DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+verbose=false
+[ "${1:-}" = "-v" ] && verbose=true
+
+# shellcheck source=../../../packages/manifest.sh
+source "$DOTFILES_DIR/packages/manifest.sh"
+
+fails=0 passes=0
+section() { printf '\n== %s\n' "$1"; }
+ok()   { passes=$((passes + 1)); $verbose && printf '  ok    %s\n' "$1"; return 0; }
+bad()  { fails=$((fails + 1)); printf '  FAIL  %s\n' "$1"; }
+check() {  # check "description" command...
+  local desc="$1"; shift
+  if "$@" >/dev/null 2>&1; then ok "$desc"; else bad "$desc"; fi
+}
+list() { grep -v '^\s*#' "$1" | awk 'NF { print $1 }'; }
+
+section "Packages (packages/pacman.txt, packages/aur.txt)"
+missing=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } \
+  | while read -r p; do pacman -Q "$p" >/dev/null 2>&1 || pacman -Qq --quiet "$p" >/dev/null 2>&1 || echo "$p"; done)
+total=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } | wc -l)
+if [ -z "$missing" ]; then ok "all $total packages installed"
+else for p in $missing; do bad "package not installed: $p"; done; fi
+
+section "Stow links (~ -> ~/dotfiles)"
+mapfile -t PKGS < <("$DOTFILES_DIR/scripts/.local/bin/dotfiles-stow-packages" "$DOTFILES_DIR")
+# A dry-run restow prints LINK for anything not linked yet and a conflict
+# for anything in the way; a fully stowed tree prints neither.
+stow_out=$(stow -n -v -R -d "$DOTFILES_DIR" -t "$HOME" "${PKGS[@]}" 2>&1)
+problems=$(grep -E '^LINK:|existing target|cannot stow|not owned by stow' <<<"$stow_out" | grep -v 'reverts previous action')
+if [ -z "$problems" ]; then ok "all ${#PKGS[@]} stow packages linked"
+else while read -r l; do bad "stow: $l"; done <<<"$problems"; fi
+
+section "System files (system/ -> /)"
+if sys_out=$("$DOTFILES_DIR/system/apply.sh" --check 2>&1); then ok "$sys_out"
+else while read -r l; do bad "$l"; done <<<"$sys_out"; fi
+check "greetd uses tuigreet-launch" grep -q 'tuigreet-launch' /etc/greetd/config.toml
+check "tuigreet-ace built (/usr/local/bin/tuigreet-ace)" test -x /usr/local/bin/tuigreet-ace
+check "console font ter-v24n-ace set" grep -qx 'FONT=ter-v24n-ace' /etc/vconsole.conf
+
+section "System services"
+for u in "${SYSTEM_UNITS_NOW[@]}" "${SYSTEM_UNITS_ENABLE[@]}"; do
+  check "enabled: $u" systemctl is-enabled --quiet "$u"
+done
+for u in "${SYSTEM_UNITS_NOW[@]}"; do
+  check "active: $u" systemctl is-active --quiet "$u"
+done
+for u in "${SYSTEM_UNITS_DISABLED[@]}"; do
+  state=$(systemctl is-enabled "$u" 2>/dev/null)
+  case "$state" in enabled|enabled-runtime) bad "should be disabled: $u ($state)" ;; *) ok "disabled: $u" ;; esac
+done
+for u in "${SYSTEM_UNITS_MASKED[@]}"; do
+  [ "$(systemctl is-enabled "$u" 2>/dev/null)" = masked ] && ok "masked: $u" || bad "not masked: $u"
+done
+check "ufw active (ENABLED=yes)" grep -qx 'ENABLED=yes' /etc/ufw/ufw.conf
+for r in "${UFW_ALLOW[@]}"; do
+  port=${r%/*} proto=${r#*/}
+  check "ufw allows $r" grep -q "^### tuple ### allow $proto ${port} " /etc/ufw/user.rules
+done
+
+section "User services"
+for u in "${USER_UNITS_NOW[@]}" "${USER_UNITS_ENABLE[@]}"; do
+  check "enabled: $u" systemctl --user is-enabled --quiet "$u"
+done
+for u in "${USER_UNITS_NOW[@]}"; do
+  check "active: $u" systemctl --user is-active --quiet "$u"
+done
+
+section "User setup"
+for g in "${USER_GROUPS[@]}"; do
+  check "in group $g (takes effect at next login)" bash -c "getent group '$g' | cut -d: -f4 | tr , '\n' | grep -qx '$USER'"
+done
+check "login shell is zsh" bash -c "[ \"\$(getent passwd '$USER' | cut -d: -f7)\" = /usr/bin/zsh ]"
+check "oh-my-zsh installed" test -d "$HOME/.oh-my-zsh"
+for c in "${ZSH_CLONES[@]}"; do
+  dest=${c#* }
+  check "oh-my-zsh custom: $dest" test -d "$HOME/.oh-my-zsh/custom/$dest"
+done
+check "TPM installed" test -d "$HOME/.tmux/plugins/tpm"
+check "pnpm shim (corepack enable)" test -e /usr/bin/pnpm
+brew=/home/linuxbrew/.linuxbrew/bin/brew
+for f in "${BREW_FORMULAE[@]}"; do
+  check "brew formula: $f" test -x "/home/linuxbrew/.linuxbrew/bin/$f"
+done
+[ -x "$brew" ] || bad "Homebrew not installed ($brew)"
+check "Claude Code keybinding hook registered" grep -q 'keybind-check-hook' "$HOME/.claude/settings.json"
+if command -v dconf >/dev/null; then
+  for s in "${DCONF_SETTINGS[@]}"; do
+    key=${s%% *} want=${s#* }
+    [ "$(dconf read "$key")" = "$want" ] && ok "dconf $key" || bad "dconf $key is $(dconf read "$key"), want $want"
+  done
+fi
+check "wallpaper fetched (~/Pictures/Wallpapers/current.jpg)" test -s "$HOME/Pictures/Wallpapers/current.jpg"
+
+printf '\n%d check(s) passed, %d failed\n' "$passes" "$fails"
+[ "$fails" -eq 0 ]
