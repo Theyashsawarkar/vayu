@@ -92,6 +92,9 @@ trap 'on_err $? $LINENO "$BASH_COMMAND"' ERR
 summary() {
   local rc=$?
   { set +x; } 2>/dev/null
+  # errexit off: a failing diagnostic (df on a missing /boot...) must not
+  # end the summary before it prints.
+  set +e +o pipefail
   trap - ERR
   [ -n "${SUDO_KEEPALIVE_PID:-}" ] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null
   local took=$((EPOCHSECONDS - RUN_START))
