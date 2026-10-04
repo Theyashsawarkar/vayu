@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (fresh install verified: AI tools, shutdown fixes, docs)
+
+- Ran the one-line Nightly install in a clean `archlinux:latest`
+  container as a sudo user (`su -l`, installer pinned to the pushed
+  commit; 47 min, 1495 s of it AUR builds). Every step passed except the
+  three that need a running systemd (services, user services, dconf;
+  they passed on the laptop) and the boot splash, fixed in the entry
+  above and then re-run there cleanly (`splash/apply.sh --check`: matches
+  the repo; only warning: no `/etc/kernel/cmdline`, the container has no
+  UKI). Two installer bugs found and fixed on the way: `$USER` unset under
+  `set -u`, and the splash daemon-reload.
+- 37 checks on the result, all passing: vayu-elevate installed root-owned
+  (CLI, window, runner, config/data dirs, `ai/apply.sh --check` clean);
+  its packages present (gtk4, libadwaita, adwaita-icon-theme,
+  python-gobject, libnotify); GTK4 + libadwaita load; schema, bad-request
+  rejection (exit 2), MCP handshake, and a clean error with no desktop;
+  the install dir isn't writable by the user. Stowed wiring: the global
+  `~/.claude/CLAUDE.md` note, the sway float rule, keybinding search
+  listing the window's keys and the SysRq keys, the vayu-verify section,
+  the update notice, `ai/` not stowed. System: `kernel.sysrq = 176`,
+  `RebootWatchdogSec=0`, the shutdown blanking hook and the hold unit.
+  Docs and screenshots in the checkout.
+
 ## 2026-10-04 (splash/apply.sh: a failed daemon-reload no longer skips the rest)
 
 - In the fresh-container install, `splash/apply.sh` stopped at
