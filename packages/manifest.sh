@@ -56,6 +56,20 @@ USER_UNITS_ENABLE=(
   update-check.service
 )
 
+# Directories under ~ that must be real directories, never stow "folded"
+# links into the repo. Stow links a whole directory when it doesn't exist
+# yet, which on a fresh machine meant everything apps write there went
+# into ~/dotfiles: nvim's plugins via ~/.local/share, systemctl --user's
+# .wants links via ~/.config/systemd/user, Claude Code's settings via
+# ~/.claude, TPM plugins via ~/.tmux, GTK bookmarks via gtk-3.0. Taken
+# from this machine, where they were real because they existed first.
+STOW_REAL_DIRS=(
+  .claude
+  .config .config/gtk-3.0 .config/gtk-4.0 .config/systemd .config/systemd/user
+  .local .local/bin .local/share .local/state
+  .tmux .tmux/scripts
+)
+
 # Supplementary groups for the installing user.
 #   docker  run docker without sudo
 #   input   /dev/uinput, which ydotoold needs (ydotool's 80-uinput.rules)

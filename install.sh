@@ -66,6 +66,11 @@ set -x
 # Carried across the hand-over to the repo's installer (see Main), so the
 # summary covers the whole run.
 RUN_START=${VAYU_RUN_START:-$EPOCHSECONDS}
+# What this run is executing, to notice when sync_repo pulls a newer
+# install.sh (bash keeps reading the old file, so it would carry on with
+# the old code). Empty for the curl bootstrap copy, a pipe.
+SELF_SUM=""
+[ -f "${BASH_SOURCE[0]}" ] && SELF_SUM=$(sha256sum < "${BASH_SOURCE[0]}")
 FAILURES_FILE=${VAYU_FAILURES_FILE:-$(mktemp "${TMPDIR:-/tmp}/vayu-install-failures.XXXXXX")}
 STEP_RESULTS=()
 [ -n "${VAYU_STEP_RESULTS:-}" ] && mapfile -t STEP_RESULTS <<<"$VAYU_STEP_RESULTS"
@@ -331,10 +336,12 @@ choose_branch() {
 sync_repo() {
   if [ -d "$DOTFILES_DIR/.git" ]; then
     info "branch: $(git -C "$DOTFILES_DIR" rev-parse --abbrev-ref HEAD)"
-    if [ -n "$(git -C "$DOTFILES_DIR" status --porcelain)" ]; then
-      warn "~/dotfiles has local changes; not pulling, installing from it as it is"
-    elif ! git -C "$DOTFILES_DIR" pull --ff-only; then
-      warn "git pull --ff-only failed (diverged branch?); installing from the local checkout as it is"
+    # Pulled even with local changes (nvim rewrites lazy-lock.json on every
+    # plugin update, so a clean tree is rare): git refuses on its own if a
+    # change would be overwritten, and only then is the pull skipped.
+    [ -n "$(git -C "$DOTFILES_DIR" status --porcelain)" ] && info "local changes: $(git -C "$DOTFILES_DIR" status --porcelain | wc -l) file(s); pulling around them"
+    if ! git -C "$DOTFILES_DIR" pull --ff-only; then
+      warn "git pull --ff-only failed (a local change in the way, or a diverged branch: cd ~/dotfiles && git status); installing from the local checkout as it is"
     fi
   elif [ -e "$DOTFILES_DIR" ]; then
     err "$DOTFILES_DIR exists but isn't a git checkout; move it away and re-run"
@@ -476,6 +483,29 @@ stow_all() {
   mapfile -t pkgs < <(./scripts/.local/bin/dotfiles-stow-packages "$DOTFILES_DIR")
   [ "${#pkgs[@]}" -gt 0 ] || { err "dotfiles-stow-packages listed nothing"; return 1; }
   info "packages: ${pkgs[*]}"
+  # Real directories first (STOW_REAL_DIRS, manifest.sh), so stow links
+  # files inside them instead of folding the whole directory into the
+  # repo. A machine set up before this has folded links there: replace each
+  # with a real directory, moving any app data that landed in the repo
+  # through it back to ~ (the restow below links the tracked files again).
+  local d t target f moved
+  for d in "${STOW_REAL_DIRS[@]}"; do
+    t="$HOME/$d"
+    if [ -L "$t" ] && target=$(readlink -f "$t") && [[ "$target" == "$DOTFILES_DIR"/* ]]; then
+      rm "$t"
+      mkdir -p "$t"
+      moved=0
+      while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        mkdir -p "$t/$(dirname "$f")"
+        mv "$target/$f" "$t/$f"
+        moved=$((moved + 1))
+      done < <(git -C "$target" ls-files --others -- . 2>/dev/null)
+      warn "~/$d was a link into the repo; now a real directory ($moved untracked file(s) moved back out of ${target#"$DOTFILES_DIR"/})"
+    elif [ ! -e "$t" ]; then
+      mkdir -p "$t"
+    fi
+  done
   # Dry run first to find what's in the way. stow 2.4 reports a real file
   # as "... over existing target X since ..." and a symlink it doesn't own
   # as "existing target is not owned by stow: X"; both get moved aside
@@ -667,7 +697,9 @@ if [ -z "${VAYU_INSTALL_REEXEC:-}" ]; then
   run_step --critical "Syncing dotfiles repo ($DOTFILES_DIR)" sync_repo
   # Hand over to the repo's installer: the copy curl fetched comes from
   # main and may not match the checked-out branch's lists and layout.
-  if [ "$(realpath "${BASH_SOURCE[0]}" 2>/dev/null)" != "$(realpath "$DOTFILES_DIR/install.sh")" ]; then
+  # Also when the pull just changed this very file: run the new one.
+  if [ "$(realpath "${BASH_SOURCE[0]}" 2>/dev/null)" != "$(realpath "$DOTFILES_DIR/install.sh")" ] ||
+     [ "$SELF_SUM" != "$(sha256sum < "$DOTFILES_DIR/install.sh")" ]; then
     log "Continuing with $DOTFILES_DIR/install.sh"
     trap - EXIT
     [ -n "${SUDO_KEEPALIVE_PID:-}" ] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null

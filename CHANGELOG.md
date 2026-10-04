@@ -5,6 +5,65 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-04 (install.sh tested on a fresh Arch: remedies, diagnostics, fallbacks)
+
+Ran the whole installer in a clean `archlinux:latest` container as a normal
+sudo user: real pacman, real AUR builds, real `/etc`. The first run took 49
+minutes. It turned up real bugs that this laptop's install never could,
+because here everything was already in place:
+
+- **swayfx can't be built from the AUR right now.** Its PKGBUILD depends on
+  `scenefx0.5`, but scenefx 0.5 moved to [extra] as plain `scenefx`, with
+  no `provides`. So a new machine had no compositor and no session to log
+  into. New `packages/aur-patches/<pkg>.sed`: sed edits applied to a
+  package's PKGBUILD before building. The swayfx one swaps the dependency,
+  the fix from the AUR comments, and becomes a no-op once upstream fixes
+  the PKGBUILD. The patched package is installed with `pacman --ask=4`, so
+  it can replace a conflicting package.
+- **Fallback if there's still no `sway`** after the AUR step: stock `sway`
+  from [extra] (same config; swayfx-only lines just get flagged). The next
+  run swaps swayfx back in.
+- **The first wallpaper always "failed"** on a new machine. The image was
+  saved, but `fetch_wallpaper.sh` exited 1 because the last command,
+  `notify-send` with no desktop session, failed. It now ends with
+  `exit 0`, and the installer judges the step by whether `current.jpg`
+  exists.
+- **Login shell set to `/usr/sbin/zsh`**, from `command -v` with
+  `/usr/sbin` ahead of `/usr/bin` in PATH. That path isn't in
+  `/etc/shells`, so pam_shells-style checks refuse it. The installer now
+  uses the path `/etc/shells` lists.
+- **The summary could die halfway.** It ran with errexit still on, so the
+  first failing diagnostic ended the run before the footer and log path
+  printed, which is exactly when you need them.
+- **`system/` now goes before the AUR builds**, so they get
+  `-j$(nproc)` and `!debug` from the start. Live reloads in
+  `system/apply.sh` and `greeter/apply.sh` (`sysctl --system`,
+  `daemon-reload`...) warn instead of failing the step, since the files
+  are what count and they apply at the next boot anyway.
+- **greeter/apply.sh** installs `tuigreet-launch` and the greetd config
+  before the ~3 min tuigreet-ace build. If the build fails, the next boot
+  still gets a login screen, with stock tuigreet.
+
+Failure reporting, for a run that goes wrong on real hardware:
+- Each failed step gets a `fix:` line in the summary, from `remedy()`:
+  mirrors/keyring/clock for prerequisites, `yay -S <pkg>` plus the AUR
+  page for a broken build, and so on.
+- A failed run appends a diagnostics section to the log: clock, disk,
+  memory, network/DNS, the pacman lock, the end of pacman.log, this
+  boot's journal errors, and failed units.
+- Preflight now stops early, with the exact fix, when the user can't
+  sudo (wheel and visudo steps) or there's under 8G free. It turns on NTP
+  if the clock isn't synced. If yay won't build from source, the
+  prebuilt `yay-bin` is used.
+- When a step function returns its own failure, the message is now "the
+  x lines above say what failed", not a misleading `line N: return`.
+- README: what to have ready before running, and how to recover from a
+  failure.
+
+The container can't run systemd, so the services, user services, ufw and
+dconf steps can't pass there. All of them ran for real on this laptop
+earlier today.
+
 ## 2026-10-04 (system audit: swap tuning, package hygiene, caches, greeter PAM)
 
 A full pass over the running system after the first real `install.sh`
