@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-16 (tmux: visible copy-mode selection, mouse copy)
+
+- Copy-mode selections had no highlight at all: since tmux 3.6,
+  copy-mode-selection-style and copy-mode-position-style default to
+  "#{E:mode-style}", which renders unstyled. Both are now set to the rose
+  mode style, so prefix Enter, then v, shows what's selected (checked with
+  a screenshot in kitty). Taken from nimapdevyash/dotfiles, which had the
+  fix.
+- Mouse, also from that config: a drag copies to the clipboard and keeps
+  the highlight (a click clears it); double-click copies a word and
+  triple-click a line, in or out of copy mode (apps that use the mouse
+  themselves still get the clicks).
+
 ## 2026-10-16 (tmux: a pull request popup, prefix G)
 
 - New `gh-pr.sh`, opened with prefix G (next to lazygit's prefix g), for

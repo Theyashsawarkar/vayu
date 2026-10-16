@@ -132,6 +132,9 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>/<kbd>Down</kbd> — Resize pane up/down by 2
 - <kbd>Alt</kbd>+<kbd>1</kbd>..<kbd>9</kbd> — Select window 1–9 (no prefix needed; a missing window is a silent no-op)
 - <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd>..<kbd>6</kbd> — Select window 1–6 (no prefix needed, kitty extended keys)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Enter</kbd> — Enter copy mode (the session capsule turns green)
 - <kbd>v</kbd> (in copy mode) — Begin visual selection
+- <kbd>Esc</kbd> / <kbd>q</kbd> (in copy mode) — Leave copy mode
 - <kbd>Ctrl</kbd>+<kbd>v</kbd> (in copy mode) — Toggle rectangle/block selection
 - <kbd>y</kbd> (in copy mode) — Copy selection to the Wayland clipboard (`wl-copy`)
+- Mouse — drag copies and keeps the highlight (click clears it); double-click copies a word, triple-click a line, in or out of copy mode
