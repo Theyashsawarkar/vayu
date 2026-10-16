@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Centred popup inside the pane area (below/above the status bar).
-#   popup.sh <client> <width%> <height%> [display-popup args...] <command>
+#   popup.sh <client> [display-popup args...] <command>
+#
+# Every popup is the same size: @popup_width / @popup_height in tmux.conf
+# (percent; extrakto's @extrakto_popup_size is kept equal by hand).
 #
 # tmux centres popups on the whole client, status rows included, and
 # display-popup's -h doesn't take formats -- so with a 2-row status bar on
@@ -8,8 +11,8 @@
 # Sizes here are a % of the pane area, and -y (the popup's bottom edge)
 # is computed so the margin above and below is equal.
 
-c=$1 w=$2 hp=$3; shift 3
-read -r ch wh pos < <(tmux display -p -c "$c" '#{client_height} #{window_height} #{status-position}')
+c=$1; shift
+read -r ch wh pos w hp < <(tmux display -p -c "$c" '#{client_height} #{window_height} #{status-position} #{?@popup_width,#{@popup_width},90} #{?@popup_height,#{@popup_height},88}')
 
 h=$(( wh * hp / 100 ))
 [ "$pos" = top ] && top=$(( ch - wh )) || top=0

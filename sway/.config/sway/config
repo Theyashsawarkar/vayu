@@ -608,6 +608,8 @@ bindsym $mod+Ctrl+r mode "resize"
 bindsym $mod+r       exec ~/.local/bin/wf-recorder-toggle.sh full
 #: Record screen: select a region (press again to stop)
 bindsym $mod+Shift+r exec ~/.local/bin/wf-recorder-toggle.sh region
+#: Record screen: full screen (Alt shortcut, press again to stop)
+bindsym Mod1+Shift+space exec ~/.local/bin/wf-recorder-toggle.sh full
 
 #
 # Utilities:
@@ -647,6 +649,8 @@ bindsym Print exec ~/.config/sway/scripts/screenshot.sh
 # Region select
 #: Take screenshot: select a region
 bindsym $mod+Print exec ~/.config/sway/scripts/screenshot.sh region
+#: Take screenshot: full screen (Alt shortcut)
+bindsym Mod1+space exec ~/.config/sway/scripts/screenshot.sh
 
 # Manual lock trigger
 #: Lock the screen

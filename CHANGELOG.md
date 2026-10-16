@@ -5,6 +5,44 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.19.0-nightly -- 2026-10-16
+
+## 2026-10-16 (tmux: vim-style pane keys, no underline on the active window)
+
+- prefix h/j/k/l moves focus between panes like vim (replacing tmux's
+  prefix l = last window). prefix n/p switch to the next/previous window
+  and wrap around from the last window to the first.
+- prefix Shift+h/j/k/l resizes the pane (5 columns / 2 rows, same as
+  Alt+Shift+arrows) and repeats: prefix H H H. Kill session moved from
+  prefix K to prefix X, and last session from prefix L to prefix b.
+- prefix \ splits side by side, replacing prefix |, so it's one key
+  without Shift.
+- Every tmux popup (session picker, lazygit, scratch shell, btop, key
+  search, extrakto) is now the same size, 90% x 88%. They were four
+  different sizes, down to 70% x 50%. The size is set once in tmux.conf
+  (@popup_width/@popup_height) and popup.sh reads it; the one-line
+  command prompt stays one line.
+- Session picker (prefix s), left side redesigned: the search, the list
+  and a key legend each get their own box. Each session takes two
+  lines: name (gold dot = current) plus its window count, window names
+  and directory. The legend names every key (enter switch, ctrl-x kill,
+  ctrl-n new, esc close). New: Ctrl+n creates a session from the typed
+  name even when it partly matches an existing one (before, Enter
+  switched to the match). Ctrl+x on the current session now says why
+  nothing happened instead of silently doing nothing. Search matches
+  session names only, not window names.
+- The active window capsule in the status bar had a line under it:
+  tmux's window-status-current-style was "underscore". tmux.conf now sets
+  it to default.
+
+## 2026-10-16 (Alt+Space full screenshot, Alt+Shift+Space full recording)
+
+- Alt+Space takes a full-screen screenshot (saved to
+  ~/Pictures/Screenshots and copied to the clipboard). Alt+Shift+Space
+  starts a full-screen recording and stops it on the next press (saved to
+  ~/Videos/recordings). A 60% keyboard has no Print key; Print, Super+Print
+  and Super+R still work on a full-size keyboard.
+
 ## 2026-10-16 (second laptop: install failures fixed, hardware detected instead of hardcoded)
 
 - Installed on an HP ProBook 640 G3 (Intel i5-7200U, HD 620, Intel 8265

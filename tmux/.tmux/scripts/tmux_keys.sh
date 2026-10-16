@@ -14,7 +14,7 @@ c=$1
 out=$(mktemp)
 trap 'rm -f "$out"' EXIT
 
-~/.tmux/scripts/popup.sh "$c" 80 75 -E -B "$HOME/.local/bin/keybind-search.py --tmux-fzf > '$out'"
+~/.tmux/scripts/popup.sh "$c" -E -B "$HOME/.local/bin/keybind-search.py --tmux-fzf > '$out'"
 
 IFS=$'\t' read -r table key < "$out"
 [ -n "$key" ] && [ "$key" != - ] || exit 0

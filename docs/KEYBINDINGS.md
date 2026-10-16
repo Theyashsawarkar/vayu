@@ -78,6 +78,7 @@ hand-written overview of the main ones.
 
 - <kbd>Super</kbd>+<kbd>r</kbd> — Record full screen
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>r</kbd> — Record a selected region
+- <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd> — Record full screen (press again to stop)
 
 ### Media & hardware keys
 
@@ -90,6 +91,7 @@ hand-written overview of the main ones.
 
 - <kbd>Print</kbd> — Screenshot, full screen
 - <kbd>Super</kbd>+<kbd>Print</kbd> — Screenshot, select a region
+- <kbd>Alt</kbd>+<kbd>Space</kbd> — Screenshot, full screen
 - <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>;</kbd> — Lock screen
 
 ## Tmux
@@ -99,20 +101,20 @@ binding still works too -- this is only the set this repo added; the full list (
 including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super+Shift+/`.
 
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>a</kbd> — Send a literal Ctrl-a to the application
-- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>|</kbd> — Split horizontally, in the current pane's directory
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>\</kbd> — Split horizontally (side by side), in the current pane's directory
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>-</kbd> — Split vertically, in the current pane's directory
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>c</kbd> — New window, in the current pane's directory
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>&lt;</kbd>/<kbd>&gt;</kbd> — Swap window left/right
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>r</kbd> — Reload tmux config (mako notification only)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>?</kbd> — Search tmux keybindings; <kbd>Enter</kbd> runs the picked one
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>:</kbd> — Floating command prompt (runs in the real client, never nests)
-- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>s</kbd> — Session picker with live previews (<kbd>Ctrl</kbd>+<kbd>x</kbd> kills, a new name creates)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>s</kbd> — Session picker with live previews (<kbd>Enter</kbd> switches, <kbd>Ctrl</kbd>+<kbd>x</kbd> kills, <kbd>Ctrl</kbd>+<kbd>n</kbd> or a new name + <kbd>Enter</kbd> creates, <kbd>Esc</kbd> closes)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>w</kbd> — Classic session/window tree
-- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>L</kbd> — Last session
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>b</kbd> — Last session
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>,</kbd> / <kbd>R</kbd> — Rename window (floating input, prefilled)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>$</kbd> — Rename session (floating input, prefilled)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>x</kbd> / <kbd>&amp;</kbd> — Kill pane / window (centred confirm menu)
-- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>K</kbd> — Kill current session, hopping to the next one (confirm menu)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>X</kbd> — Kill current session, hopping to the next one (confirm menu)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Alt</kbd>+<kbd>k</kbd> — Kill every other session (confirm menu)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>s</kbd> / <kbd>Ctrl</kbd>+<kbd>r</kbd> — Save / restore sessions (tmux-resurrect, mako notification only)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>g</kbd> — lazygit popup in the current directory
@@ -121,6 +123,9 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Tab</kbd> — extrakto: fuzzy-pick paths/URLs/words from the pane
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>S</kbd> — Toggle synchronized input to all panes
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>z</kbd> — Toggle pane zoom
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> — Move focus to the pane left/below/above/right (vim-style)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>n</kbd> / <kbd>p</kbd> — Switch to the next / previous window (wraps around)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Shift</kbd>+<kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> — Resize pane left/down/up/right (5 columns / 2 rows; repeats without the prefix)
 - <kbd>Alt</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd>/<kbd>Up</kbd>/<kbd>Down</kbd> — Move focus between panes (no prefix needed)
 - <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd> — Resize pane left/right by 5
 - <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>/<kbd>Down</kbd> — Resize pane up/down by 2
