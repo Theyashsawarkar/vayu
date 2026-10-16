@@ -93,4 +93,4 @@ notify-send -u normal \
     "Desktop update available ($CHANNEL)" \
     "$COUNT new commit$PLURAL_S -- latest: \"$LATEST_SUBJECT\""
 
-nwg-bar -t "$HOME/.config/nwg-bar/update-bar.json" -s "$HOME/.config/nwg-bar/update-bar-style.css" -i 40
+"$HOME/.local/bin/nwg-bar-launch" -t update-bar.json -s "$HOME/.config/nwg-bar/update-bar-style.css" -i 40

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# nwg-bar with the template's "~/" paths expanded to this user's $HOME.
+# nwg-bar loads icon paths literally (neither ~ nor $HOME works), so the
+# templates in ~/.config/nwg-bar say "~/..." and this writes a filled-in
+# copy under $XDG_RUNTIME_DIR and points nwg-bar at it. Same arguments as
+# nwg-bar; -t is a file name in ~/.config/nwg-bar or an absolute path.
+# Execs nwg-bar, so `pkill -x nwg-bar` (toggle-popup.sh) still finds it.
+set -euo pipefail
+tmpl=bar.json args=()
+while [ $# -gt 0 ]; do
+  case $1 in
+    -t) tmpl=$2; shift 2 ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+case $tmpl in /*) src=$tmpl ;; *) src=${XDG_CONFIG_HOME:-$HOME/.config}/nwg-bar/$tmpl ;; esac
+out=${XDG_RUNTIME_DIR:-/tmp}/nwg-bar/$(basename "$src")
+mkdir -p "${out%/*}"
+sed "s|~/|$HOME/|g" "$src" > "$out"
+exec nwg-bar -t "$out" "${args[@]}"

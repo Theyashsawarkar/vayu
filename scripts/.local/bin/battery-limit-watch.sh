@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Charge-limit nudges -- a software reminder only, not a hardware charge
-# cutoff (this Acer Aspire A315-23 exposes no charge_control_end_threshold;
+# cutoff (neither the Acer A315-23 nor the HP ProBook 640 G3 exposes a
+# charge_control_end_threshold;
 # see battery-limit-picker.py's docstring and docs/ARCHITECTURE.md).
 #
 # Reads the percentage battery-limit-picker.py saved (a plain number, or

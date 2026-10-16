@@ -378,7 +378,7 @@ mark_explicit() {
 install_official() {
   cd "$DOTFILES_DIR"
   local want=() avail=() failed=() p
-  mapfile -t want < <(read_list packages/pacman.txt)
+  mapfile -t want < <(read_list packages/pacman.txt; hw_packages)
   # Check names first: one that left the repos (renamed, dropped) would
   # otherwise fail the whole batch with a one-line error.
   for p in "${want[@]}"; do
@@ -600,6 +600,24 @@ setup_nvim() {
   # lazy.nvim bootstraps itself and installs the plugins pinned in
   # lazy-lock.json; otherwise this happens on the first `nvim`.
   timeout 900 nvim --headless "+Lazy! restore" +qa
+  # Second start: LazyVim's mason.nvim queues its tools (tree-sitter-cli,
+  # formatters, linters) at startup, and +qa above quit while they were
+  # still downloading ("Installation was aborted", plus nvim-treesitter's
+  # "Package is already installing" on the first start). Wait until no
+  # package is installing anymore, then quit. Timing varies per machine
+  # and connection, so it polls rather than sleeping a fixed time.
+  timeout 900 nvim --headless "+lua vim.defer_fn(function()
+    local ok, reg = pcall(require, 'mason-registry')
+    if ok then
+      vim.wait(850000, function()
+        for _, p in ipairs(reg.get_all_packages()) do
+          if p:is_installing() then return false end
+        end
+        return true
+      end, 1000)
+    end
+    vim.cmd('qa!')
+  end, 5000)" || warn "some Mason tools didn't finish installing; they retry on the next nvim start"
 }
 
 setup_node() {
@@ -642,6 +660,10 @@ setup_system_services() {
     fi
   done
   sudo systemctl mask "${SYSTEM_UNITS_MASKED[@]}" || { note_failure "systemctl mask"; bad=1; }
+  # Units that already failed this boot (the NvPCR ones fail on any machine
+  # without a TPM/systemd initramfs) stay listed as failed until a reboot
+  # even once masked; clear them so `systemctl --failed` shows real problems.
+  sudo systemctl reset-failed "${SYSTEM_UNITS_MASKED[@]}" 2>/dev/null || true
   # ufw.service only loads the rules; `ufw enable` is what turns the
   # firewall on (default: deny incoming, allow outgoing).
   for u in "${UFW_ALLOW[@]}"; do
@@ -656,6 +678,15 @@ setup_groups() {
   for g in "${USER_GROUPS[@]}"; do
     sudo usermod -aG "$g" "$USER"
   done
+  # A new group only reaches processes started after the next login, and
+  # ydotool's 80-uinput.rules (GROUP=input) only applies to /dev/uinput at
+  # the next boot: until then it stays root-only 0600 and ydotoold, started
+  # in the next step, exits with "failed to open uinput device: Permission
+  # denied". An ACL for this user bridges that gap on any machine.
+  if [ -e /dev/uinput ]; then
+    sudo udevadm control --reload-rules || true
+    sudo setfacl -m "u:$USER:rw" /dev/uinput || warn "couldn't grant $USER access to /dev/uinput; ydotool works after a reboot"
+  fi
 }
 
 setup_user_services() {
@@ -731,6 +762,8 @@ fi
 cd "$DOTFILES_DIR"
 # shellcheck source=packages/manifest.sh
 source "$DOTFILES_DIR/packages/manifest.sh"
+# shellcheck source=packages/hardware.sh
+source "$DOTFILES_DIR/packages/hardware.sh"
 
 run_step "Installing official packages (packages/pacman.txt)" install_official
 # Before the AUR builds: system/ carries makepkg.conf.d (-j$(nproc), !debug).

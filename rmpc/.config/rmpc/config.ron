@@ -9,8 +9,10 @@
     // with "Access to local files via TCP is not allowed" against the
     // TCP address below, and MPD's own systemd socket unit (already
     // active, confirmed via `ss -lx`) exposes exactly this at
-    // /run/user/1000/mpd/socket.
-    address: "/run/user/1000/mpd/socket",
+    // $XDG_RUNTIME_DIR/mpd/socket. That path depends on the uid and this
+    // file can't expand variables, so it comes from MPD_HOST (set in
+    // ~/.profile, zsh/.profile in the repo, with a fallback in
+    // rmpc-toggle.sh and music-search.py), which rmpc prefers over this.
     password: None,
     theme: "catppuccin-mocha",
     cache_dir: "~/.cache/rmpc",

@@ -84,6 +84,14 @@ import tempfile
 import traceback
 import urllib.request
 
+# rmpc reaches MPD through MPD_HOST (its Unix socket; see rmpc's
+# config.ron). Normally inherited from ~/.profile; this covers a session
+# started without it.
+os.environ.setdefault(
+    "MPD_HOST",
+    os.path.join(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"), "mpd/socket"),
+)
+
 STATE_DIR = os.path.expanduser("~/.local/state/music-search")
 LOG_PATH = os.path.join(STATE_DIR, "music-search.log")
 
@@ -357,7 +365,7 @@ def play_music(video_id, title):
     # running, so the track that was just queued is immediately visible
     # and controllable, not just playing somewhere unseen.
     subprocess.Popen(
-        ["/home/yash/.local/bin/rmpc-toggle.sh"],
+        [os.path.expanduser("~/.local/bin/rmpc-toggle.sh")],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         start_new_session=True,

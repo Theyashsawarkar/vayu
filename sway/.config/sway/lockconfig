@@ -6,7 +6,7 @@
 ignore-empty-password
 disable-caps-lock-text
 
-image=/home/yash/Pictures/Wallpapers/current.jpg
+image=~/Pictures/Wallpapers/current.jpg
 scaling=fill
 
 indicator

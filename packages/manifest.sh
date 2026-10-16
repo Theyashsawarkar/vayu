@@ -28,7 +28,8 @@ SYSTEM_UNITS_DISABLED=(
   docker.service
   sddm.service
 )
-# Hibernate corrupts the amdgpu resume on this hardware (docs/ARCHITECTURE.md,
+# Hibernate corrupted the amdgpu resume on the Acer this was built on, and
+# this setup configures no resume device anyway (docs/ARCHITECTURE.md,
 # "Lid-close, suspend vs hibernate"); NvPCR units fail without a systemd
 # initramfs.
 SYSTEM_UNITS_MASKED=(

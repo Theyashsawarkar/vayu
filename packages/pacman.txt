@@ -1,6 +1,5 @@
 7zip
 adwaita-icon-theme
-amd-ucode
 base
 base-devel
 bat
@@ -36,6 +35,7 @@ grim
 gst-plugin-pipewire
 gtk3
 gtk4
+inetutils
 inxi
 iwd
 jq
@@ -78,6 +78,7 @@ qt6-multimedia-ffmpeg
 qt6-svg
 ripgrep
 rmpc
+rtkit
 seahorse
 slurp
 sof-firmware
@@ -97,7 +98,6 @@ ttf-nerd-fonts-symbols
 ufw
 unzip
 upower
-vulkan-radeon
 waybar
 wev
 wf-recorder

@@ -134,7 +134,8 @@ and
 
 ## Boot: the firmware logo stays up for ~15 s
 
-Expected on this laptop, not a hang. Loading the `amdgpu` driver costs ~6 s
+Expected on AMD Raven-family laptops (the Acer this was built on), not a
+hang. Loading the `amdgpu` driver costs ~6 s
 of CPU however it's loaded, and that time comes before the Vayu logo can
 appear. Measured and explained in `splash/README.md` ("Why the boot is
 ordered this way"). Only building amdgpu into a custom kernel would remove
@@ -175,14 +176,40 @@ instead.
 To remove the splash completely, follow "Rollback" in
 [`splash/README.md`](https://github.com/Theyashsawarkar/vayu/blob/development/splash/README.md).
 
-## Boot: a blank screen for a few seconds before the logo (not this laptop)
+## Boot: a blank screen for a few seconds before the logo
 
 The `vayu-kms` early-graphics hook is only installed on AMD Raven-family
-APUs (the laptop this is built on). Elsewhere Plymouth draws on the firmware
-framebuffer (`plymouth.use-simpledrm`) until the real GPU driver loads, so
-the screen can stay blank or flicker once. Harmless; adding your GPU's
-driver to the initramfs (the stock `kms` hook) removes it at the cost of a
-bigger, slower-loading image.
+APUs; on every other GPU `system/apply.sh` keeps the stock `kms` hook in
+`/etc/mkinitcpio.conf` (and puts it back if an older version removed it),
+so the driver loads from the initramfs. If you still see this, check
+`grep ^HOOKS /etc/mkinitcpio.conf` lists `kms`, then run `system/apply.sh`
+and reboot. Without it Plymouth draws on the firmware framebuffer
+(`plymouth.use-simpledrm`) until the real driver loads, which shows as a
+blank screen or one flicker.
+
+## Install: mpd or ydotool failed on a fresh machine
+
+Both were fixed in the installer (CHANGELOG 2026-10-16); re-run
+`install.sh` to pick that up. mpd failed with "Failed to access ~/Music:
+No such file or directory": its directories didn't exist yet, and
+`mpd.service.d/prepare-dirs.conf` now creates the ones `mpd.conf` names.
+ydotool failed with "failed to open uinput device: Permission denied":
+the `input` group and ydotool's udev rule only take effect after a
+re-login/reboot, so the installer now grants your user an ACL on
+`/dev/uinput` for the current boot. If either still fails:
+`systemctl --user status mpd ydotool` and `getfacl /dev/uinput`.
+
+## Hardware: a different laptop than the one this was built on
+
+Hardware-specific parts are detected, not hardcoded:
+`packages/hardware.sh` picks microcode (intel-ucode/amd-ucode) and GPU
+drivers (vulkan-intel + intel-media-driver, vulkan-radeon, vulkan-nouveau)
+from `/proc/cpuinfo` and the PCI display controllers; the lid device
+(`/proc/acpi/button/lid/*`), AC adapter (power_supply `type=Mains`),
+battery and backlight are found at runtime. To see what this machine gets:
+`source ~/dotfiles/packages/hardware.sh; hw_packages`. Still tied to the
+original hardware: hibernate stays masked (it broke amdgpu resume there),
+and the greeter layout assumes a 1920x1080 panel (160x45 console).
 
 ## Login: the desktop doesn't start after logging in
 

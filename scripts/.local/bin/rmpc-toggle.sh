@@ -16,6 +16,10 @@
 # from the scratchpad hides it again, not a no-op.
 set -uo pipefail
 
+# rmpc finds MPD's socket through MPD_HOST (see rmpc's config.ron);
+# normally inherited from ~/.profile, this covers a session without it.
+export MPD_HOST="${MPD_HOST:-${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/mpd/socket}"
+
 if pgrep -x rmpc >/dev/null; then
     swaymsg '[app_id="^rmpc$"] scratchpad show' >/dev/null
 else

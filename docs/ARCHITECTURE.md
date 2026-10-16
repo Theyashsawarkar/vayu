@@ -227,6 +227,7 @@ reproducing the machine means keeping these in sync with it, not editing the scr
 | Where | What |
 |---|---|
 | `packages/pacman.txt`, `packages/aur.txt` | every explicitly wanted package (direct runtime dependencies of the configs too, not left to come in as someone else's dependency) |
+| `packages/hardware.sh` | what depends on the CPU/GPU, detected on the machine: microcode and GPU driver packages (`hw_packages`, added to pacman.txt by install.sh and vayu-verify), and whether splash/'s vayu-kms applies (`hw_is_raven`, also deciding whether system/apply.sh drops the stock `kms` hook) |
 | `packages/manifest.sh` | system/user units to enable, start, disable or mask; groups; ufw rules; Homebrew formulae; zsh plugin clones; dconf keys. Sourced by both `install.sh` and `vayu-verify` |
 | `system/` | root-owned files, mirrored from `/` (`system/etc/sysctl.d/99-custom.conf` -> `/etc/sysctl.d/99-custom.conf`), installed by `system/apply.sh` |
 | `greeter/` | the login screen (`greeter/apply.sh`) |

@@ -10,6 +10,8 @@
 # Rollback: see splash/README.md.
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=../packages/hardware.sh
+source "$here/../packages/hardware.sh"
 check=false
 [ "${1:-}" = "--check" ] && check=true
 
@@ -104,10 +106,7 @@ kms_files=(
   "mkinitcpio-vayu-kms.conf:/etc/mkinitcpio.conf.d/vayu-kms.conf"
 )
 raven=false
-for d in /sys/bus/pci/devices/*; do
-  [ "$(cat "$d/vendor" 2>/dev/null)" = 0x1002 ] || continue
-  case $(cat "$d/device" 2>/dev/null) in 0x15d8|0x15dd) raven=true ;; esac
-done
+hw_is_raven && raven=true
 for pair in "${kms_files[@]}"; do
   src=$here/${pair%%:*} dst=${pair#*:}
   if $raven; then

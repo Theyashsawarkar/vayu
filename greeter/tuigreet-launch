@@ -1,5 +1,5 @@
 #!/bin/sh
-# greetd's greeter command: puts "Ace · NN%" (plus "· charging") in
+# greetd's greeter command: puts "<hostname> · NN%" (plus "· charging") in
 # tuigreet's box title. Read once per start, i.e. at boot and after each
 # logout. tuigreet ignores --custom-title when a config file sets one, so it
 # gets a filled-in copy of the config on fd 3. That way there's no temp
@@ -8,7 +8,9 @@
 # like a "G").
 conf=${TUIGREET_CONFIG:-/etc/tuigreet/config.toml}
 
-title=Ace
+# The machine's own hostname, not a fixed name, so it follows a rename
+# or a different laptop.
+title=$(cat /proc/sys/kernel/hostname 2>/dev/null || echo Vayu)
 bat=$(ls -d /sys/class/power_supply/BAT* 2>/dev/null | head -n1)
 if [ -n "$bat" ] && pct=$(cat "$bat/capacity" 2>/dev/null); then
   title="$title · $pct%"

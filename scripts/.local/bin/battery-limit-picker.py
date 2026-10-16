@@ -2,9 +2,10 @@
 """Battery charge-limit reminder picker for waybar's battery module.
 
 A software-only reminder, deliberately NOT a hardware charge cutoff:
-this laptop (Acer Aspire A315-23) has no charge_control_end_threshold
-under /sys/class/power_supply/BAT1 -- confirmed directly, the firmware
-doesn't expose one to Linux at all. The only real workaround, a
+the laptops this runs on have no charge_control_end_threshold under
+/sys/class/power_supply/BAT* -- confirmed directly on the Acer Aspire
+A315-23 (BAT1) and the HP ProBook 640 G3 (BAT0); the firmware doesn't
+expose one to Linux at all. The only real workaround, a
 community acer-wmi-battery kernel module, is untested on this exact
 model (its own MODELS.md lists several other A315 variants working/not
 working, A315-23 isn't in either list) and only offers a fixed 80%

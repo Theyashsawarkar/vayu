@@ -554,7 +554,8 @@ window#waybar {
 /* BATTERY STATES -- colored by actual charge status now, not just the
    two emergency thresholds. #battery.<status> classes come from the
    kernel's power_supply status file (see waybar-battery(5)), confirmed
-   via `cat /sys/class/power_supply/BAT1/status` on this machine. Placed
+   via `cat /sys/class/power_supply/BAT1/status` on the Acer (BAT0
+   on the HP). Placed
    before .warning/.critical/.charging below: same selector specificity
    (#battery.<class>), so source order decides when e.g. both
    .discharging and .warning apply at once -- the low-battery colors

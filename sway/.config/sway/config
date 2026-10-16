@@ -125,7 +125,7 @@ bindsym $mod+Shift+n exec ~/.local/bin/toggle-popup.sh notifhistory wofi ~/.loca
 # focus-ring styling on top of this yet -- works correctly, just not
 # obvious to the eye which button Tab landed on.
 #: Open power menu (lock, logout, suspend, reboot, shutdown)
-bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar nwg-bar -i 40
+bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar ~/.local/bin/nwg-bar-launch -i 40
 
 # Caffeine mode keyboard path -- was click-only via waybar's
 # custom/caffeine module (on-click in waybar/config) until now. Direct
@@ -182,8 +182,8 @@ bindsym --release Num_Lock exec ~/.local/bin/waybar-signal 10
 bindsym $mod+Shift+m exec ~/.local/bin/rmpc-toggle.sh
 
 # Matches the app_id kitty is launched with above -- floating, sized to
-# 60% width / 60% height of this machine's actual 1920x1080 output
-# (1152x648 -- widened from an original 50% height so the window feels
+# 60% width / 60% height of the output, in ppt so it scales to any
+# screen (1152x648 on a 1920x1080 panel -- widened from an original 50% height so the window feels
 # less cramped, matching the same 60% used for width instead of a
 # smaller, mismatched fraction), centered, and moved into the
 # scratchpad + shown immediately so it's visible the moment it first
@@ -214,7 +214,7 @@ bindsym $mod+Shift+m exec ~/.local/bin/rmpc-toggle.sh
 # vayu-elevate's approval window (ai/): float it centred with the glass
 # blur the other popups have, above whatever is on screen.
 for_window [app_id="^io\.github\.theyashsawarkar\.VayuElevate$"] floating enable, move position center, blur enable, sticky enable
-for_window [app_id="^rmpc$"] floating enable, resize set 1152 648, move position center, move scratchpad, scratchpad show, blur enable
+for_window [app_id="^rmpc$"] floating enable, resize set 60 ppt 60 ppt, move position center, move scratchpad, scratchpad show, blur enable
 
 # mpv's video window (music-search.py's play action, audio-only mode
 # never creates a window at all) -- floating and centered rather than
@@ -233,7 +233,7 @@ for_window [app_id="^rmpc$"] floating enable, resize set 1152 648, move position
 # control it" from the outside. Explicitly focusing here fixed it,
 # verified via mpv's own IPC (`pause` property actually flipped after
 # a spacebar press once focus was forced) before trusting it.
-for_window [app_id="^mpv$"] floating enable, resize set 1280 720, move position center, focus
+for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move position center, focus
 
 # Two direct keybindings instead of one + a mode toggle -- simpler to
 # hold in your head than "press Y, then remember which mode is active".
@@ -417,7 +417,7 @@ client.urgent           #DC2626 #11111B #CDD6F4 #DC2626   #DC2626
 # Daily rotation is handled by systemd/.config/systemd/user/wallpaper.timer
 # (fetch_wallpaper.sh) -- once a day, not on every reload. This just sets
 # the background at sway startup/reload from whatever current.jpg already is.
-output * bg /home/yash/Pictures/Wallpapers/current.jpg fill
+output * bg ~/Pictures/Wallpapers/current.jpg fill
 
 ### Input configuration
 input type:touchpad {

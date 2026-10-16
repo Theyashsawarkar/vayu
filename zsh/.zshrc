@@ -144,7 +144,7 @@ eval "$(zoxide init zsh --cmd cd)"
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
 
-export PATH="/home/yash/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Bare `tmux` attaches to the "main" session (creating it if missing);
 # any explicit subcommand/args pass through untouched.

@@ -5,6 +5,61 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-16 (second laptop: install failures fixed, hardware detected instead of hardcoded)
+
+- Installed on an HP ProBook 640 G3 (Intel i5-7200U, HD 620, Intel 8265
+  Wi-Fi), the first machine other than the Acer A315-23. The install log
+  ended with two failed steps and vayu-verify at 90/92; a hardware audit
+  found more that failed silently. All fixed, and everything that was
+  tied to the Acer is now detected on the machine.
+- mpd failed at install ("Failed to access ~/Music: No such file or
+  directory"): a fresh machine has none of the directories mpd.conf names.
+  New `mpd.service.d/prepare-dirs.conf` runs `mpd-prepare-dirs.sh`, which
+  reads them from mpd.conf and creates them.
+- ydotool failed ("failed to open uinput device: Permission denied"): the
+  `input` group applies at the next login and ydotool's udev rule at the
+  next boot. `setup_groups` now grants the user an ACL on /dev/uinput so it
+  works in the same boot.
+- Neovim: `+qa` quit while mason.nvim was still installing, aborting 5
+  tools and making nvim-treesitter fail with "Package is already
+  installing". install.sh now starts nvim a second time and waits until no
+  Mason package is installing.
+- Lid-closed poweroff never fired on the HP: the hook read
+  `/proc/acpi/button/lid/LID0/state` and the HP's lid is `LID`. It now
+  takes whichever lid device exists (the DRY_RUN notification also finds
+  the seat0 user instead of `yash`/uid 1000).
+- battery-warning-dismiss never dismissed: it matched the adapter name
+  `ACAD` (`AC` on the HP). It now finds the adapter by `type=Mains`.
+- New `packages/hardware.sh`: microcode and GPU packages come from the CPU
+  vendor and PCI display controllers (intel-ucode / amd-ucode,
+  vulkan-intel + intel-media-driver / vulkan-radeon / vulkan-nouveau)
+  instead of pacman.txt's `amd-ucode` and `vulkan-radeon`. The HP had no
+  Vulkan or hardware video decode before this.
+- `system/apply.sh` dropped the stock `kms` hook on every machine, but
+  only Raven APUs get vayu-kms in its place; on the HP i915 loaded late.
+  It now removes `kms` only where vayu-kms applies and puts it back
+  elsewhere (shared `hw_is_raven`, also used by splash/apply.sh).
+- Added `inetutils` (tmux-resurrect calls `hostname`: "hostname: command
+  not found" on every autosave) and `rtkit` (PipeWire's "RTKit error:
+  ServiceUnknown") to pacman.txt. The installer also `reset-failed`s the
+  masked NvPCR units so `systemctl --failed` is clean after install.
+- No more `/home/yash` or uid 1000: waybar, sway (`output * bg ~/...`),
+  swaylock, tmux-main.service (`%h`), .zshrc and music-search.py use the
+  home directory. rmpc gets MPD's socket from `MPD_HOST` (new
+  `zsh/.profile`, sourced by greetd, with fallbacks in rmpc-toggle.sh and
+  music-search.py), since config.ron can't expand variables. nwg-bar
+  can't expand `~` or `$HOME` in icon paths (tested: broken icons), so
+  the new `nwg-bar-launch` writes the template with the home directory
+  filled in under $XDG_RUNTIME_DIR. The rmpc/mpv popups are sized in
+  `ppt` instead of pixels for 1920x1080, and the greeter title is the
+  hostname instead of "Ace".
+- Verified on the HP: mpd and ydotoold active, no failed system or user
+  units, vulkaninfo shows the HD 620 on ANV, iHD VA-API present, `kms`
+  in HOOKS, lid and AC detection read `LID` and `AC`, rmpc connects
+  through MPD_HOST, the rmpc popup opens at 1142x613, keybinding check
+  OK, `vayu-verify` 92 passed / 0 failed, system/ and splash/ match the
+  repo.
+
 ## v1.18.0 -- 2026-10-04
 
 ## 2026-10-04 (pre-release check for v1.18.0 Stable)

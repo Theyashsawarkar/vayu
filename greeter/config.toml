@@ -16,7 +16,7 @@ show_time = true
 # width sits half a cell off its centre.
 time_format = "%I:%M %p  ·  %a %d %b %Y"
 show_title = true
-# tuigreet-launch rewrites this line to "Ace · NN%" (plus "· charging")
+# tuigreet-launch rewrites this line to "<hostname> · NN%" (plus "· charging")
 custom_title = "Ace"
 
 [remember]

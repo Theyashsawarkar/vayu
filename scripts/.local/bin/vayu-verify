@@ -17,6 +17,8 @@ verbose=false
 
 # shellcheck source=../../../packages/manifest.sh
 source "$DOTFILES_DIR/packages/manifest.sh"
+# shellcheck source=../../../packages/hardware.sh
+source "$DOTFILES_DIR/packages/hardware.sh"
 
 fails=0 passes=0
 section() { printf '\n== %s\n' "$1"; }
@@ -27,16 +29,18 @@ check() {  # check "description" command...
   if "$@" >/dev/null 2>&1; then ok "$desc"; else bad "$desc"; fi
 }
 list() { grep -v '^\s*#' "$1" | awk 'NF { print $1 }'; }
+# pacman.txt and aur.txt, plus what this machine's CPU/GPU needs (hardware.sh).
+all_packages() { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; hw_packages; }
 
 section "Packages (packages/pacman.txt, packages/aur.txt)"
-missing=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } \
+missing=$( all_packages \
   | while read -r p; do pacman -Q "$p" >/dev/null 2>&1 || pacman -Qq --quiet "$p" >/dev/null 2>&1 || echo "$p"; done)
-total=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } | wc -l)
+total=$( all_packages | wc -l)
 if [ -z "$missing" ]; then ok "all $total packages installed"
 else for p in $missing; do bad "package not installed: $p"; done; fi
 # A listed package installed only as a dependency gets removed by an orphan
 # cleanup once nothing needs it (install.sh marks them explicit).
-asdeps=$( { list "$DOTFILES_DIR/packages/pacman.txt"; list "$DOTFILES_DIR/packages/aur.txt"; } \
+asdeps=$( all_packages \
   | while read -r p; do pacman -Qdq "$p" 2>/dev/null; done | xargs)
 if [ -z "$asdeps" ]; then ok "all listed packages marked explicitly installed"
 else bad "listed but installed as a dependency (orphan cleanup would remove them): $asdeps"; fi

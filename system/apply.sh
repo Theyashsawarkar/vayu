@@ -13,6 +13,8 @@
 # per-machine settings.
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=../packages/hardware.sh
+source "$here/../packages/hardware.sh"
 check=false
 [ "${1:-}" = "--check" ] && check=true
 
@@ -83,14 +85,30 @@ fi
 # preset's --splash only paints a logo during that wait, so it goes too.
 # (splash/apply.sh's vayu-kms hook brings amdgpu back early with only this
 # APU's firmware, ~6 MB instead of ~35 MB.)
+# That only holds where vayu-kms applies (hw_is_raven, packages/hardware.sh).
+# On any other GPU (Intel i915, other AMD, NVIDIA) nothing would replace it,
+# Plymouth and the console would start on simpledrm and flicker when the
+# real driver takes over, so the stock kms hook is kept (put back if an
+# older run removed it) -- with autodetect it packs only that GPU's driver.
 rebuild_initramfs=false
-if grep -qE '^HOOKS=\(.*\bkms\b' /etc/mkinitcpio.conf 2>/dev/null; then
+has_kms=false
+grep -qE '^HOOKS=\(.*\bkms\b' /etc/mkinitcpio.conf 2>/dev/null && has_kms=true
+if hw_is_raven && $has_kms; then
   changed+=("mkinitcpio kms hook")
   if $check; then
-    echo "differs: /etc/mkinitcpio.conf (kms hook still in HOOKS)"
+    echo "differs: /etc/mkinitcpio.conf (kms hook still in HOOKS; vayu-kms replaces it on this APU)"
   else
     sudo sed -i -E '/^HOOKS=/{s/ kms\b//;s/\(kms /(/}' /etc/mkinitcpio.conf
     echo "removed the kms hook from /etc/mkinitcpio.conf"
+    rebuild_initramfs=true
+  fi
+elif ! hw_is_raven && ! $has_kms && grep -qE '^HOOKS=\(.*\bmodconf\b' /etc/mkinitcpio.conf 2>/dev/null; then
+  changed+=("mkinitcpio kms hook")
+  if $check; then
+    echo "differs: /etc/mkinitcpio.conf (kms hook missing; this GPU needs it for early KMS)"
+  else
+    sudo sed -i -E '/^HOOKS=/s/\bmodconf\b/modconf kms/' /etc/mkinitcpio.conf
+    echo "added the kms hook back to /etc/mkinitcpio.conf (no vayu-kms for this GPU)"
     rebuild_initramfs=true
   fi
 fi

@@ -42,16 +42,16 @@
 		"format": "<span size='125%' rise='-1pt'>{icon}</span>  {percent}%",
 		"format-icons": ["󰃞", "󰃟", "󰃠"],
 		"tooltip-format": "Click: drag to set   Scroll: +/-5%",
-		"on-click": "/home/yash/.local/bin/brightness-slider.sh",
-		"on-scroll-up": "/home/yash/.config/sway/scripts/brightness_osd.sh +5%",
-		"on-scroll-down": "/home/yash/.config/sway/scripts/brightness_osd.sh 5%-",
+		"on-click": "$HOME/.local/bin/brightness-slider.sh",
+		"on-scroll-up": "$HOME/.config/sway/scripts/brightness_osd.sh +5%",
+		"on-scroll-down": "$HOME/.config/sway/scripts/brightness_osd.sh 5%-",
 		"smooth-scrolling-threshold": 1,
 		"reverse-scrolling": true
 	},
 
 	"custom/capslock": {
-		"exec": "/home/yash/.local/bin/keylock-status.sh capslock",
-		"on-click": "/home/yash/.local/bin/keylock-toggle.sh capslock",
+		"exec": "$HOME/.local/bin/keylock-status.sh capslock",
+		"on-click": "$HOME/.local/bin/keylock-toggle.sh capslock",
 		"interval": "once",
 		"signal": 9,
 		"return-type": "json",
@@ -59,8 +59,8 @@
 	},
 
 	"custom/numlock": {
-		"exec": "/home/yash/.local/bin/keylock-status.sh numlock",
-		"on-click": "/home/yash/.local/bin/keylock-toggle.sh numlock",
+		"exec": "$HOME/.local/bin/keylock-status.sh numlock",
+		"on-click": "$HOME/.local/bin/keylock-toggle.sh numlock",
 		"interval": "once",
 		"signal": 10,
 		"return-type": "json",
@@ -78,12 +78,12 @@
 	},
 
 	"custom/notifications": {
-		"exec": "/home/yash/.local/bin/notification-history-status.sh",
+		"exec": "$HOME/.local/bin/notification-history-status.sh",
 		"interval": "once",
 		"return-type": "json",
-		"on-click": "/home/yash/.local/bin/notification-history.py",
-		"on-scroll-up": "/home/yash/.local/bin/notification-mode.sh next",
-		"on-scroll-down": "/home/yash/.local/bin/notification-mode.sh prev",
+		"on-click": "$HOME/.local/bin/notification-history.py",
+		"on-scroll-up": "$HOME/.local/bin/notification-mode.sh next",
+		"on-scroll-down": "$HOME/.local/bin/notification-mode.sh prev",
 		"signal": 8
 	},
 
@@ -93,25 +93,25 @@
 	},
 
 	"custom/theme": {
-		"exec": "/home/yash/.local/bin/theme-status.sh",
+		"exec": "$HOME/.local/bin/theme-status.sh",
 		"interval": "once",
 		"signal": 11,
 		"return-type": "json",
-		"on-click": "/home/yash/.local/bin/theme-toggle.sh"
+		"on-click": "$HOME/.local/bin/theme-toggle.sh"
 	},
 
 	"custom/wallpaper": {
 		"format": "",
 		"tooltip-format": "Click to fetch a new wallpaper",
-		"on-click": "/home/yash/.local/bin/fetch_wallpaper.sh"
+		"on-click": "$HOME/.local/bin/fetch_wallpaper.sh"
 	},
 
 	"custom/docker": {
-		"exec": "/home/yash/.local/bin/docker-status.sh",
+		"exec": "$HOME/.local/bin/docker-status.sh",
 		"interval": "once",
 		"signal": 14,
 		"return-type": "json",
-		"on-click": "/home/yash/.local/bin/docker-picker.py"
+		"on-click": "$HOME/.local/bin/docker-picker.py"
 	},
 
 	"network": {
@@ -127,7 +127,7 @@
 		"tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
 		"tooltip-format-disconnected": "Disconnected",
 		"tooltip-format-disabled": "Wi-Fi disabled (rfkill)",
-		"on-click": "/home/yash/.local/bin/wifi-picker.py"
+		"on-click": "$HOME/.local/bin/wifi-picker.py"
 	},
 
 	"network#speed": {
@@ -142,16 +142,16 @@
 		"format-connected": "  {device_alias}",
 		"format-connected-battery": "  {device_alias}  {device_battery_percentage}%",
 		"tooltip-format": "Bluetooth Status: {status}",
-		"on-click": "/home/yash/.local/bin/bluetooth-picker.py",
+		"on-click": "$HOME/.local/bin/bluetooth-picker.py",
 		"max-length": 25
 	},
 
 	"custom/phone": {
-		"exec": "/home/yash/.local/bin/phone-status.sh",
+		"exec": "$HOME/.local/bin/phone-status.sh",
 		"interval": "once",
 		"signal": 13,
 		"return-type": "json",
-		"on-click": "/home/yash/.local/bin/toggle-popup.sh phone wofi /home/yash/.local/bin/phone-picker.py"
+		"on-click": "$HOME/.local/bin/toggle-popup.sh phone wofi $HOME/.local/bin/phone-picker.py"
 	},
 
 	"custom/caffeine": {
@@ -175,7 +175,7 @@
 			"charging": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
 			"default": ["󰁺", "󰁽", "󰁿", "󰂁", "󰁹"]
 		},
-		"on-click": "/home/yash/.local/bin/battery-limit-picker.py"
+		"on-click": "$HOME/.local/bin/battery-limit-picker.py"
 	},
 
 	"pulseaudio": {
@@ -210,10 +210,10 @@
 			"default": ["󰕿", "󰖀", "󰕾"]
 		},
 		"tooltip-format": "Click: mute/unmute   Right-click: mixer   Scroll: +/-5%",
-		"on-click": "/home/yash/.config/sway/scripts/volume_osd.sh mute-toggle",
+		"on-click": "$HOME/.config/sway/scripts/volume_osd.sh mute-toggle",
 		"on-click-right": "pavucontrol",
-		"on-scroll-up": "/home/yash/.config/sway/scripts/volume_osd.sh +5%",
-		"on-scroll-down": "/home/yash/.config/sway/scripts/volume_osd.sh -5%",
+		"on-scroll-up": "$HOME/.config/sway/scripts/volume_osd.sh +5%",
+		"on-scroll-down": "$HOME/.config/sway/scripts/volume_osd.sh -5%",
 		"smooth-scrolling-threshold": 1,
 		"reverse-scrolling": true
 	},
@@ -221,6 +221,6 @@
 	"custom/power": {
 		"format": "",
 		"tooltip": false,
-		"on-click": "nwg-bar -i 40"
+		"on-click": "$HOME/.local/bin/nwg-bar-launch -i 40"
 	}
 }
