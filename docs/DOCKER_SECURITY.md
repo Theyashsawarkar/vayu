@@ -93,7 +93,8 @@ session):**
 ### Installing the persistence drop-in (optional, only needed if you actually publish ports)
 
 ```bash
-sudo cp docs/docker-user-rules.service /etc/systemd/system/
+# run from ~/dotfiles; fills in this checkout's path
+sed "s|@DOTFILES@|$PWD|" docs/docker-user-rules.service | sudo tee /etc/systemd/system/docker-user-rules.service >/dev/null
 sudo systemctl daemon-reload
 sudo systemctl enable docker-user-rules.service
 sudo systemctl start docker-user-rules.service   # applies it immediately too

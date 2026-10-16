@@ -91,6 +91,10 @@ full branch/release process.
   filled in under $XDG_RUNTIME_DIR. The rmpc/mpv popups are sized in
   `ppt` instead of pixels for 1920x1080, and the greeter title is the
   hostname instead of "Ace".
+- docs/docker-user-rules.service ran `/home/yash/dotfiles/...`; it now
+  has an `@DOTFILES@` placeholder that DOCKER_SECURITY.md's install
+  command fills in with the checkout's path. The greeter README showed
+  the old fixed "Ace" title; it's the hostname.
 - Verified on the HP: mpd and ydotoold active, no failed system or user
   units, vulkaninfo shows the HD 620 on ANV, iHD VA-API present, `kms`
   in HOOKS, lid and AC detection read `LID` and `AC`, rmpc connects

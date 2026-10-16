@@ -9,7 +9,9 @@ Requires=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/bash /home/yash/dotfiles/docs/harden-docker.sh
+# @DOTFILES@ is filled in at install time (see docs/DOCKER_SECURITY.md),
+# so this works for any user, not just one home directory.
+ExecStart=/usr/bin/bash @DOTFILES@/docs/harden-docker.sh
 
 [Install]
 WantedBy=multi-user.target

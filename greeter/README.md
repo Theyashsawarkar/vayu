@@ -5,7 +5,7 @@ System files, not a stow package: `./apply.sh` installs them (needs sudo).
 | File | Installed as |
 |---|---|
 | `config.toml` | `/etc/tuigreet/config.toml` -- layout, colours, sway command |
-| `tuigreet-launch` | `/usr/local/bin/tuigreet-launch` -- greetd's greeter; puts `Ace · NN%` (plus `· charging`) in the title |
+| `tuigreet-launch` | `/usr/local/bin/tuigreet-launch` -- greetd's greeter; puts `<hostname> · NN%` (plus `· charging`) in the title |
 | `tuigreet-center-box.patch` | built into `/usr/local/bin/tuigreet-ace` -- tuigreet 0.11.1 with the box centred on the screen (stock lifts it by `window_padding`); the launcher falls back to stock tuigreet with padding 0 if it's missing |
 | `build-console-font.py` | builds `/usr/share/kbd/consolefonts/ter-v24n-ace.psf.gz` (Terminus 12x24 with rounded corners) |
 | `vtrgb`, `vt-palette.service` | `/etc/vtrgb` + unit -- Catppuccin Mocha, true black, on every tty |
