@@ -47,8 +47,9 @@ window#waybar {
        like the top: #workspaces and #custom-power below. */
     margin-left: 0;
     margin-right: 0;
-    border: 1px solid rgba(203, 166, 247, 0.18); /* Subtle Royal Mauve border */
-    transition: background-color 0.2s ease, border-color 0.2s ease;
+    /* Thin, visible on any wallpaper; brightens on hover (end of file). */
+    border: 1px solid rgba(203, 166, 247, 0.6); /* Royal Mauve hairline */
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 #clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #bluetooth, #custom-phone, #backlight, #pulseaudio, #battery, #custom-power {
@@ -117,12 +118,6 @@ window#waybar {
     color: #F38BA8;
     border-color: rgba(243, 139, 168, 0.5);
     box-shadow: 0 0 8px rgba(243, 139, 168, 0.4);
-}
-
-/* One consistent accent (Mauve) for "you're pointing at something
-   interactive" everywhere, instead of a different color per module */
-#clock:hover, #custom-docker:hover, #custom-capslock:hover, #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover, #custom-wallpaper:hover, #network:hover, #bluetooth:hover, #custom-phone:hover, #custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
-    border-color: rgba(203, 166, 247, 0.4);
 }
 
 /* --- Three parts, one gap ---
@@ -309,7 +304,7 @@ window#waybar {
 }
 
 #custom-docker.idle {
-    border-color: transparent;
+    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
 }
 
 /* Bluetooth: "on" is the powered-on-but-nothing-connected state -- was
@@ -328,7 +323,7 @@ window#waybar {
 
 #network.disabled {
     color: #6C7086; /* Dim gray — matches every other "off" state (bluetooth.disabled, caffeine.inactive) */
-    border-color: transparent;
+    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
 }
 
 #network.wifi {
@@ -513,7 +508,7 @@ window#waybar {
 /* BLUETOOTH STATES */
 #bluetooth.disabled, #bluetooth.off {
     color: #6C7086;
-    border-color: transparent;
+    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
 }
 
 #bluetooth.connected {
@@ -530,7 +525,7 @@ window#waybar {
 }
 
 #custom-phone.disconnected {
-    border-color: transparent;
+    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
 }
 
 /* A phone is asking to pair: Yellow, like a pending decision */
@@ -620,3 +615,21 @@ tooltip label {
 #custom-theme { padding-right: 13px; }
 #clock.time, #clock-time { padding-left: 11px; }
 #battery { padding-left: 11px; }
+
+/* --- Hover: every capsule's border lights up (2026-10-16) ---
+   Last in the file on purpose: state rules like #network.wifi or
+   #battery.warning have the same specificity as #network:hover, so a
+   hover rule placed before them never showed on those capsules. One
+   accent (Mauve) for "you're pointing at something", power keeps red. */
+#workspaces:hover, #clock:hover, #custom-docker:hover, #custom-capslock:hover,
+#custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover,
+#custom-wallpaper:hover, #network:hover, #bluetooth:hover, #custom-phone:hover,
+#custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
+    border-color: #CBA6F7;
+    box-shadow: 0 0 6px rgba(203, 166, 247, 0.35);
+}
+
+#custom-power:hover {
+    border-color: #F38BA8;
+    box-shadow: 0 0 8px rgba(243, 139, 168, 0.4);
+}

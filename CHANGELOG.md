@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-16 (waybar: a visible thin border on every capsule, lit on hover)
+
+- Every capsule has a 1px Mauve border at 60% (was 18%, nearly invisible
+  on a light or blue wallpaper). "Off" states (docker idle, bluetooth
+  off, phone disconnected, network disabled) used to drop the border to
+  transparent; they keep a dim gray one now, so each capsule is always
+  outlined.
+- Hovering any capsule, the workspaces group included, turns its border
+  solid Mauve with a soft glow (power stays red). The hover rule moved to
+  the end of style.css: it sat before the state rules (#network.wifi,
+  #battery.warning...), which have the same specificity, so hovering a
+  capsule in one of those states never changed anything.
+- Checked from zoomed screenshots at rest and while hovering brightness
+  and the ethernet capsule.
+
 ## v1.19.0-nightly -- 2026-10-16
 
 ## 2026-10-16 (tmux: vim-style pane keys, no underline on the active window)
