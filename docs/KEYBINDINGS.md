@@ -118,6 +118,7 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Alt</kbd>+<kbd>k</kbd> — Kill every other session (confirm menu)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>s</kbd> / <kbd>Ctrl</kbd>+<kbd>r</kbd> — Save / restore sessions (tmux-resurrect, mako notification only)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>g</kbd> — lazygit popup in the current directory
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>G</kbd> — Pull requests popup for the current repo: read, review, merge and close PRs without the browser. Vim-style: <kbd>j</kbd>/<kbd>k</kbd> move, <kbd>1</kbd>–<kbd>4</kbd> overview/diff/checks/comments, <kbd>Enter</kbd> full screen (failed check logs in checks), <kbd>/</kbd> search, <kbd>f</kbd> filter, <kbd>m</kbd> merge, <kbd>a</kbd> approve, <kbd>r</kbd> request changes, <kbd>c</kbd> comment, <kbd>x</kbd> close/reopen, <kbd>o</kbd> checkout, <kbd>d</kbd> draft/ready, <kbd>q</kbd> or <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>G</kbd> quit (full list: <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>?</kbd>, "PR popup")
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>t</kbd> — Scratch shell popup (<kbd>Ctrl</kbd>+<kbd>d</kbd> closes)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>T</kbd> — btop popup
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Tab</kbd> — extrakto: fuzzy-pick paths/URLs/words from the pane

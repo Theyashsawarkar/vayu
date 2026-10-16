@@ -85,10 +85,10 @@ DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults
 SEARCH_HINT = "action + object, e.g. kill window, open lazygit, raise volume"
 TMUX_SEARCH_HINT = "action + object, e.g. kill window, split pane, rename session"
 VERBS = set("""
-add alternate begin cancel clear close confirm continue copy create cut cycle delete
+add alternate approve begin cancel clear close confirm continue copy create cut cycle delete
 describe detach edit enter evaluate exit focus force format go grow hover install invert
-jump kill leave lock lower move normal open paste pick play quit raise rate record
-reload remove rename reopen rerun rescan reset resize restore rotate run save scroll
+jump kill leave lock lower merge move normal open paste pick play quit raise rate record
+reload remove rename reopen request rerun rescan reset resize restore rotate run save scroll
 search seek select send set show shrink shuffle split start step stop swap switch
 take toggle trash update
 """.split())

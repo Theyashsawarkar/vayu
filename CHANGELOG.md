@@ -5,6 +5,40 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-16 (tmux: a pull request popup, prefix G)
+
+- New `gh-pr.sh`, opened with prefix G (next to lazygit's prefix g), for
+  the repo in the current pane. Everything a PR review needs, without
+  the browser: a list with CI (✓ ✗ ●) and review state (✔ approved, ✎
+  changes requested, ○ waiting) per PR, and four views: overview (state
+  badge, merge readiness, checks, reviewers, per-file change bars,
+  description), diff, checks (Enter shows the failed jobs' logs) and
+  comments (conversation plus comments on the code).
+- Actions: merge (squash / merge commit / rebase / auto-merge, deletes
+  the branch on GitHub only, never touches the local checkout), approve,
+  request changes and comment (in $EDITOR), close/reopen, checkout,
+  draft/ready, copy link, browser. Filters: open, review requested,
+  mine, closed, merged, all.
+- Vim-style: opens in normal mode (letters are commands); / searches,
+  Enter or Esc goes back. Every key is in the popup's footer and in the
+  keybinding search ("PR popup").
+- Opens instantly: the last list is cached per repo and refreshed in the
+  background ("refreshing…" in the label); details for the first 15 PRs
+  are fetched ahead, 4 at a time. GitHub calls take 1.5-4 s here.
+- The account follows the folder: `git config github.user` (set in the
+  personal/work git configs) picks the gh account's token, so vayu's PRs
+  use theyashsawarkar and work repos nimapdevyash, with no `gh auth
+  switch`.
+- prefix G inside the PR popup closes it. tmux doesn't get keys while a
+  popup is open, so the popup catches it itself: Ctrl+a marks the time
+  and a G within 2 s quits (a plain G still jumps to the last PR).
+- `less` added to pacman.txt: the full-screen views page through it
+  (it wasn't installed; PAGER was `more`).
+- Tested on cli/cli (read-only): list, all four views, search mode,
+  filters, full screen, failed-job logs, and the merge/close prompts up to
+  cancel. Actions that write to GitHub (merge, approve, comment, close)
+  are not yet tested against a real PR.
+
 ## 2026-10-16 (waybar: a visible thin border on every capsule, lit on hover)
 
 - Every capsule has a 1px Mauve border at 60% (was 18%, nearly invisible

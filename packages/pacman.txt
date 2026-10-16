@@ -42,6 +42,7 @@ jq
 kdeconnect
 kitty
 lazygit
+less
 libadwaita
 libnotify
 libpulse
