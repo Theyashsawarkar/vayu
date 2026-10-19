@@ -25,4 +25,6 @@ fi
 # stays consistent with the rest of the theme). running/idle is still
 # signaled, just via the pill's border-color now instead of the text.
 text="<span color='#89B4FA'>$ICON</span>  <span color='#CDD6F4'>$count</span>"
+# Hidden while nothing runs: an "only while on" indicator on the bar.
+[ "$count" -gt 0 ] || text=""
 printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"

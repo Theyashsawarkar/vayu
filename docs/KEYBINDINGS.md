@@ -27,6 +27,7 @@ hand-written overview of the main ones.
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd> — Docker picker (running containers, restart, stop)
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notification history
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>p</kbd> — Power menu (lock / logout / suspend / reboot / shutdown)
+- <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([Vyom](https://github.com/Theyashsawarkar/vyom); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, caffeine, dark theme, new wallpaper, power profile, volume and brightness sliders, lock and power. Arrows move, <kbd>Enter</kbd> toggles, <kbd>Shift</kbd>+<kbd>Enter</kbd> opens a tile's details (the Wi‑Fi list…), <kbd>Esc</kbd> or <kbd>Super</kbd>+<kbd>q</kbd> closes
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — rmpc (music player), toggle open/hidden
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — Search + download music from YouTube
 - <kbd>Super</kbd>+<kbd>n</kbd> — Cycle notification mode (normal → silent → dnd)
@@ -119,6 +120,7 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Ctrl</kbd>+<kbd>s</kbd> / <kbd>Ctrl</kbd>+<kbd>r</kbd> — Save / restore sessions (tmux-resurrect, mako notification only)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>g</kbd> — lazygit popup in the current directory
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>G</kbd> — Pull requests popup ([sangam](https://github.com/Theyashsawarkar/sangam), its own repo; also the `sangam` command in any terminal), from any folder: sections like gh-dash (review requested, my PRs, pinned repos from `~/.config/gh-pr/sections`, plus the repo you're in), each searched as its own GitHub account; read, review, merge and close PRs without the browser. Vim-style: <kbd>j</kbd>/<kbd>k</kbd> move, <kbd>h</kbd>/<kbd>l</kbd> section, <kbd>f</kbd> open/merged/closed/all (<kbd>F</kbd> open ↔ all), <kbd>u</kbd> switch account, <kbd>s</kbd> search GitHub (author:x, label:y…), <kbd>S</kbd> add / edit / delete / move sections (or pin the repo you're in), <kbd>E</kbd> the sections file, <kbd>1</kbd>–<kbd>4</kbd> overview/diff/checks/comments, <kbd>Enter</kbd> full screen (failed check logs in checks), <kbd>/</kbd> search, <kbd>m</kbd> merge, <kbd>a</kbd> approve, <kbd>r</kbd> request changes, <kbd>c</kbd> comment, <kbd>x</kbd> close/reopen, <kbd>o</kbd> checkout, <kbd>d</kbd> draft/ready, <kbd>q</kbd> or <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>G</kbd> closes it; <kbd>?</kbd> inside it opens a key popup
+- Click the **"N to review"** capsule on the tmux bar — the same pull requests popup (sangam); a click on a window capsule still selects that window
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>t</kbd> — Scratch shell popup (<kbd>Ctrl</kbd>+<kbd>d</kbd> closes)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>T</kbd> — btop popup
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Tab</kbd> — extrakto: fuzzy-pick paths/URLs/words from the pane

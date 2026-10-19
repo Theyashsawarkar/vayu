@@ -642,3 +642,62 @@ tooltip label {
     border-color: #F38BA8;
     box-shadow: 0 0 8px rgba(243, 139, 168, 0.4);
 }
+
+/* ===================================================================
+   GROUPS (2026-10-19 rearrangement): group/clock, group/connectivity
+   and group/system in config each draw as ONE capsule; the modules
+   inside lose their own pill and become segments with a thin divider.
+   Same Deep Midnight fill and mauve hairline as every other capsule.
+   waybar names a group widget after the group ("group/system" is
+   #system), so the clock group is "clockbox": "clock" would collide
+   with the clock modules themselves.
+   =================================================================== */
+#clockbox,
+#connectivity,
+#system,
+#mpd,
+#custom-quick {
+    background-color: rgba(17, 17, 27, 0.92);
+    color: #CDD6F4;
+    border-radius: 16px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    border: 1px solid rgba(203, 166, 247, 0.6);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+#clockbox, #connectivity, #system { padding: 0 4px; }
+#mpd { padding: 0 14px; }
+#custom-quick { padding: 0 14px; color: #CBA6F7; }
+#clockbox:hover, #connectivity:hover, #system:hover,
+#mpd:hover, #custom-quick:hover {
+    background-color: rgba(30, 30, 46, 0.95);
+    border-color: rgba(203, 166, 247, 0.9);
+}
+
+/* Segments inside a group: no pill of their own. */
+#clockbox #custom-notifications, #clockbox #clock,
+#connectivity #network, #connectivity #bluetooth,
+#system #pulseaudio, #system #backlight, #system #battery {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin: 0;
+    padding: 0 9px;
+    border-radius: 0;
+}
+#clockbox #custom-notifications:hover, #clockbox #clock:hover,
+#connectivity #network:hover, #connectivity #bluetooth:hover,
+#system #pulseaudio:hover, #system #backlight:hover, #system #battery:hover {
+    background: transparent;
+    border: none;
+}
+/* Dividers between segments (a hidden segment takes its divider with it). */
+#clockbox #clock.time, #clockbox #clock:not(.time),
+#connectivity #bluetooth, #connectivity #network.speed,
+#system #backlight, #system #battery {
+    border-left: 1px solid rgba(205, 214, 244, 0.14);
+}
+#clockbox #clock.time { font-weight: bold; }
+#clockbox #clock:not(.time) { color: #A6ADC8; }
+#connectivity #network.speed { color: #A6ADC8; font-size: 11px; }
+#mpd.paused { color: #A6ADC8; }

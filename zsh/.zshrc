@@ -171,3 +171,23 @@ tmux() {
     command tmux "$@"
   fi
 }
+
+# tmux status bar: this pane's git branch, set on every prompt (tmux.conf
+# shows #{@git} for the active pane; the status line runs no #() jobs).
+# "!" = uncommitted changes to tracked files, "✓" = clean. Unset outside a
+# repo, which hides the capsule.
+if [ -n "$TMUX_PANE" ]; then
+  _tmux_git_status() {
+    local branch
+    branch=$(git symbolic-ref --short -q HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null)
+    if [ -z "$branch" ]; then
+      command tmux set -p -t "$TMUX_PANE" -u @git 2>/dev/null
+    elif git diff --no-ext-diff --quiet HEAD 2>/dev/null; then
+      command tmux set -p -t "$TMUX_PANE" @git "$branch ✓" 2>/dev/null
+    else
+      command tmux set -p -t "$TMUX_PANE" @git "$branch !" 2>/dev/null
+    fi
+  }
+  autoload -Uz add-zsh-hook
+  add-zsh-hook precmd _tmux_git_status
+fi

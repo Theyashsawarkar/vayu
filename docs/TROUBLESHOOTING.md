@@ -251,6 +251,19 @@ your saved network by itself.
 - **"needs dnsmasq":** `sudo pacman -S dnsmasq` (`install.sh` installs it
   on new machines).
 
+## Bar: the ⚙ (or Super+Q) doesn't open quick settings
+
+Quick settings is [Vyom](https://github.com/Theyashsawarkar/vyom), its own
+repo. A machine set up before it was added doesn't have it yet:
+
+```sh
+~/dotfiles/install.sh          # safe to re-run: clones it and links ~/.local/bin/vyom
+vyom daemon                    # or log out and back in (sway starts it)
+```
+
+`vyom quick` in a terminal shows any error. It needs `gtk4-layer-shell`
+(install.sh installs it) and `python-gobject`.
+
 ## Login: the desktop doesn't start after logging in
 
 The screen returns to the login prompt or goes black. Sway's own log goes to

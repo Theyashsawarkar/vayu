@@ -5,6 +5,53 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (a development tmux bar, a rearranged waybar, quick settings)
+
+- **tmux status bar, for development.** No date or time any more (waybar
+  shows them right above). Left: the session (now saying PREFIX / COPY
+  while those are on), then the active pane's folder and git branch, "!"
+  with uncommitted changes, "✓" when clean. Middle: each window with an
+  icon for what it runs (nvim, lazygit, node, python, docker, ssh, btop,
+  rmpc, else a terminal), ● on activity. Right: **"N to review"** (open
+  PRs waiting for your review across every gh account; click it for
+  sangam) and running containers, each only while there are any.
+- Still no #() jobs in the status line: the branch is pushed by a zsh
+  prompt hook (`tmux set -p @git`, one git call per prompt, only inside
+  tmux), the review count by bar-events.py every 5 minutes through the new
+  `gh-review-count` (finds a Homebrew gh, keeps the last value offline).
+  Existing shells show the branch after `exec zsh`.
+- Fixed while testing: commas inside a tmux #{?...} conditional must be
+  written `#,`, or `#[fg=..,bg=..]` splits the conditional (it leaked raw
+  "bg=#..." text and showed "0 to review").
+- **Waybar rearranged** (from the design review): left, workspaces with
+  an icon per app in them, and now playing (MPD; click pauses, right click
+  opens rmpc; hidden when stopped). Middle, one capsule: notifications,
+  time, date. Right, from temporary to permanent: indicators that only
+  show while on (Caps Lock, hotspot, containers, phone, caffeine), one
+  connectivity capsule (network, a connected Bluetooth device, speed), one
+  system capsule (volume, brightness, battery), the ⚙ quick settings, power.
+  Ethernet shows "Ethernet" instead of the IP (IP in the tooltip).
+- Deduplicated: Num Lock, theme and wallpaper capsules are gone (theme and
+  wallpaper are in quick settings); docker, phone and caffeine no longer
+  sit on the bar while idle; Bluetooth shows only a connected device.
+  An everyday bar is 8 capsules instead of 18.
+- Waybar names a group's widget after the group ("group/system" is
+  #system), so the clock group is "clockbox": "clock" collided with the
+  clock modules and gave every segment its own pill.
+- **Quick settings: Vyom v0.1** ([github.com/Theyashsawarkar/vyom](https://github.com/Theyashsawarkar/vyom),
+  its own repo per the plugin rule), the first piece of the wofi
+  replacement: a GTK 4 + layer-shell panel with Wi-Fi, Bluetooth, hotspot,
+  do not disturb, caffeine, dark theme, new wallpaper and power profile
+  tiles, volume and brightness sliders, battery and uptime, lock and power
+  buttons. Opens from the ⚙ capsule or Super+Q in ~0.1 s (one resident
+  process, `exec vyom daemon` in sway). Vayu's tiles drive Vayu's own
+  scripts (vyom/.config/vyom/config.toml, a new stow package), so state
+  stays shared with waybar and mako. SwayFX blurs it like wofi
+  (`layer_effects "vyom"`).
+- `install.sh` clones Vyom to ~/.local/share/vyom and links
+  ~/.local/bin/vyom; keybind-search.py reads Vyom's annotated keys
+  (source "Vyom").
+
 ## 2026-10-19 (Wi-Fi hotspot: share this laptop's internet)
 
 - There was no way to start a hotspot on this desktop at all. New

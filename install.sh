@@ -602,6 +602,16 @@ setup_tmux() {
   fi
 }
 
+setup_vyom() {
+  # Vyom (github.com/Theyashsawarkar/vyom): quick settings now, the wofi
+  # replacement as it grows. Its own repo (CLAUDE.md "Plugins"), cloned
+  # and linked onto PATH; the stowed vyom/.config/vyom/config.toml points
+  # its tiles at Vayu's scripts. Update: git -C ~/.local/share/vyom pull.
+  clone_if_missing https://github.com/Theyashsawarkar/vyom "$HOME/.local/share/vyom" || return 1
+  mkdir -p "$HOME/.local/bin"
+  ln -sfn "$HOME/.local/share/vyom/bin/vyom" "$HOME/.local/bin/vyom"
+}
+
 setup_nvim() {
   # lazy.nvim bootstraps itself and installs the plugins pinned in
   # lazy-lock.json; otherwise this happens on the first `nvim`.
@@ -782,6 +792,7 @@ run_step "Installing the boot splash (Plymouth, splash/)" apply_splash
 run_step "Installing the AI tools (vayu-elevate, ai/)" apply_ai
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
+run_step "Setting up Vyom (quick settings)" setup_vyom
 run_step "Installing Neovim plugins (lazy.nvim)" setup_nvim
 run_step "Enabling corepack (pnpm, yarn)" setup_node
 run_step "Installing Homebrew + formulae (${BREW_FORMULAE[*]})" setup_brew

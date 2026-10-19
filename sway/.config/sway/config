@@ -127,6 +127,13 @@ bindsym $mod+Shift+n exec ~/.local/bin/toggle-popup.sh notifhistory wofi ~/.loca
 #: Open power menu (lock, logout, suspend, reboot, shutdown)
 bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar ~/.local/bin/nwg-bar-launch -i 40
 
+# Quick settings (Vyom, github.com/Theyashsawarkar/vyom): Wi-Fi, Bluetooth,
+# hotspot, DND, caffeine, theme, wallpaper, power profile, volume,
+# brightness. Same as the waybar gear; pressing it again closes it. Vyom
+# toggles itself (one resident process), so no toggle-popup.sh.
+#: Open quick settings (Wi-Fi, Bluetooth, hotspot, DND, volume...)
+bindsym $mod+q exec ~/.local/bin/vyom quick
+
 # Caffeine mode keyboard path -- was click-only via waybar's
 # custom/caffeine module (on-click in waybar/config) until now. Direct
 # exec straight to caffeine-toggle.sh, not toggle-popup.sh -- there's no
@@ -342,6 +349,16 @@ layer_effects "wofi" {
     blur enable
     blur_xray enable
     corner_radius 16
+    shadows enable
+}
+
+# Vyom (the wofi replacement: quick settings now, every picker later) is a
+# layer surface named "vyom": same glass recipe as wofi. Its card fills the
+# surface exactly, so this radius is its border-radius (vyom/style.css).
+layer_effects "vyom" {
+    blur enable
+    blur_xray enable
+    corner_radius 20
     shadows enable
 }
 
@@ -674,6 +691,8 @@ exec ~/.local/bin/sway-session.sh
 
 exec waybar 
 exec mako
+# Vyom stays resident so its panels open at once (quick settings: $mod+q).
+exec ~/.local/bin/vyom daemon
 # Refreshes waybar's capsules (and tmux's docker count) when what they
 # show changes, so they don't poll (scripts/.local/bin/bar-events.py).
 exec systemctl --user restart bar-events.service

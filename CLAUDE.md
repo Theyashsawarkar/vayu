@@ -70,6 +70,10 @@ they want without the rest of vayu.
 - **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
   (pull requests: a command, and the prefix G popup; `install.sh` links
   TPM's copy to `~/.local/bin/sangam`).
+  [`vyom`](https://github.com/Theyashsawarkar/vyom) (quick settings now,
+  the wofi replacement as it grows; `install.sh` clones it to
+  `~/.local/share/vyom` and links `~/.local/bin/vyom`; Vayu's config is
+  the `vyom/` stow package).
 
 ## Keybindings: one registry, always in sync
 

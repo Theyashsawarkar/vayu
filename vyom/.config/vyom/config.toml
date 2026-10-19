@@ -1,0 +1,49 @@
+# Vyom (github.com/Theyashsawarkar/vyom) as Vayu uses it: the quick
+# settings tiles drive Vayu's own scripts, so state stays shared with
+# waybar, mako and sway. Every key is optional; vyom's examples/config.toml
+# lists them all.
+
+[quick]
+tiles = ["wifi", "bluetooth", "hotspot", "dnd", "caffeine", "theme", "wallpaper", "power-profile"]
+lock = "swaylock -C ~/.config/sway/lockconfig"
+power = "~/.local/bin/nwg-bar-launch -i 40"
+
+# Shift+Enter / right click opens each one's picker.
+[quick.tile.wifi]
+open = "~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wifi-picker.py"
+
+[quick.tile.bluetooth]
+open = "~/.local/bin/toggle-popup.sh bluetooth wofi ~/.local/bin/bluetooth-picker.py"
+
+[quick.tile.hotspot]
+command = "~/.local/bin/vayu-hotspot"
+open = "~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wifi-picker.py"
+
+# Vayu's three notification modes (normal / silent / dnd) live in
+# notification-mode.sh; the tile switches between normal and dnd.
+[quick.tile.dnd]
+status = "cat ~/.local/state/notification-mode/current"
+on_when = "^dnd$"
+on = "~/.local/bin/notification-mode.sh dnd"
+off = "~/.local/bin/notification-mode.sh normal"
+subtitle_on = "notifications held"
+subtitle_off = "off"
+
+[quick.tile.caffeine]
+status = "~/.local/bin/caffeine-status.sh"
+on_when = '"class":"active"'
+toggle = "~/.local/bin/caffeine-toggle.sh"
+subtitle_on = "screen stays on"
+subtitle_off = "off"
+
+# theme-toggle.sh restyles waybar, mako and the rest too, not just GTK.
+[quick.tile.theme]
+status = "~/.local/bin/theme-status.sh"
+on_when = '"class":"dark"'
+toggle = "~/.local/bin/theme-toggle.sh"
+subtitle_on = "on"
+subtitle_off = "light"
+
+[quick.tile.wallpaper]
+run = "~/.local/bin/fetch_wallpaper.sh"
+subtitle = "fetch a new one"

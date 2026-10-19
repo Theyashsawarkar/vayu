@@ -4,27 +4,54 @@
 	"height": 41,
 	"spacing": 8,
 
-	"modules-center": ["custom/notifications", "clock#time", "clock"],
-	"modules-left": ["sway/workspaces", "bluetooth", "network", "custom/hotspot", "network#speed"],
-
+	// Left: where you are (workspaces with their apps, what's playing).
+	// Middle: when (one capsule: notifications, time, date).
+	// Right: the machine, from temporary to permanent: indicators that only
+	// show while something is on (caps lock, hotspot, containers, phone,
+	// caffeine), then connectivity, then system, then quick settings and
+	// power. Rare toggles (theme, wallpaper, DND, power profile...) live in
+	// quick settings (vyom quick), not on the bar.
+	"modules-left": ["sway/workspaces", "mpd"],
+	"modules-center": ["group/clockbox"],
 	"modules-right": [
 		"custom/capslock",
-		"custom/numlock",
-		"custom/theme",
-		"custom/wallpaper",
+		"custom/hotspot",
 		"custom/docker",
 		"custom/phone",
 		"custom/caffeine",
-		"backlight",
-		"pulseaudio",
-		"battery",
+		"group/connectivity",
+		"group/system",
+		"custom/quick",
 		"custom/power"
 	],
+
+	// Groups draw as one capsule (style.css: #clockbox, #connectivity,
+	// #system: waybar names a group widget after it), modules inside
+	// are plain segments with a thin divider.
+	"group/clockbox": { "orientation": "horizontal", "modules": ["custom/notifications", "clock#time", "clock"] },
+	"group/connectivity": { "orientation": "horizontal", "modules": ["network", "bluetooth", "network#speed"] },
+	"group/system": { "orientation": "horizontal", "modules": ["pulseaudio", "backlight", "battery"] },
 
 	"sway/workspaces": {
 		"disable-scroll": true,
 		"all-outputs": true,
-		"format": "{name}",
+		// The apps on each workspace as icons next to its number.
+		"format": "{name}  {windows}",
+		"format-window-separator": " ",
+		"window-rewrite-default": "\uf2d0",
+		"window-rewrite": {
+			"class<kitty|foot|Alacritty|org.wezfurlong.wezterm>": "\uf489",
+			"class<firefox|librewolf|zen>": "󰈹",
+			"class<chromium|google-chrome|brave-browser>": "\uf268",
+			"class<code|code-oss|Code|dev.zed.Zed|zed>": "󰨞",
+			"class<org.gnome.Nautilus|thunar|nemo|pcmanfm>": "\uf07b",
+			"class<discord|vesktop|Slack|slack>": "󰭹",
+			"class<Spotify|spotify|mpv|rmpc>": "󰝚",
+			"class<jetbrains-studio|android-studio>": "󰀲",
+			"class<org.kde.kdeconnect.*>": "󰄜",
+			"class<libreoffice.*|soffice>": "󰈙",
+			"class<pavucontrol|org.pulseaudio.pavucontrol>": "󰕾"
+		},
 		"persistent-workspaces": {
 			"1": [],
 			"2": [],
@@ -58,14 +85,6 @@
 		"hide-empty-text": true
 	},
 
-	"custom/numlock": {
-		"exec": "$HOME/.local/bin/keylock-status.sh numlock",
-		"on-click": "$HOME/.local/bin/keylock-toggle.sh numlock",
-		"interval": "once",
-		"signal": 10,
-		"return-type": "json",
-		"hide-empty-text": true
-	},
 
 	"clock": {
 	// Date half. Time lives in a separate "clock#time" instance right next
@@ -73,7 +92,7 @@
 	// per module (confirmed: a second one throws "invalid arg-id in format
 	// string"), so two colors means two module instances, same pattern as
 	// network/network#speed.
-	"format": "  {:%a, %B %d}",
+	"format": "{:%a %d %b}",
 	"tooltip-format": "<tt><small>{calendar}</small></tt>"
 	},
 
@@ -92,19 +111,7 @@
 	"tooltip": false
 	},
 
-	"custom/theme": {
-		"exec": "$HOME/.local/bin/theme-status.sh",
-		"interval": "once",
-		"signal": 11,
-		"return-type": "json",
-		"on-click": "$HOME/.local/bin/theme-toggle.sh"
-	},
 
-	"custom/wallpaper": {
-		"format": "",
-		"tooltip-format": "Click to fetch a new wallpaper",
-		"on-click": "$HOME/.local/bin/fetch_wallpaper.sh"
-	},
 
 	"custom/docker": {
 		"exec": "$HOME/.local/bin/docker-status.sh",
@@ -116,7 +123,7 @@
 
 	"network": {
 		"format-wifi": "{icon}  {essid}",
-		"format-ethernet": "  {ipaddr}",
+		"format-ethernet": "󰈀  Ethernet",
 		"format-disconnected": "  Offline",
 		"format-disabled": "  Disabled",
 		"format-linked": "  No IP",
@@ -142,13 +149,15 @@
 
 	"network#speed": {
 		"interval": 2,
-		"format": "<span color='#A6E3A1'> {bandwidthDownBytes}</span>  <span color='#FAB387'> {bandwidthUpBytes}</span>",
+		"format": "<span color='#A6E3A1'>\uf063</span>{bandwidthDownBytes}  <span color='#FAB387'>\uf062</span>{bandwidthUpBytes}",
 		"tooltip": false
 	},
 
 	"bluetooth": {
-		"format-off": "",
-		"format-on": "",
+		// Only a connected device shows here; on/off is in quick settings.
+		"format-off": "",
+		"format-on": "",
+		"format-disabled": "",
 		"format-connected": "  {device_alias}",
 		"format-connected-battery": "  {device_alias}  {device_battery_percentage}%",
 		"tooltip-format": "Bluetooth Status: {status}",
@@ -226,6 +235,27 @@
 		"on-scroll-down": "$HOME/.config/sway/scripts/volume_osd.sh -5%",
 		"smooth-scrolling-threshold": 1,
 		"reverse-scrolling": true
+	},
+
+	// Now playing (MPD, played through rmpc). Hidden when stopped.
+	"mpd": {
+		"format": "<span color='#F5C2E7'>󰝚</span>  {title}<span color='#9399B2'> · {artist}</span>",
+		"format-paused": "<span color='#F5C2E7'>󰏤</span>  {title}<span color='#9399B2'> · paused</span>",
+		"format-stopped": "",
+		"format-disconnected": "",
+		"max-length": 48,
+		"interval": 5,
+		"tooltip-format": "{artist}\n{album}\n{elapsedTime:%M:%S} / {totalTime:%M:%S}\n\nClick: play/pause · Right click: rmpc",
+		"on-click": "rmpc togglepause",
+		"on-click-right": "$HOME/.local/bin/rmpc-toggle.sh"
+	},
+
+	// Quick settings (Vyom): Wi-Fi, Bluetooth, hotspot, DND, caffeine,
+	// theme, wallpaper, power profile, volume, brightness, lock, power.
+	"custom/quick": {
+		"format": "󰒓",
+		"tooltip-format": "Quick settings",
+		"on-click": "$HOME/.local/bin/vyom quick"
 	},
 
 	"custom/power": {

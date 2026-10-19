@@ -61,6 +61,8 @@ ANNOTATED_SCRIPT_DIRS = [
     # keys in its bin/sangam. Third-party plugins don't use the annotation.
     *sorted((HOME / ".tmux/plugins").glob("*/scripts")),
     *sorted((HOME / ".tmux/plugins").glob("*/bin")),
+    # Vyom's panels (quick settings...): its keys are annotated in its source.
+    HOME / ".local/share/vyom/vyom",
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # vayu-elevate's approval window (ai/elevate/dialog.py, root-owned).
@@ -75,6 +77,7 @@ SOURCE_COLORS = {
     "Zed": "#89B4FA",    # Blue
     "rmpc": "#CBA6F7",   # Mauve
     "Kernel": "#F38BA8", # Red
+    "Vyom": "#B4BEFE",   # Lavender
 }
 SCOPE_COLOR = "#FAB387"   # Peach
 DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults

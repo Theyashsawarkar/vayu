@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# gh-review-count: how many open pull requests are waiting for your review,
+# across every github.com account gh is signed in to. Prints one number
+# (nothing when gh is missing or signed out). bar-events.py runs it every
+# 5 minutes and sets tmux's @gh_reviews (the "to review" capsule).
+#   gh-review-count [--set-tmux]     also set @gh_reviews on the tmux server
+#
+# Services and tmux run without the login shell's PATH: find a Homebrew gh.
+if ! command -v gh >/dev/null; then
+  for d in /home/linuxbrew/.linuxbrew/bin "$HOME/.linuxbrew/bin" /opt/homebrew/bin; do
+    [ -x "$d/gh" ] && { PATH=$d:$PATH; break; }
+  done
+fi
+command -v gh >/dev/null || exit 0
+
+accounts=$(gh auth status 2>&1 | sed -n 's/.*Logged in to github.com account \([^ ]*\).*/\1/p')
+[ -n "$accounts" ] || exit 0
+total=0 ok=0
+for a in $accounts; do
+  n=$(GH_TOKEN=$(gh auth token --user "$a" 2>/dev/null) gh api -X GET search/issues \
+        -f q='is:pr is:open archived:false review-requested:@me' -f per_page=1 --jq .total_count 2>/dev/null) || continue
+  [[ $n =~ ^[0-9]+$ ]] || continue
+  total=$((total + n)) ok=1
+done
+[ "$ok" = 1 ] || exit 0   # every lookup failed (offline): keep the last value
+echo "$total"
+[ "${1:-}" = --set-tmux ] && tmux set -g @gh_reviews "$total" 2>/dev/null
+exit 0

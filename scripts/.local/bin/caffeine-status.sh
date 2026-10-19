@@ -6,7 +6,8 @@
 ICON=$'\uf0f4'
 
 if systemctl --user is-active --quiet swayidle.service; then
-    printf '{"text":"%s","class":"inactive","tooltip":"Caffeine off -- click to keep the screen awake"}\n' "$ICON"
+    # Hidden when off (quick settings has the toggle); class stays for vyom.
+    printf '{"text":"","class":"inactive","tooltip":"Caffeine off"}\n'
 else
     printf '{"text":"%s","class":"active","tooltip":"Caffeine on -- click to let the screen sleep again"}\n' "$ICON"
 fi

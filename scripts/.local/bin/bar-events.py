@@ -17,6 +17,9 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               `iw event` new/del station (a device joined
                               or left the hotspot)
 
+tmux's "to review" capsule (@gh_reviews) is set from gh-review-count every
+5 minutes (GitHub has no push for "review requested" to a desktop).
+
 Caps Lock / Num Lock (9, 10) are signalled by sway's --release binds and
 keylock-toggle.sh. Everything else on the bar is waybar-internal.
 
@@ -164,6 +167,17 @@ def read_docker_events(stream, proc):
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
 
 
+def gh_reviews():
+    """Runs gh-review-count in the background; it sets tmux's @gh_reviews.
+    Returns True so GLib keeps the 5-minute timer going."""
+    try:
+        Gio.Subprocess.new([os.path.expanduser("~/.local/bin/gh-review-count"), "--set-tmux"],
+                           Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("gh-review-count:", e.message)
+    return True
+
+
 def watch_stations():
     """`iw event` prints "<dev>: new station <mac>" / "del station" as
     devices join or leave any access point on this machine (the hotspot)."""
@@ -225,6 +239,9 @@ def main():
                             lambda c, s, p, i, m, params: "ActiveConnections" in params.unpack()[1]
                             and refresh("hotspot"))
     watch_stations()
+
+    gh_reviews()
+    GLib.timeout_add_seconds(300, gh_reviews)
 
     # Whatever changed while this wasn't running.
     for name in WAYBAR_SIGNAL:

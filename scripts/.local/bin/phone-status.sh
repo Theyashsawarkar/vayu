@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Phone (KDE Connect) segment for waybar, JSON like docker-status.sh.
 #   connected:    phone glyph + battery %, with a bolt while charging
-#   disconnected: dim phone glyph (paired phone not reachable, or none paired)
+#   disconnected: hidden (paired phone not reachable, or none paired)
 # Click opens phone-picker.py. Refreshed by bar-events.py on KDE Connect
 # signals (waybar signal 13), never on a timer. Reads the daemon's
 # D-Bus state only -- never starts anything (the systemd unit
@@ -72,8 +72,10 @@ if [ -n "$name" ]; then
   tooltip="$name connected${charge:+, battery ${charge}%}$([ "$charging" = true ] && echo ', charging')\nClick: phone picker"
   class=connected
 else
-  text="<span color='#585B70'>$ICON</span>"
-  tooltip="${paired_name:+$paired_name: }no phone connected (open KDE Connect on it, same network)\nClick: phone picker"
+  # Not connected: nothing on the bar (it's an "only while on" indicator;
+  # Super+Shift+o still opens the phone picker).
+  text=""
+  tooltip="${paired_name:+$paired_name: }no phone connected"
   class=disconnected
 fi
 printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"
