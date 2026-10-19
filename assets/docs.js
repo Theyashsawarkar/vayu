@@ -60,6 +60,27 @@
       { rootMargin: "0px 0px -80% 0px" }
     );
     headings.forEach((h) => observer.observe(h));
+
+    // On a phone (docs.css, <= 900px) the sidebar sits above the article,
+    // so it folds into an "On this page" button instead of pushing the
+    // page down by 50+ entries; picking a section folds it again. On a
+    // wide screen the button is just the label and stays open.
+    const sidebar = document.getElementById("docs-toc");
+    const toggle = document.getElementById("toc-toggle");
+    if (toggle) {
+      const phone = window.matchMedia("(max-width: 900px)");
+      const set = (open) => {
+        sidebar.classList.toggle("open", open);
+        toggle.setAttribute("aria-expanded", String(open));
+      };
+      sidebar.classList.add("collapsible");
+      set(!phone.matches);
+      phone.addEventListener("change", () => set(!phone.matches));
+      toggle.addEventListener("click", () => {
+        if (phone.matches) set(!sidebar.classList.contains("open"));
+      });
+      links.forEach((a) => a.addEventListener("click", () => phone.matches && set(false)));
+    }
   }
 
   // Table rows with exactly one link to a section on this page (the Tools

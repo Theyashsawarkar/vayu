@@ -11,7 +11,8 @@
 <div class="topnav-wrap">
 <nav class="topnav">
   <a class="brand" href="{{ '/' | relative_url }}" aria-label="Vayu home"><svg class="brand-logo" viewBox="-12 -8 318 126" width="76" height="30" aria-hidden="true" focusable="false"><defs><linearGradient id="vayu-nav-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0"><stop offset="0" stop-color="#cba6f7"/><stop offset="1" stop-color="#f5e0dc"/></linearGradient></defs><g fill="none" stroke="url(#vayu-nav-g)" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="7"><path d="M0 0 L22 52 L44 0"/><path d="M84 52 L106 0 L128 52"/><path d="M168 0 L190 27 L212 0 M190 27 V52"/><path d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/></g><path stroke-width="5.5" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/></g></svg><span class="sr-only">Vayu</span></a>
-  <div class="navlinks">
+  <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navlinks"><span class="nav-toggle-bars" aria-hidden="true"></span></button>
+  <div class="navlinks" id="navlinks">
     <a href="{{ '/' | relative_url }}#features">Features</a>
     <a href="{{ '/' | relative_url }}#install">Install</a>
     <a href="{{ '/docs/ARCHITECTURE.html' | relative_url }}">Architecture</a>
@@ -26,7 +27,7 @@
 
 <div class="docs-layout">
   <aside class="docs-sidebar" id="docs-toc">
-    <p class="toc-label">On this page</p>
+    <button type="button" class="toc-label" id="toc-toggle" aria-expanded="true" aria-controls="toc-list">On this page</button>
     <nav id="toc-list"><!-- built by docs.js from the real h2s below --></nav>
   </aside>
   <main class="docs-content">
@@ -54,6 +55,7 @@
   <p>Vayu · MIT License · <a href="https://github.com/Theyashsawarkar/vayu/tags">Latest release</a></p>
 </footer>
 
+<script src="{{ '/assets/nav.js' | relative_url }}"></script>
 <script src="{{ '/assets/docs.js' | relative_url }}"></script>
 <script src="{{ '/assets/copy.js' | relative_url }}"></script>
 {% if page.title == "Changelog" %}
