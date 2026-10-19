@@ -39,15 +39,24 @@ they want without the rest of vayu.
   sane defaults, no hardcoded vayu paths or `/home/yash`, a README with
   install steps for that tool alone and every option. Vayu's look and
   behaviour go through the plugin's options, set in vayu's config (e.g.
-  tmux-gh-pr's `@gh-pr-launcher` points at vayu's `popup.sh`).
+  sangam's `@sangam-launcher` points at vayu's `popup.sh`).
+- **A tool first, when it can be one:** if what we build is useful
+  outside its host (sangam is a PR tool, not only a tmux popup), make it a
+  command anyone can install and run on its own (an installer, `make
+  install`, a package, `--help`, a `doctor` check), with the host
+  integration as one way to use it. The plugin manager's copy can then be
+  linked onto PATH by `install.sh`.
 - **Keybindings still show up in the search:** keys a plugin binds use
   `bind -N "<Verb> <object> (details)"` (or a `TMUX_PLUGIN_NOTES` entry),
   and keys inside its scripts keep their `# keybind:` lines: tmux plugins'
-  `scripts/` dirs (`~/.tmux/plugins/*/scripts`) are scanned. Run
+  `scripts/` and `bin/` dirs (`~/.tmux/plugins/*/{scripts,bin}`) are
+  scanned. Run
   `keybind-search.py --check` after installing it, as for any key change.
 - **Changes:** fix or extend a plugin in its repo, with its own CHANGELOG
   and tags; vayu's CHANGELOG notes only what changes for vayu (a plugin
   added or removed, options changed). To test a local plugin change inside
   vayu, temporarily symlink `~/.tmux/plugins/<name>` to `~/personal/<name>`
   and put the real clone back after pushing (`prefix U` updates).
-- **Existing:** `tmux-gh-pr` (prefix G, pull requests popup).
+- **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
+  (pull requests: a command, and the prefix G popup; `install.sh` links
+  TPM's copy to `~/.local/bin/sangam`).

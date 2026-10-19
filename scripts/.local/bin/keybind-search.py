@@ -57,9 +57,10 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".tmux/scripts",
     HOME / ".local/bin",
     HOME / ".config/sway/scripts",
-    # Vayu's own tmux plugins (own repos, cloned by TPM), e.g. tmux-gh-pr's
-    # PR popup keys. Third-party plugins don't use the annotation.
+    # Vayu's own tmux plugins (own repos, cloned by TPM), e.g. sangam's
+    # keys in its bin/sangam. Third-party plugins don't use the annotation.
     *sorted((HOME / ".tmux/plugins").glob("*/scripts")),
+    *sorted((HOME / ".tmux/plugins").glob("*/bin")),
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # vayu-elevate's approval window (ai/elevate/dialog.py, root-owned).

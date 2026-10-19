@@ -594,6 +594,12 @@ setup_tmux() {
   while read -r spec; do
     clone_if_missing "https://github.com/$spec" "$HOME/.tmux/plugins/${spec##*/}"
   done < <(sed -nE "s/^set -g @plugin '([^']+)'.*/\1/p" "$DOTFILES_DIR/tmux/.config/tmux/tmux.conf")
+  # sangam is a command too (like lazygit), not only tmux's prefix G popup:
+  # put TPM's copy on PATH, so `prefix U` updates both.
+  if [ -x "$HOME/.tmux/plugins/sangam/bin/sangam" ]; then
+    mkdir -p "$HOME/.local/bin"
+    ln -sfn "$HOME/.tmux/plugins/sangam/bin/sangam" "$HOME/.local/bin/sangam"
+  fi
 }
 
 setup_nvim() {

@@ -5,6 +5,31 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (the PR popup is now sangam, a command too)
+
+- tmux-gh-pr became [sangam](https://github.com/Theyashsawarkar/sangam)
+  v2.0.0: a pull request tool you run in any terminal, like lazygit
+  (`sangam`; `sangam doctor` checks its dependencies), and still the
+  prefix G popup here. It has its own logo, README, installer, Arch
+  PKGBUILD and CI. The GitHub repo was renamed (the old URL redirects).
+- tmux.conf pulls `Theyashsawarkar/sangam` and sets `@sangam-launcher`
+  (popup.sh) and `@sangam-title`; the old `@gh-pr-*` options are gone.
+  On an existing machine the next tmux load clones it
+  (plugins-missing.sh); remove the old `~/.tmux/plugins/tmux-gh-pr` by
+  hand. Your sections carry over from ~/.config/gh-pr to ~/.config/sangam.
+- `install.sh` links TPM's copy to `~/.local/bin/sangam`, so the command
+  and the popup are one install and `prefix U` updates both. On a machine
+  set up before this: `ln -sfn ~/.tmux/plugins/sangam/bin/sangam
+  ~/.local/bin/sangam`.
+- keybind-search.py also scans tmux plugins' `bin/` dirs (sangam's keys
+  live in its bin/sangam); `--check` passes, each key listed once.
+- CLAUDE.md / AGENTS.md "Plugins": a new rule, a tool first when it can
+  be one: something useful outside its host becomes a command anyone can
+  install, with the host integration as one way to use it.
+- Tested: prefix G with this tmux.conf on an isolated server opens sangam
+  through popup.sh, its key sheet shows "or Ctrl+a G", prefix G closes it,
+  and it leaves no state or tmux server behind.
+
 ## 2026-10-19 (site on phones; the PR popup is its own plugin)
 
 - The website works on phones. The nav's eight links used to wrap into a
