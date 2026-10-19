@@ -5,6 +5,25 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (waybar polish: icon-only network, workspace chips)
+
+- The connectivity capsule is just an icon and the speed: the wired-
+  network glyph (Material "lan", like Lucide's network icon) or the Wi-Fi
+  signal icon, at 150% so it reads at a glance; the network name and IP
+  moved to the tooltip. Disconnected / Wi-Fi off show their own glyph in
+  red.
+- No divider lines inside the grouped capsules any more, spacing only.
+- The power capsule is gone from the bar: quick settings (the gear,
+  Super+Q) has the power menu and lock in its header.
+- Workspaces are chips instead of underlined numbers: the focused one a
+  filled mauve chip with its number and the icons of the apps in it,
+  other occupied ones the number and icons in soft silver, empty ones a
+  dim number, urgent ones red.
+- The speed segment had a 177px min-width (against jitter as the numbers
+  change length) that GTK centred the text in, leaving a gap after the
+  icon. The values are now fixed-width in the format (monospace), so it
+  neither jitters nor gaps.
+
 ## 2026-10-19 (a development tmux bar, a rearranged waybar, quick settings)
 
 - **tmux status bar, for development.** No date or time any more (waybar

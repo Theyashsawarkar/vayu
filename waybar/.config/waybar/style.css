@@ -646,7 +646,8 @@ tooltip label {
 /* ===================================================================
    GROUPS (2026-10-19 rearrangement): group/clock, group/connectivity
    and group/system in config each draw as ONE capsule; the modules
-   inside lose their own pill and become segments with a thin divider.
+   inside lose their own pill and become segments (spacing only, no
+   dividers).
    Same Deep Midnight fill and mauve hairline as every other capsule.
    waybar names a group widget after the group ("group/system" is
    #system), so the clock group is "clockbox": "clock" would collide
@@ -691,13 +692,47 @@ tooltip label {
     background: transparent;
     border: none;
 }
-/* Dividers between segments (a hidden segment takes its divider with it). */
-#clockbox #clock.time, #clockbox #clock:not(.time),
-#connectivity #bluetooth, #connectivity #network.speed,
-#system #backlight, #system #battery {
-    border-left: 1px solid rgba(205, 214, 244, 0.14);
-}
 #clockbox #clock.time { font-weight: bold; }
 #clockbox #clock:not(.time) { color: #A6ADC8; }
-#connectivity #network.speed { color: #A6ADC8; font-size: 11px; }
+#connectivity #network { color: #89DCEB; padding-right: 2px; }
+/* Bluetooth shows only a connected device; otherwise it takes no space. */
+#connectivity #bluetooth { padding: 0; }
+#connectivity #bluetooth.connected { padding: 0 9px; }
+#connectivity #network.disconnected, #connectivity #network.disabled { color: #F38BA8; }
+#connectivity #network.speed { color: #A6ADC8; font-size: 11px; padding-left: 8px; padding-right: 6px; min-width: 0; }
+/* (the old 177px min-width against jitter is replaced by fixed-width
+   values in the config's format, so no centred gap) */
 #mpd.paused { color: #A6ADC8; }
+
+/* ===================================================================
+   WORKSPACES (2026-10-19): chips instead of underlined numbers.
+     focused   a filled mauve chip: number + the apps in it, dark ink
+     occupied  number + app icons in soft silver
+     empty     just a dim number
+     urgent    a red chip
+   Each app icon carries its own leading space (config: window-rewrite),
+   so an empty workspace is only its number and stays narrow.
+   =================================================================== */
+#workspaces { padding: 0 4px; }
+#workspaces button {
+    padding: 0 9px;
+    margin: 4px 1px;
+    min-width: 0;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #585B70;
+    font-weight: 600;
+    box-shadow: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+#workspaces button:not(.empty):not(.focused) { color: #BAC2DE; font-weight: 600; }
+#workspaces button:hover { background: rgba(203, 166, 247, 0.14); color: #CDD6F4; box-shadow: none; border: none; }
+#workspaces button.focused {
+    background: #CBA6F7;
+    color: #11111B;
+    font-weight: 800;
+    border: none;
+    box-shadow: none;
+}
+#workspaces button.urgent { background: #F38BA8; color: #11111B; }
