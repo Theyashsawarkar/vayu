@@ -13,6 +13,10 @@ full branch/release process.
   so switching tools never jumps. Quick settings (kendra) keeps its own
   size: it drops down from the bar's corner rather than popping up in the
   middle. Vyom 0.2.5.
+- The power menu and battery are cards, not search panels: they keep their
+  own, smaller size, as tall as their content. Panels are more see-through
+  (`opacity = 0.62` in the Vyom config, was 0.82) so the blurred desktop
+  shows through like glass. Vyom 0.2.6.
 - Footer hints and buttons spell keys out (Ctrl+Enter, Shift+Enter, Esc,
   Backspace) instead of symbols like ⌃↵ and ⌫. Vyom 0.2.4 and the tools'
   next releases.
