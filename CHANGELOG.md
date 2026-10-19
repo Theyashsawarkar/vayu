@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (every Vyom popup the same size; key names instead of symbols)
+
+- Every Vyom panel (apps, calculator, emoji, Wi-Fi, power menu, battery,
+  `vyom dmenu` pickers...) now opens at one size, `width`/`height` in
+  `[vyom]` of `vyom/.config/vyom/config.toml` (900 x 520 times scale 1.25),
+  so switching tools never jumps. Quick settings (kendra) keeps its own
+  size: it drops down from the bar's corner rather than popping up in the
+  middle. Vyom 0.2.5.
+- Footer hints and buttons spell keys out (Ctrl+Enter, Shift+Enter, Esc,
+  Backspace) instead of symbols like ⌃↵ and ⌫. Vyom 0.2.4 and the tools'
+  next releases.
+
 ## 2026-10-19 (app launcher: 37 entries down to 17)
 
 - Uninstalled what Vyom made redundant: Bluetooth Manager (blueman; setu
