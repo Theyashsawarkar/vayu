@@ -51,6 +51,8 @@ full branch/release process.
   current_now, not energy_*/power_now, so time left was blank; urja and
   kendra handle both kinds of driver now.
 - Troubleshooting: "Panels: a key or a bar click opens nothing".
+- Panels are 25% bigger (Vyom v0.2.2: `scale = 1.25` in
+  vyom/.config/vyom/config.toml; raise it for bigger, capped at 90% of the screen).
 
 ## 2026-10-19 (waybar polish: icon-only network, workspace chips)
 
