@@ -46,7 +46,7 @@ out=$(list | SHELL=bash fzf --ansi --read0 --gap --delimiter '\t' --with-nth 2..
   --layout reverse --info inline-right --no-separator --no-scrollbar --highlight-line \
   --prompt '  ' --pointer '▌' --marker ' ' --gutter ' ' \
   --input-border rounded --input-label ' search, or type a new session name ' --input-label-pos 3 \
-  --list-border rounded --list-label ' 󰍹 sessions ' --list-label-pos 3 \
+  --list-border rounded \
   --footer "$footer" --footer-border rounded --footer-label ' keys ' --footer-label-pos 3 \
   --preview "tmux capture-pane -ep -t ={1}: | awk '/[^[:space:]]/{for(;n;n--)print \"\";print;next}{n++}'" \
   --preview-window 'right,55%,border-rounded,follow' \

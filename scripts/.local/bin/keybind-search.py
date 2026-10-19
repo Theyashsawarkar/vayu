@@ -57,6 +57,9 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".tmux/scripts",
     HOME / ".local/bin",
     HOME / ".config/sway/scripts",
+    # Vayu's own tmux plugins (own repos, cloned by TPM), e.g. tmux-gh-pr's
+    # PR popup keys. Third-party plugins don't use the annotation.
+    *sorted((HOME / ".tmux/plugins").glob("*/scripts")),
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # vayu-elevate's approval window (ai/elevate/dialog.py, root-owned).
@@ -571,7 +574,7 @@ def run_tmux_fzf():
          "--layout", "reverse", "--info", "inline-right", "--no-separator", "--no-scrollbar",
          "--prompt", "❯ ", "--ghost", TMUX_SEARCH_HINT,
          "--pointer", "▌", "--marker", " ", "--gutter", " ",
-         "--border", "rounded", "--border-label", " 󰌌 tmux keys ", "--border-label-pos", "3",
+         # The tmux popup draws the border and the " keys" title.
          "--padding", "1,2",
          "--header", "⏎ run it · esc close · everything else: Super+Shift+/\n",
          "--color", "bg:-1,bg+:#2A2D35,fg:#D7DDE6,fg+:#FFFFFF,hl:#D095A4,hl+:#D095A4",

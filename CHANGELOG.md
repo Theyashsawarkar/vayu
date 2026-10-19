@@ -5,6 +5,141 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (site on phones; the PR popup is its own plugin)
+
+- The website works on phones. The nav's eight links used to wrap into a
+  tall sticky block; below 1024px they now fold behind a menu button
+  (assets/nav.js; a link, Esc or a tap outside closes it). That also fixes
+  "GitHub" wrapping alone onto a second row on ~900-1000px wide windows
+  (checked every 20px from 860 to 1600: one row or the menu, never two).
+- Nothing on the site is wider than a phone any more (checked at 320,
+  360, 390 and 768px, every page): the hero's two halves dropped their
+  desktop min-widths, the screenshot deck's peeking cards fan out by a few
+  px instead of up to 70, the hero glow is clipped, the card grids never
+  ask for a column wider than the screen, and long slash-joined words in
+  the docs break. Page gutters are 1rem, the CTA buttons share a row, and
+  the Stable/Nightly tabs fill the width (icons drop below 380px).
+- Docs pages on a phone: the "On this page" sidebar is a folding card
+  above the article instead of a full list (Changelog's 50+ entries
+  pushed the article several screens down); picking a section folds it.
+  On touch screens the copy button on code blocks is always visible.
+- Desktop layout unchanged.
+- The pull request popup (prefix G) moved to its own repository,
+  [tmux-gh-pr](https://github.com/Theyashsawarkar/tmux-gh-pr) (v1.0.0),
+  and tmux.conf pulls it with `set -g @plugin` like any TPM plugin. Vayu
+  keeps its look through the plugin's options (`@gh-pr-launcher` =
+  popup.sh, `@gh-pr-title`). tmux/.tmux/scripts/gh-pr.sh is gone.
+- New rule (CLAUDE.md "Plugins", and the new AGENTS.md for other agents):
+  every plugin we write lives in its own repo under Theyashsawarkar and
+  is pulled in, never copied in, so each one can be tested and upgraded
+  on its own and installed without the rest of vayu.
+- A plugin added to tmux.conf after a machine was set up is now cloned on
+  the next tmux load (`plugins-missing.sh`, a quick directory check; TPM's
+  installer runs only when one is missing), so a `git pull` of vayu is
+  enough. `install.sh` already cloned every `@plugin` line on fresh
+  installs. Tested: with tmux-gh-pr removed, a reload cloned it and bound
+  prefix G.
+- keybind-search.py also reads `# keybind:` lines from tmux plugins'
+  `scripts/` dirs, so the PR popup's keys stay in both searches.
+
+## 2026-10-16 (PR popup: sections across repos, like gh-dash)
+
+- The PR popup (prefix G) only listed the PRs of the repo it was opened
+  in, so it was useless anywhere else. It now has sections, like
+  gh-dash: each is a GitHub search across all repos, run as one of the
+  gh accounts, so work (nimapdevyash) and personal (theyashsawarkar) PRs
+  sit side by side and work from any folder.
+- Sections come from `~/.config/gh-pr/sections` (`name | account |
+  search`), local and not in this repo; the popup writes generic
+  defaults (review requested, my PRs, involved) on first run, and E
+  opens the file. Opened inside a GitHub repo, a "<repo> (here)" tab is
+  added unless a section already pins that repo.
+- h/l switch sections (tabs with counts, in a "sections" box above the
+  list); f cycles open / merged / closed / all for every section. Each
+  section is one GraphQL search with CI and review state included; all
+  sections are fetched in the background at start, so switching is
+  instant from cache.
+- Rows carry owner/repo#number, so every view and action knows its repo;
+  checkout (o) only runs inside a clone of the PR's repo.
+- Layout L2, picked from mockups: a box of section tabs across the whole
+  popup (the current one a rounded gold capsule, like the active window
+  in the tmux bar; the account and any search on the right), then the PR
+  list and the preview (42%). fzf can't draw anything spanning its list
+  and preview, so the popup runs its own small tmux session, gh-prs-<pid>:
+  the strip is a 3-line pane redrawn when the section/state/account/
+  search or a count changes, fzf is the pane below. Each PR is one line in
+  aligned columns (CI, review, repo, #, title, author, age, +/-) under
+  headings inside the list box; merged/closed tags only show in the
+  "all" view.
+- Nothing in the popup moves around: the repo column used to hide in
+  one-repo sections, which shifted the headings and rows whenever the
+  section or data changed, so every section now has the same columns
+  (checked: the heading row is byte-identical across sections, states
+  and accounts). Tab counts take a fixed 2 cells (· while loading), so
+  tabs don't shift as counts arrive, and "? keys" moved from the list's
+  title (where it moved with the section name) to the strip's right end.
+- prefix G inside the popup now closes it natively (it kills that
+  session); the Ctrl+a-then-G workaround is gone.
+- No key legend on screen: ? opens a real popup over everything with every
+  key (move / read / act); any key closes it.
+- u switches account: all sections, then only one gh account's (its
+  sections, plus the account-less ones run as it), shown on the strip.
+- s searches GitHub within the current section: anything GitHub search
+  takes (author:x, label:y, head:branch, words), shown on the strip;
+  empty clears. F toggles open ↔ all; open stays the default.
+- The list is just #, title, author, age and +/-: the repo name and the
+  CI / review icons moved to the preview, whose overview is now in
+  blocks: repo + #, the full title (wrapped by words), state badge,
+  author, times and branch; then status (merge, checks, reviews,
+  changes, labels, assignees, each with an icon in one column), files
+  (long paths shortened in the middle instead of wrapping with ↳),
+  description (wrapped by words, not mid-word) and activity. Diff and
+  comments wrap themselves, so fzf's ↳ markers are gone.
+- S manages the sections from the popup: add (name, account picked from
+  the signed-in ones, GitHub search), edit, delete (asks first), move
+  left/right, and pin the repo you're in. It rewrites
+  ~/.config/gh-pr/sections, keeping its comment header (tested: add,
+  delete and move round-trip back to an identical file).
+- Headings and rows share one indent, so "#", title and author line up
+  exactly over their columns.
+- m opens a merge panel instead of a one-line prompt: readiness
+  (checks, review, conflicts, up to date with the base, draft), the
+  commits that land, and only what fits the PR's state: the repo's
+  allowed merge methods when it's ready (squash with an editable commit
+  title, prefilled "title (#n)"), update branch when it's behind,
+  auto-merge or an admin merge when it's blocked, check out to resolve
+  when it conflicts (or the gh command, outside its clone), mark ready
+  when it's a draft. It re-reads the PR after each step and confirms
+  once before merging; a spinner runs while GitHub works.
+- Tested on Theyashsawarkar/pr-playground, a public test repo with one PR
+  per situation (clean, conflicting, behind a branch that requires
+  up-to-date, failing CI, draft, and one needing an approving review;
+  nimapdevyash is a collaborator so it can approve). A squash merge
+  through the panel landed as "Add a farewell helper (#1)" and deleted
+  its branch.
+- The preview's label is " repo · 1 overview …": no PR number (it's in
+  the list and the overview) and a space before the repo name.
+- The tab strip flickered: every background fetch (on open, f, u, h/l)
+  cleared it and redrew it, and building the frame takes ~100 ms of jq.
+  It now builds the frame first, writes it over the old one in one go,
+  and skips the write when nothing changed (checked: 22 identical frames
+  in a row during f, one change when the counts arrive).
+- The account picked with u is remembered in ~/.cache/gh-pr/last-account,
+  so it survives closing the popup and rebooting (if still signed in).
+- Every tool popup now has the rounded rose border with its name top
+  left, like lazygit: sessions (prefix s), pull requests (prefix G) and
+  keys (prefix ?) were borderless. Their own inner "sessions" / "tmux
+  keys" frame and label went, so the name shows once.
+- Fixed: from the real tmux server the popup found no `gh` (Homebrew's,
+  added to PATH by zshrc, which the systemd-started server never runs),
+  so it only worked when tmux was started from a shell. The script now
+  adds Homebrew's bin when gh isn't on PATH. Also, a failed token lookup
+  no longer leaves the preview empty: it falls back to gh's active
+  account; and fzf's {1} (which keeps the trailing tab) is trimmed.
+- Tested from a folder outside any repo, from cli/cli (the "here" tab and
+  checkout prompt) and from vayu (no duplicate tab), and in a kitty
+  window whose tmux has the same PATH as the real server (screenshot).
+
 ## 2026-10-16 (tmux: visible copy-mode selection, mouse copy)
 
 - Copy-mode selections had no highlight at all: since tmux 3.6,
