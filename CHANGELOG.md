@@ -17,6 +17,10 @@ full branch/release process.
   own, smaller size, as tall as their content. Panels are more see-through
   (`opacity = 0.62` in the Vyom config, was 0.82) so the blurred desktop
   shows through like glass. Vyom 0.2.6.
+- No Vyom panel reads as a solid block any more: `blur_xray` is off for
+  the `vyom` layer (it blurred only the wallpaper, so over a dark part of
+  it a panel looked opaque) and `opacity` is 0.55, so every panel shows a
+  blur of whatever is really behind it.
 - Footer hints and buttons spell keys out (Ctrl+Enter, Shift+Enter, Esc,
   Backspace) instead of symbols like ⌃↵ and ⌫. Vyom 0.2.4 and the tools'
   next releases.

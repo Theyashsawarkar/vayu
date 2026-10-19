@@ -243,13 +243,13 @@ shadow_color #0000007F
 # launcher and system panels), via SwayFX's layer_effects (scenefx). This
 # is what makes "glass" read as glass: the panels' translucent background
 # has nothing real to blur behind it without this. Vyom's layer surfaces
-# are all named "vyom"; blur_xray blurs the true desktop background
-# rather than whatever is directly behind (a waybar pill it overlaps).
+# are all named "vyom". No blur_xray: it blurred only the wallpaper,
+# so over a dark part a panel looked solid; without it the panel blurs
+# the windows actually behind it, which always reads as glass.
 # The card fills the surface exactly, so corner_radius is its CSS
 # border-radius (vyom/style.css).
 layer_effects "vyom" {
     blur enable
-    blur_xray enable
     corner_radius 20
     shadows enable
 }
