@@ -5,6 +5,53 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (wofi and nwg-bar replaced by Vyom and its tools)
+
+- Every wofi popup and the nwg-bar power menu is now a
+  [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each its own
+  repository named in Sanskrit (CLAUDE.md "Plugins"): **dvara** (apps,
+  Super+D), **ganit** (calculator, Super+C), **smriti** (clipboard,
+  Super+M), **bhava** (emoji, Super+.), **tarang** (Wi-Fi + hotspot,
+  Super+Shift+W), **setu** (Bluetooth, Super+Shift+B), **doot** (phone,
+  Super+Shift+O), **patra** (Docker, Super+Shift+D), **suchana**
+  (notifications, Super+Shift+N), **raga** (YouTube, Super+Shift+Y /
+  Super+Ctrl+Shift+Y), **mudra** (keybindings, Super+Shift+/), **urja**
+  (battery, the battery capsule), **vishram** (power menu, Super+Shift+P),
+  **kendra** (quick settings, Super+Q / the gear). Same keys as before;
+  pressing one again closes its panel.
+- What each gained over its wofi script, from the design review: live
+  answers (ganit), a full preview with image thumbnails (smriti), a grid
+  with recents and skin tones that types the emoji for you (bhava), live
+  signal and inline passwords plus a hotspot QR code (tarang), battery
+  levels and discovery while open (setu), live CPU/memory and logs
+  (patra), on-screen notifications with their actions (suchana),
+  thumbnails and music/video in one panel (raga), key caps and running
+  the binding (mudra), health, cycles and wattage (urja), a countdown with
+  cancel before reboot/power off (vishram).
+- Vyom v0.2.0 is now the runtime for those repos: a plugin API, one shared
+  panel (list, grid, card, preview, key hints), instant opening over D-Bus,
+  and `vyom dmenu` for scripts. notification-actions.sh, phone-events.py's
+  pairing dialog and update-check.sh's update prompt use `vyom dmenu`;
+  keybind-search.py's own wofi front-end is gone (it feeds mudra with
+  `--json`) and it now reads every Vyom tool's annotated keys (64 of them).
+- install.sh clones Vyom to ~/.local/share/vyom/core and the tools
+  (VYOM_TOOLS in packages/manifest.sh) to .../plugins/, updating them on a
+  re-run; a machine with the older ~/.local/share/vyom clone is moved over.
+  Vayu's settings for them: vyom/.config/vyom/config.toml (rewritten per
+  tool: hotspot command, notification modes, the battery-limit file,
+  swaylock, rmpc...).
+- Removed: the wofi, nwg-bar and networkmanager-dmenu stow packages and
+  packages, wofi-emoji, and the scripts they ran (wifi-picker.py,
+  bluetooth-picker.py, phone-picker.py, docker-picker.py,
+  notification-history.py, music-search.py, wofi-calc.sh,
+  battery-limit-picker.py, nwg-bar-launch). Their behaviour moved into the
+  tools, including the hard-won parts (raga keeps the before/after queue
+  check, because `rmpc addyt` exits 0 on a failed download).
+- Found along the way: this ProBook's battery reports charge_* and
+  current_now, not energy_*/power_now, so time left was blank; urja and
+  kendra handle both kinds of driver now.
+- Troubleshooting: "Panels: a key or a bar click opens nothing".
+
 ## 2026-10-19 (waybar polish: icon-only network, workspace chips)
 
 - The connectivity capsule is just an icon and the speed: the wired-

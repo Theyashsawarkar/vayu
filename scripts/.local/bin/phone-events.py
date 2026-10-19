@@ -166,7 +166,7 @@ def decide_pairing(dev_id, name, prompt, accept):
 
 def prompt_pairing(dev_id):
     """The phone asked to pair. mako can't draw buttons, so besides the
-    notification (click = Accept, Super+Ctrl+a = Reject) a small wofi dialog
+    notification (click = Accept, Super+Ctrl+a = Reject) a Vyom dialog
     opens with both choices spelled out. Esc on the dialog leaves the
     notification to answer later; either answer closes the other, and both
     close if the phone withdraws the request."""
@@ -188,13 +188,9 @@ def prompt_pairing(dev_id):
 
     def dialog():
         prompt["dialog"] = subprocess.Popen(
-            # Fixed height, not --lines: wofi sizes --lines from the rows it
-            # has when it first draws, and these arrive a moment later, so
-            # the dialog sometimes came up cut to the prompt (reproduced
-            # 2026-09-29). No cache: wofi moves past picks up, which had
-            # put Reject first.
-            ["wofi", "--dmenu", "-i", "--height", "200", "--cache-file", "/dev/null",
-             "-p", f"{name} wants to pair "],
+            # `vyom dmenu` (stdin: the choices, stdout: the pick). Killed
+            # when the notification answers first, it closes its panel too.
+            [os.path.expanduser("~/.local/bin/vyom"), "dmenu", "-p", f"{name} wants to pair"],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         choice, _ = prompt["dialog"].communicate(f"{accept_label}\n{reject_label}\n")
         choice = choice.strip()

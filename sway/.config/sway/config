@@ -16,73 +16,30 @@ set $right l
 # Preferred Applications
 set $term kitty
 
-# application opener
-# --columns is only set here, not in the shared wofi/config -- every
-# other wofi-backed tool in this desktop (wifi/bluetooth pickers,
-# calculator, keybind search, emoji picker, cliphist) is a plain
-# single-column list, and a grid would break their readability. Width
-# comes from wofi/config's own width=60%, shared by every wofi popup in
-# this desktop, not repeated here.
-#
-# --show drun,run (both modes combined) used to be here, matching what
-# this line had before any of this -- dropped the ",run" deliberately
-# after finding a real sway parsing gotcha, not as an unrelated
-# simplification: sway's own command syntax uses a bare comma to chain
-# multiple commands on one bindsym line (`bindsym x cmd1, cmd2`), and
-# `exec`'s argument isn't exempt from that -- a literal comma anywhere in
-# the string handed to `exec`, even one meant for the program being
-# launched, gets treated as a sway command separator. `wofi --show
-# drun,run --columns 4` was silently getting truncated to just `wofi
-# --show drun` the moment `exec` ran it -- confirmed directly by
-# comparing the actual running process's real command line
-# (`ps -o cmd -p <pid>`) against what was configured, after a real
-# ydotool-simulated keypress (not just a manual shell reproduction of
-# the command, which doesn't go through sway's exec parsing at all and
-# had been silently passing every earlier verification of this). This is
-# exactly why the grid kept reporting as "still one column" despite every
-# earlier check looking fine -- --columns 4 was never actually reaching
-# wofi in the first place. "run" mode (launch an arbitrary $PATH
-# executable by typed name, not from the app database) wasn't part of
-# what was actually asked for ("application search") anyway, so it's
-# left out rather than chasing a quoting/escaping workaround to keep it.
-set $menu wofi --show drun --columns 4
+# Launcher and system panels: Vyom (github.com/Theyashsawarkar/vyom) and
+# its tools, each its own repo (CLAUDE.md "Plugins"), replacing wofi and
+# nwg-bar. One resident process (`exec vyom daemon` below), so every panel
+# opens at once, and the same key again closes it (no toggle-popup.sh).
+# Each tool's keys are in its footer and README, and in the keybinding
+# search (Super+Shift+/).
+set $vyom ~/.local/bin/vyom
+set $menu $vyom dvara
+set $calc $vyom ganit
 
-# calculator
-set $calc ~/.local/bin/wofi-calc.sh
+#: Open clipboard history (smriti: links, images, code; pin, delete)
+bindsym $mod+m exec $vyom smriti
 
-# Every popup keybinding below routes through toggle-popup.sh -- asked
-# directly for these to toggle (press the same keybinding again to close
-# it, not just always open a new one) rather than being fire-and-open
-# only. Escape already closed the wofi-based ones on its own (wofi's own
-# native behavior, nothing this repo had to add) -- toggle-popup.sh adds
-# the other half: a marker file per keybinding tracks whether *that*
-# popup is the one currently open, so the right process gets signaled
-# closed instead of just guessing "any wofi". See the script's own
-# comments for the full reasoning.
+#: Open emoji picker (bhava: types it into the window you were in)
+bindsym $mod+period exec $vyom bhava
 
-# clipboard history
-#: Open clipboard history (cliphist), pick an entry to copy it again
-bindsym $mod+m exec ~/.local/bin/toggle-popup.sh clipboard wofi sh -c "cliphist list | wofi --dmenu | cliphist decode | wl-copy"
+#: Open Wi-Fi panel (tarang: networks, connect, hotspot)
+bindsym $mod+Shift+w exec $vyom tarang
 
-# Launch Wofi Emoji Picker
-#: Open emoji picker
-bindsym $mod+period exec ~/.local/bin/toggle-popup.sh emoji wofi wofi-emoji
+#: Open Bluetooth panel (setu: devices, battery, pair, connect)
+bindsym $mod+Shift+b exec $vyom setu
 
-# Previously only reachable by clicking waybar's network module, no
-# keyboard path existed at all
-# Wi-Fi picker: scan, connect, toggle
-#: Open Wi-Fi picker (scan, connect, toggle)
-bindsym $mod+Shift+w exec ~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wifi-picker.py
-
-# Previously waybar-click-only, same gap as Wi-Fi above
-# Bluetooth picker: pair, connect, toggle
-#: Open Bluetooth picker (pair, connect, toggle)
-bindsym $mod+Shift+b exec ~/.local/bin/toggle-popup.sh bluetooth wofi ~/.local/bin/bluetooth-picker.py
-
-# Phone picker (KDE Connect, also waybar's phone module): send files and
-# the clipboard to the phone, browse its storage, ring it, pair/unpair.
-#: Open phone picker (KDE Connect: send file, clipboard, browse, ring)
-bindsym $mod+Shift+o exec ~/.local/bin/toggle-popup.sh phone wofi ~/.local/bin/phone-picker.py
+#: Open phone panel (doot, KDE Connect: send file, clipboard, ring, browse)
+bindsym $mod+Shift+o exec $vyom doot
 
 # Stops the laptop ringing (Find my device) if it is; otherwise, since
 # mako's left click only runs a notification's default action, this lists
@@ -95,44 +52,17 @@ bindsym $mod+Ctrl+a exec ~/.local/bin/notification-actions.sh
 for_window [app_id="org.kde.kdeconnect.daemon"] floating enable, border none, sticky enable
 for_window [app_id="kdeconnectd"] floating enable, border none, sticky enable
 
-# Previously waybar-click-only, same gap as Wi-Fi/Bluetooth above
-# Docker picker: view running containers, restart, stop
-#: Open Docker picker (running containers: restart, stop)
-bindsym $mod+Shift+d exec ~/.local/bin/toggle-popup.sh docker wofi ~/.local/bin/docker-picker.py
+#: Open Docker panel (patra: containers, logs, restart, stop, shell)
+bindsym $mod+Shift+d exec $vyom patra
 
-# Matches the same keyboard-path convention as every other waybar-click
-# picker above -- notification bell was waybar-click-only otherwise
-# Notification history: view past notifications, sorted newest first
-#: Open notification history (newest first)
-bindsym $mod+Shift+n exec ~/.local/bin/toggle-popup.sh notifhistory wofi ~/.local/bin/notification-history.py
+#: Open notifications (suchana: on screen, history, do not disturb)
+bindsym $mod+Shift+n exec $vyom suchana
 
-# Same gap as every picker above -- the power menu (nwg-bar) was only
-# ever reachable by clicking waybar's custom/power module, no keyboard
-# path. Tab/Shift+Tab already move focus between its buttons on their
-# own -- nwg-bar requests exclusive layer-shell keyboard focus itself
-# (LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE, confirmed in its own source),
-# and real GtkButtons in a GtkBox get Tab-chain navigation from GTK for
-# free on top of that -- nothing this repo had to wire up. Verified
-# safely without ever actually pressing Enter (every one of these five
-# actions is disruptive/hard to reverse -- lock, logout, suspend,
-# reboot, shutdown -- not something to trigger just to test a
-# keybinding): queried nwg-bar's own AT-SPI accessibility tree directly
-# (read-only, can't activate anything) after each simulated Tab/
-# Shift+Tab and read back which button actually reports itself focused.
-# Confirmed the full cycle both directions with wraparound: Lock ->
-# Logout -> Suspend -> Reboot -> Shutdown -> (wraps) -> Lock forward,
-# and Lock -> (wraps) -> Shutdown going back with Shift+Tab. No visible
-# focus-ring styling on top of this yet -- works correctly, just not
-# obvious to the eye which button Tab landed on.
-#: Open power menu (lock, logout, suspend, reboot, shutdown)
-bindsym $mod+Shift+p exec ~/.local/bin/toggle-popup.sh powermenu nwg-bar ~/.local/bin/nwg-bar-launch -i 40
+#: Open power menu (vishram: lock, suspend, log out, reboot, power off)
+bindsym $mod+Shift+p exec $vyom vishram
 
-# Quick settings (Vyom, github.com/Theyashsawarkar/vyom): Wi-Fi, Bluetooth,
-# hotspot, DND, caffeine, theme, wallpaper, power profile, volume,
-# brightness. Same as the waybar gear; pressing it again closes it. Vyom
-# toggles itself (one resident process), so no toggle-popup.sh.
-#: Open quick settings (Wi-Fi, Bluetooth, hotspot, DND, volume...)
-bindsym $mod+q exec ~/.local/bin/vyom quick
+#: Open quick settings (kendra: Wi-Fi, Bluetooth, hotspot, DND, volume...)
+bindsym $mod+q exec $vyom kendra
 
 # Caffeine mode keyboard path -- was click-only via waybar's
 # custom/caffeine module (on-click in waybar/config) until now. Direct
@@ -199,7 +129,7 @@ bindsym $mod+Shift+m exec ~/.local/bin/rmpc-toggle.sh
 # blur enable: real compositor-level background blur (SwayFX,
 # scenefx0.4 -- already in packages/aur.txt), the actual mechanism that
 # makes this read as glass rather than just a tinted, see-through box --
-# same lesson wofi's own layer_effects rule already established (see
+# same lesson the Vyom panels' layer_effects rule established (see
 # above), just reached via `for_window` instead: wofi is a layer-shell
 # surface so it needed `layer_effects`, but rmpc is a plain toplevel
 # window (kitty), and blur/corner_radius/shadows are all regular
@@ -242,36 +172,15 @@ for_window [app_id="^rmpc$"] floating enable, resize set 60 ppt 60 ppt, move pos
 # a spacebar press once focus was forced) before trusting it.
 for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move position center, focus
 
-# Two direct keybindings instead of one + a mode toggle -- simpler to
-# hold in your head than "press Y, then remember which mode is active".
-# Both replace termusic's own `s` popup, which turned out to depend
-# entirely on the public Invidious instance network (confirmed dead
-# across the board, see docs/ARCHITECTURE.md and music-search.py's own
-# docstring for the full story). wofi-based, so both route through
-# toggle-popup.sh like every other picker above.
+# YouTube search (raga): two keys, one per way to play; inside, Shift+Enter
+# plays the other way and Ctrl+M switches. Music goes into MPD's queue
+# through rmpc's own `addyt` (needs python-mutagen); video opens in mpv
+# (the for_window rule above focuses it).
+#: Search YouTube and play a video (raga, in mpv)
+bindsym $mod+Shift+y exec $vyom raga video
 
-# Search YouTube, play the picked result as real video (mpv, a genuine
-# controllable window -- see the for_window rule above) -- `video` is
-# a required positional argument to music-search.py now, not a
-# persisted toggle read behind the scenes.
-#: Search music on YouTube (videos)
-bindsym $mod+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchvideo wofi ~/.local/bin/music-search.py video
-
-# Search YouTube, add the picked result straight into MPD's queue via
-# rmpc's own built-in `addyt` (rmpc already ships this -- yt-dlp under
-# the hood, cached to ~/.cache/rmpc/youtube/, no reason to hand-roll a
-# second download path) and open rmpc so it's immediately visible and
-# controllable with every normal rmpc/MPD control (play/pause/next/
-# prev/seek/volume) -- this is "opens in the music player", not a
-# headless process with no way to stop it.
-#
-# Needs python-mutagen installed (`sudo pacman -S python-mutagen`) --
-# confirmed live that addyt's own post-processing step fails without
-# it (rmpc debuginfo already flags this as "not installed" on this
-# machine) and surfaces a clear error notification if it's still
-# missing, rather than failing silently.
-#: Search music on YouTube Music
-bindsym $mod+Ctrl+Shift+y exec ~/.local/bin/toggle-popup.sh musicsearchmusic wofi ~/.local/bin/music-search.py music
+#: Search YouTube and play music (raga, into MPD via rmpc)
+bindsym $mod+Ctrl+Shift+y exec $vyom raga music
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
 # script and same three-state cycle the waybar bell's scroll wheel uses
@@ -294,8 +203,8 @@ bindsym $mod+Ctrl+d exec ~/.local/bin/notification-mode.sh dnd
 # $mod+? matches the near-universal "show shortcuts" convention (Slack,
 # Discord, GitHub, GNOME all use ? or Ctrl+/) rather than inventing a new
 # one. Excludes Neovim on purpose -- it already has its own keymap search.
-#: Search every keybinding on the system (this list)
-bindsym $mod+Shift+slash exec ~/.local/bin/toggle-popup.sh keybindsearch wofi ~/.local/bin/keybind-search.py
+#: Search every keybinding on the system (mudra; Enter runs it)
+bindsym $mod+Shift+slash exec $vyom mudra
 
 ### Window Look & Feel (Classy Minimalist)
 # Core border style for windows
@@ -330,31 +239,14 @@ shadows on
 shadow_blur_radius 20
 shadow_color #0000007F
 
-# Real compositor-level background blur for wofi specifically, via
-# SwayFX's layer_effects (scenefx0.4 -- already in packages/aur.txt,
-# nothing new to install). This is what makes "glass" actually read as
-# glass instead of just a tinted box: wofi/style.css's own semi-transparent
-# background alone has nothing real to blur behind it without this.
-# Namespace confirmed live rather than guessed -- `swaymsg -t get_outputs`
-# while wofi was open lists it under layer_shell_surfaces as "wofi" (not
-# assumed from the binary name; layer-shell namespaces don't have to match
-# it). blur_xray blurs the true desktop background behind wofi rather than
-# whatever surface happens to be immediately behind it (e.g. a waybar
-# pill it overlaps), which is the difference between an authentic frosted-
-# glass look and blurring the wrong thing. corner_radius matches wofi's
-# own CSS border-radius so the blurred/shadowed shape lines up with the
-# window's actual rounded corners instead of showing a square blur behind
-# round content.
-layer_effects "wofi" {
-    blur enable
-    blur_xray enable
-    corner_radius 16
-    shadows enable
-}
-
-# Vyom (the wofi replacement: quick settings now, every picker later) is a
-# layer surface named "vyom": same glass recipe as wofi. Its card fills the
-# surface exactly, so this radius is its border-radius (vyom/style.css).
+# Real compositor-level background blur behind every Vyom panel (the
+# launcher and system panels), via SwayFX's layer_effects (scenefx). This
+# is what makes "glass" read as glass: the panels' translucent background
+# has nothing real to blur behind it without this. Vyom's layer surfaces
+# are all named "vyom"; blur_xray blurs the true desktop background
+# rather than whatever is directly behind (a waybar pill it overlaps).
+# The card fills the surface exactly, so corner_radius is its CSS
+# border-radius (vyom/style.css).
 layer_effects "vyom" {
     blur enable
     blur_xray enable
@@ -458,13 +350,13 @@ seat seat0 xcursor_theme Adwaita 24
 #: Open a terminal (kitty, inside tmux main)
 bindsym $mod+Return exec $term
 
-# Start your combined app/command launcher
+# App launcher (dvara: frequent apps first; Shift+Enter runs a command)
 #: Open app launcher
-bindsym $mod+d exec ~/.local/bin/toggle-popup.sh launcher wofi $menu
+bindsym $mod+d exec $menu
 
-# Start your math/currency calculator
-#: Open calculator (math and currency)
-bindsym $mod+c exec ~/.local/bin/toggle-popup.sh calc wofi $calc
+# Calculator (ganit, qalc: answers as you type)
+#: Open calculator (math, units, currency)
+bindsym $mod+c exec $calc
 
 # Kill focused window
 #: Close (kill) the focused window

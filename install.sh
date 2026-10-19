@@ -603,13 +603,32 @@ setup_tmux() {
 }
 
 setup_vyom() {
-  # Vyom (github.com/Theyashsawarkar/vyom): quick settings now, the wofi
-  # replacement as it grows. Its own repo (CLAUDE.md "Plugins"), cloned
-  # and linked onto PATH; the stowed vyom/.config/vyom/config.toml points
-  # its tiles at Vayu's scripts. Update: git -C ~/.local/share/vyom pull.
-  clone_if_missing https://github.com/Theyashsawarkar/vyom "$HOME/.local/share/vyom" || return 1
-  mkdir -p "$HOME/.local/bin"
-  ln -sfn "$HOME/.local/share/vyom/bin/vyom" "$HOME/.local/bin/vyom"
+  # Vyom (github.com/Theyashsawarkar/vyom), the launcher/panels runtime that
+  # replaces wofi and nwg-bar, and its tools, each its own repo (CLAUDE.md
+  # "Plugins"): Vyom in ~/.local/share/vyom/core, tools in .../plugins.
+  # The stowed vyom/.config/vyom/config.toml points them at Vayu's scripts.
+  # Re-running pulls updates.
+  local base="$HOME/.local/share/vyom" tool
+  # Before 2026-10-19 Vyom itself was cloned straight into $base.
+  if [ -d "$base/.git" ]; then
+    local tmp="$base.old.$$"
+    mv "$base" "$tmp" && mkdir -p "$base" && mv "$tmp" "$base/core"
+  fi
+  clone_or_pull https://github.com/Theyashsawarkar/vyom "$base/core" || return 1
+  mkdir -p "$base/plugins" "$HOME/.local/bin"
+  for tool in "${VYOM_TOOLS[@]}"; do
+    clone_or_pull "https://github.com/Theyashsawarkar/$tool" "$base/plugins/$tool" ||
+      warn "Vyom tool $tool: clone failed (the rest still work)"
+  done
+  ln -sfn "$base/core/bin/vyom" "$HOME/.local/bin/vyom"
+}
+
+clone_or_pull() {  # url dest: clone, or fast-forward an existing clone
+  if [ -d "$2/.git" ]; then
+    git -C "$2" pull -q --ff-only || warn "couldn't update $2 (local changes?)"
+  else
+    clone_if_missing "$1" "$2"
+  fi
 }
 
 setup_nvim() {
@@ -792,7 +811,7 @@ run_step "Installing the boot splash (Plymouth, splash/)" apply_splash
 run_step "Installing the AI tools (vayu-elevate, ai/)" apply_ai
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
-run_step "Setting up Vyom (quick settings)" setup_vyom
+run_step "Setting up Vyom (launcher and panels)" setup_vyom
 run_step "Installing Neovim plugins (lazy.nvim)" setup_nvim
 run_step "Enabling corepack (pnpm, yarn)" setup_node
 run_step "Installing Homebrew + formulae (${BREW_FORMULAE[*]})" setup_brew

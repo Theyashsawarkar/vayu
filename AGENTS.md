@@ -73,7 +73,13 @@ they want without the rest of vayu.
 - **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
   (pull requests: a command, and the prefix G popup; `install.sh` links
   TPM's copy to `~/.local/bin/sangam`).
-  [`vyom`](https://github.com/Theyashsawarkar/vyom) (quick settings now,
-  the wofi replacement as it grows; `install.sh` clones it to
-  `~/.local/share/vyom` and links `~/.local/bin/vyom`; Vayu's config is
-  the `vyom/` stow package).
+  [`vyom`](https://github.com/Theyashsawarkar/vyom), the launcher/panels
+  runtime that replaced wofi and nwg-bar, and its tools, each its own
+  repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),
+  tarang (Wi-Fi + hotspot), setu (Bluetooth), doot (phone), patra (Docker),
+  suchana (notifications), raga (YouTube), mudra (keybindings), urja
+  (battery), vishram (power menu), kendra (quick settings). `install.sh`
+  clones Vyom to `~/.local/share/vyom/core` and the tools
+  (`VYOM_TOOLS`, packages/manifest.sh) to `.../plugins/`; Vayu's settings
+  for them are the `vyom/` stow package. A script that needs a picker uses
+  `vyom dmenu -p PROMPT` (stdin choices, stdout pick), never a new wofi.

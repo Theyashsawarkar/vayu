@@ -1,27 +1,62 @@
-# Vyom (github.com/Theyashsawarkar/vyom) as Vayu uses it: the quick
-# settings tiles drive Vayu's own scripts, so state stays shared with
-# waybar, mako and sway. Every key is optional; vyom's examples/config.toml
-# lists them all.
+# Vyom (github.com/Theyashsawarkar/vyom) as Vayu uses it. Each tool is its
+# own repo (packages/manifest.sh VYOM_TOOLS); its settings live under
+# [plugin.<name>] here, pointing it at Vayu's own scripts so state stays
+# shared with waybar, mako and sway. Every key is optional: each tool's
+# README lists them. Reload after editing: vyom reload
 
-[quick]
-tiles = ["wifi", "bluetooth", "hotspot", "dnd", "caffeine", "theme", "wallpaper", "power-profile"]
-lock = "swaylock -C ~/.config/sway/lockconfig"
-power = "~/.local/bin/nwg-bar-launch -i 40"
+[vyom]
+# Tab inside a panel moves through these, in this order.
+cycle = ["dvara", "ganit", "smriti", "bhava", "tarang", "setu", "doot", "patra", "suchana", "raga", "mudra"]
 
-# Shift+Enter / right click opens each one's picker.
-[quick.tile.wifi]
-open = "~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wifi-picker.py"
+[plugin.dvara]
+terminal = "kitty"
 
-[quick.tile.bluetooth]
-open = "~/.local/bin/toggle-popup.sh bluetooth wofi ~/.local/bin/bluetooth-picker.py"
+[plugin.tarang]
+hotspot_command = "~/.local/bin/vayu-hotspot"
 
-[quick.tile.hotspot]
-command = "~/.local/bin/vayu-hotspot"
-open = "~/.local/bin/toggle-popup.sh wifi wofi ~/.local/bin/wifi-picker.py"
+[plugin.patra]
+terminal = "kitty"
 
 # Vayu's three notification modes (normal / silent / dnd) live in
-# notification-mode.sh; the tile switches between normal and dnd.
-[quick.tile.dnd]
+# notification-mode.sh; the switch moves between normal and dnd.
+[plugin.suchana]
+dnd_status = "cat ~/.local/state/notification-mode/current"
+dnd_on_when = "^dnd$"
+dnd_on = "~/.local/bin/notification-mode.sh dnd"
+dnd_off = "~/.local/bin/notification-mode.sh normal"
+
+[plugin.raga]
+# rmpc's window, opened (or raised) once music starts playing.
+player_command = "~/.local/bin/rmpc-toggle.sh"
+
+[plugin.mudra]
+source_command = "~/.local/bin/keybind-search.py --json"
+
+# battery-limit-watch.sh nudges you to unplug at this percentage.
+[plugin.urja]
+limit_file = "~/.local/state/battery-limit/threshold"
+
+[plugin.vishram]
+lock = "swaylock -C ~/.config/sway/lockconfig"
+logout = "swaymsg exit"
+
+[plugin.kendra]
+tiles = ["wifi", "bluetooth", "hotspot", "dnd", "caffeine", "theme", "wallpaper", "power-profile"]
+lock = "swaylock -C ~/.config/sway/lockconfig"
+power = "~/.local/bin/vyom vishram"
+
+# Right click / Shift+Enter on a tile opens its full panel.
+[plugin.kendra.tile.wifi]
+open = "~/.local/bin/vyom tarang"
+
+[plugin.kendra.tile.bluetooth]
+open = "~/.local/bin/vyom setu"
+
+[plugin.kendra.tile.hotspot]
+command = "~/.local/bin/vayu-hotspot"
+open = "~/.local/bin/vyom tarang hotspot"
+
+[plugin.kendra.tile.dnd]
 status = "cat ~/.local/state/notification-mode/current"
 on_when = "^dnd$"
 on = "~/.local/bin/notification-mode.sh dnd"
@@ -29,7 +64,7 @@ off = "~/.local/bin/notification-mode.sh normal"
 subtitle_on = "notifications held"
 subtitle_off = "off"
 
-[quick.tile.caffeine]
+[plugin.kendra.tile.caffeine]
 status = "~/.local/bin/caffeine-status.sh"
 on_when = '"class":"active"'
 toggle = "~/.local/bin/caffeine-toggle.sh"
@@ -37,13 +72,13 @@ subtitle_on = "screen stays on"
 subtitle_off = "off"
 
 # theme-toggle.sh restyles waybar, mako and the rest too, not just GTK.
-[quick.tile.theme]
+[plugin.kendra.tile.theme]
 status = "~/.local/bin/theme-status.sh"
 on_when = '"class":"dark"'
 toggle = "~/.local/bin/theme-toggle.sh"
 subtitle_on = "on"
 subtitle_off = "light"
 
-[quick.tile.wallpaper]
+[plugin.kendra.tile.wallpaper]
 run = "~/.local/bin/fetch_wallpaper.sh"
 subtitle = "fetch a new one"

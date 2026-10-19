@@ -78,7 +78,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 * ⌨️ Keyboard-first workflow
 * 🖥️ Sway window manager
 * 📊 Waybar status bar
-* 🚀 Wofi application launcher
+* 🚀 [Vyom](https://github.com/Theyashsawarkar/vyom): launcher and system panels (apps, calculator, clipboard, emoji, Wi‑Fi, Bluetooth, phone, Docker, notifications, keybindings, battery, power, quick settings), each tool its own repo
 * 🔔 Mako notifications
 * 🐱 Kitty terminal
 * 📝 Neovim development environment
@@ -96,7 +96,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 | -------------------- | -------- |
 | Window Manager       | Sway     |
 | Status Bar           | Waybar   |
-| Application Launcher | Wofi     |
+| Application Launcher | Vyom (dvara) |
 | Notifications        | Mako     |
 | Lock Screen          | swaylock |
 | Wallpaper            | swaybg   |
@@ -117,7 +117,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 | -------------- | -------------------------------------------------- |
 | Music Daemon   | MPD (real filesystem watcher, zero third-party API) |
 | Music Client   | rmpc (TUI, Catppuccin Mocha themed, real compositor glass) |
-| Search/Download | `music-search.py` (wofi-based, real thumbnails, yt-dlp) |
+| Search/Download | [raga](https://github.com/Theyashsawarkar/raga) (a Vyom tool: YouTube into MPD or mpv, thumbnails, yt-dlp) |
 
 ---
 
@@ -136,9 +136,7 @@ Each directory represents an independent package managed by GNU Stow.
 ├── kitty/
 ├── mako/
 ├── mpd/             # MPD daemon config (music_directory, auto_update)
-├── networkmanager-dmenu/  # wofi-backed Wi-Fi picker (scan/connect/toggle)
 ├── nvim/
-├── nwg-bar/         # power menu (lock/logout/suspend/reboot/shutdown)
 ├── rmpc/            # MPD TUI client + Catppuccin Mocha theme
 ├── scripts/         # ~/.local/bin utilities used by sway keybindings
 ├── sway/
@@ -146,7 +144,7 @@ Each directory represents an independent package managed by GNU Stow.
 │                    #   audio-idle-inhibit, batsignal, tmux)
 ├── tmux/
 ├── waybar/
-├── wofi/
+├── vyom/            # config for Vyom, the launcher + panels (its tools are their own repos)
 ├── xdg/             # mimeapps.list (default app associations)
 ├── zed/
 └── zsh/
@@ -190,7 +188,7 @@ Install individual packages:
 
 ```bash
 stow kitty tmux nvim zed zsh scripts systemd gtk xdg
-stow sway waybar mako wofi nwg-bar networkmanager-dmenu
+stow sway waybar mako vyom
 stow mpd rmpc
 ```
 
@@ -290,8 +288,8 @@ This setup prioritizes:
 
 | | |
 |---|---|
-| ![Wofi app launcher](assets/wofi.jpg) | ![Keybinding search, filtered to window keys](assets/keybindsearch.jpg) |
-| App launcher (`Super+d`) | Keybinding search (`Super+Shift+/`) |
+| ![App launcher (before Vyom: wofi)](assets/wofi.jpg) | ![Keybinding search, filtered to window keys](assets/keybindsearch.jpg) |
+| App launcher (`Super+d`; screenshot from before [Vyom](https://github.com/Theyashsawarkar/vyom)) | Keybinding search (`Super+Shift+/`) |
 | ![Emoji picker searching for wind](assets/emoji.jpg) | ![Power menu](assets/powermenu.jpg) |
 | Emoji picker (`Super+.`) | Power menu (`Super+Shift+p`) |
 

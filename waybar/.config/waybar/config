@@ -99,7 +99,7 @@
 		"exec": "$HOME/.local/bin/notification-history-status.sh",
 		"interval": "once",
 		"return-type": "json",
-		"on-click": "$HOME/.local/bin/notification-history.py",
+		"on-click": "$HOME/.local/bin/vyom suchana",
 		"on-scroll-up": "$HOME/.local/bin/notification-mode.sh next",
 		"on-scroll-down": "$HOME/.local/bin/notification-mode.sh prev",
 		"signal": 8
@@ -117,7 +117,7 @@
 		"interval": "once",
 		"signal": 14,
 		"return-type": "json",
-		"on-click": "$HOME/.local/bin/docker-picker.py"
+		"on-click": "$HOME/.local/bin/vyom patra"
 	},
 
 	"network": {
@@ -134,7 +134,7 @@
 		"tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
 		"tooltip-format-disconnected": "Disconnected",
 		"tooltip-format-disabled": "Wi-Fi disabled (rfkill)",
-		"on-click": "$HOME/.local/bin/wifi-picker.py"
+		"on-click": "$HOME/.local/bin/vyom tarang"
 	},
 
 	// Shown only while the hotspot (vayu-hotspot) is on: devices connected.
@@ -143,7 +143,7 @@
 		"interval": 30,
 		"signal": 15,
 		"return-type": "json",
-		"on-click": "$HOME/.local/bin/toggle-popup.sh wifi wofi $HOME/.local/bin/wifi-picker.py",
+		"on-click": "$HOME/.local/bin/vyom tarang hotspot",
 		"on-click-right": "$HOME/.local/bin/vayu-hotspot off"
 	},
 
@@ -163,7 +163,7 @@
 		"format-connected": "  {device_alias}",
 		"format-connected-battery": "  {device_alias}  {device_battery_percentage}%",
 		"tooltip-format": "Bluetooth Status: {status}",
-		"on-click": "$HOME/.local/bin/bluetooth-picker.py",
+		"on-click": "$HOME/.local/bin/vyom setu",
 		"max-length": 25
 	},
 
@@ -172,7 +172,7 @@
 		"interval": "once",
 		"signal": 13,
 		"return-type": "json",
-		"on-click": "$HOME/.local/bin/toggle-popup.sh phone wofi $HOME/.local/bin/phone-picker.py"
+		"on-click": "$HOME/.local/bin/vyom doot"
 	},
 
 	"custom/caffeine": {
@@ -196,7 +196,7 @@
 			"charging": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
 			"default": ["󰁺", "󰁽", "󰁿", "󰂁", "󰁹"]
 		},
-		"on-click": "$HOME/.local/bin/battery-limit-picker.py"
+		"on-click": "$HOME/.local/bin/vyom urja"
 	},
 
 	"pulseaudio": {
@@ -257,7 +257,7 @@
 	"custom/quick": {
 		"format": "󰒓",
 		"tooltip-format": "Quick settings",
-		"on-click": "$HOME/.local/bin/vyom quick"
+		"on-click": "$HOME/.local/bin/vyom kendra"
 	}
 
 }

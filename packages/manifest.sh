@@ -71,6 +71,13 @@ STOW_REAL_DIRS=(
   .tmux .tmux/scripts
 )
 
+# Vyom tools (github.com/Theyashsawarkar/<name>), each its own repo, cloned
+# into ~/.local/share/vyom/plugins by install.sh (setup_vyom). Together they
+# replace wofi and nwg-bar: apps, calculator, clipboard, emoji, Wi-Fi +
+# hotspot, Bluetooth, phone, Docker, notifications, YouTube, keybindings,
+# battery, power menu, quick settings.
+VYOM_TOOLS=(dvara ganit smriti bhava tarang setu doot patra suchana raga mudra urja vishram kendra)
+
 # Supplementary groups for the installing user.
 #   docker  run docker without sudo
 #   input   /dev/uinput, which ydotoold needs (ydotool's 80-uinput.rules)

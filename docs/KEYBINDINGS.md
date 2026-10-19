@@ -1,7 +1,7 @@
 # Keybindings
 
-The live, always-complete list is **`Super+Shift+/`** (every source below, fuzzy
-search in wofi) and, inside tmux, **`Ctrl+a ?`** (tmux keys; Enter runs the picked
+The live, always-complete list is **`Super+Shift+/`** (every source below, in
+[mudra](https://github.com/Theyashsawarkar/mudra), a Vyom tool: search by what a key does, Enter runs it) and, inside tmux, **`Ctrl+a ?`** (tmux keys; Enter runs the picked
 binding). Both come from `scripts/.local/bin/keybind-search.py`, which re-reads the
 real configs every time: sway (`#:` line above each `bindsym`), tmux (`bind -N`
 notes, stock keys marked `default`), kitty (`#:` above each `map`), Zed
@@ -16,29 +16,32 @@ hand-written overview of the main ones.
 
 ## Sway
 
-### Popups & pickers
+### Popups & pickers (Vyom)
 
-- <kbd>Super</kbd>+<kbd>m</kbd> — Clipboard history
-- <kbd>Super</kbd>+<kbd>.</kbd> — Emoji picker
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi-Fi picker (scan, connect, toggle)
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> — Bluetooth picker (pair, connect, toggle)
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>o</kbd> — Phone picker, KDE Connect (send file / clipboard, browse phone storage, ring, pair)
+Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in its own repo. The same key again closes it. Inside any panel: type to search, <kbd>Up</kbd>/<kbd>Down</kbd> move, <kbd>Enter</kbd> runs, <kbd>Tab</kbd> jumps to the next tool, <kbd>Esc</kbd> closes; each tool's own keys are in its footer (and in <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd>).
+
+- <kbd>Super</kbd>+<kbd>d</kbd> — Apps ([dvara](https://github.com/Theyashsawarkar/dvara)): your frequent apps first, app actions on <kbd>Ctrl</kbd>+<kbd>1</kbd>…, <kbd>Shift</kbd>+<kbd>Enter</kbd> runs what you typed
+- <kbd>Super</kbd>+<kbd>c</kbd> — Calculator ([ganit](https://github.com/Theyashsawarkar/ganit)): answers as you type (units, currency, %), <kbd>Enter</kbd> copies
+- <kbd>Super</kbd>+<kbd>m</kbd> — Clipboard ([smriti](https://github.com/Theyashsawarkar/smriti)): links, images, code told apart; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> pastes, <kbd>Ctrl</kbd>+<kbd>P</kbd> pins, <kbd>Delete</kbd> deletes
+- <kbd>Super</kbd>+<kbd>.</kbd> — Emoji ([bhava](https://github.com/Theyashsawarkar/bhava)): <kbd>Enter</kbd> types it into the window you were in, <kbd>Ctrl</kbd>+<kbd>T</kbd> skin tone
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi‑Fi ([tarang](https://github.com/Theyashsawarkar/tarang)): connect (password typed inline), <kbd>Ctrl</kbd>+<kbd>D</kbd> disconnect, <kbd>Ctrl</kbd>+<kbd>H</kbd> hotspot tab with a QR code
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> — Bluetooth ([setu](https://github.com/Theyashsawarkar/setu)): devices with battery, <kbd>Enter</kbd> connects / pairs
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>o</kbd> — Phone ([doot](https://github.com/Theyashsawarkar/doot), KDE Connect): send clipboard or a file, ring, browse
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>a</kbd> — Stop the laptop ringing (phone's Find my device), otherwise pick an action on the current notification (Accept/Reject pairing, Undo phone clipboard, Show received file in folder)
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd> — Docker picker (running containers, restart, stop)
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notification history
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>p</kbd> — Power menu (lock / logout / suspend / reboot / shutdown)
-- <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([Vyom](https://github.com/Theyashsawarkar/vyom); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, caffeine, dark theme, new wallpaper, power profile, volume and brightness sliders, lock and power. Arrows move, <kbd>Enter</kbd> toggles, <kbd>Shift</kbd>+<kbd>Enter</kbd> opens a tile's details (the Wi‑Fi list…), <kbd>Esc</kbd> or <kbd>Super</kbd>+<kbd>q</kbd> closes
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd> — Docker ([patra](https://github.com/Theyashsawarkar/patra)): <kbd>Enter</kbd> logs, <kbd>Ctrl</kbd>+<kbd>R</kbd> restart, <kbd>Ctrl</kbd>+<kbd>S</kbd> stop/start, <kbd>Ctrl</kbd>+<kbd>T</kbd> shell
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notifications ([suchana](https://github.com/Theyashsawarkar/suchana)): what's on screen with its actions, the history, do not disturb
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>p</kbd> — Power ([vishram](https://github.com/Theyashsawarkar/vishram)): <kbd>L</kbd> lock, <kbd>S</kbd> suspend, <kbd>E</kbd> log out, <kbd>R</kbd> reboot, <kbd>P</kbd> power off (5 s countdown, <kbd>Esc</kbd> cancels)
+- <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([kendra](https://github.com/Theyashsawarkar/kendra); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, caffeine, dark theme, wallpaper, power profile, volume and brightness, lock and power
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — rmpc (music player), toggle open/hidden
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — Search + download music from YouTube
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> / <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — YouTube ([raga](https://github.com/Theyashsawarkar/raga)): search, play as video (mpv) / music (MPD via rmpc); <kbd>Shift</kbd>+<kbd>Enter</kbd> the other way
 - <kbd>Super</kbd>+<kbd>n</kbd> — Cycle notification mode (normal → silent → dnd)
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>n</kbd> / <kbd>s</kbd> / <kbd>d</kbd> — Jump directly to normal / silent / dnd
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd> — Fuzzy-searchable keybinding reference (this list, live)
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd> — Keybindings ([mudra](https://github.com/Theyashsawarkar/mudra)): every binding by what it does, real key caps, <kbd>Enter</kbd> runs it
+- The battery capsule on the bar — Battery ([urja](https://github.com/Theyashsawarkar/urja)): charge, time left, health, power profile, the charge-limit reminder
 
 ### Launch & session
 
 - <kbd>Super</kbd>+<kbd>Return</kbd> — Open a terminal
-- <kbd>Super</kbd>+<kbd>d</kbd> — App launcher
-- <kbd>Super</kbd>+<kbd>c</kbd> — Calculator
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>q</kbd> — Kill focused window
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>c</kbd> — Reload sway config
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>e</kbd> — Exit sway (confirmation prompt)

@@ -28,7 +28,8 @@ tool's own annotation mechanism:
           the root approval window.
 
 Front-ends:
-  (no args)          wofi popup, Super+Shift+/ in sway. Enter copies the line.
+  (no args)          opens mudra (a Vyom tool, Super+Shift+/), which reads --json.
+  --json             every binding as JSON (mudra's source).
   --tmux-fzf         fzf list of tmux keys for the tmux `prefix ?` popup;
                      prints the picked entry's table<TAB>key for tmux_keys.sh
                      to replay with `send-keys -K`.
@@ -61,8 +62,11 @@ ANNOTATED_SCRIPT_DIRS = [
     # keys in its bin/sangam. Third-party plugins don't use the annotation.
     *sorted((HOME / ".tmux/plugins").glob("*/scripts")),
     *sorted((HOME / ".tmux/plugins").glob("*/bin")),
-    # Vyom's panels (quick settings...): its keys are annotated in its source.
-    HOME / ".local/share/vyom/vyom",
+    # Vyom (the launcher/panels runtime) and its tools, each a separate
+    # repo: their keys are annotated in their Python packages.
+    HOME / ".local/share/vyom/core/vyom",
+    *sorted(p for p in (HOME / ".local/share/vyom/plugins").glob("*/*")
+            if (p / "__init__.py").exists()),
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # vayu-elevate's approval window (ai/elevate/dialog.py, root-owned).
@@ -509,51 +513,10 @@ def short(desc):
     return desc if len(desc) <= MAX_DESC_LEN else desc[: MAX_DESC_LEN - 1].rstrip() + "…"
 
 
-def wofi_line(e):
-    color = SOURCE_COLORS.get(e["source"], "#CDD6F4")
-    esc = html.escape
-    keys = f"{e['keys']:22s}"
-    if e["origin"] == "default":
-        keys = f'<span foreground="{DIM_COLOR}">{esc(keys)}</span>'
-    else:
-        keys = esc(keys)
-    line = f'<span foreground="{color}">{esc(e["source"]):5s}</span> {keys} {esc(short(e["desc"]))}'
-    tags = [t for t in (e["scope"], "default" if e["origin"] == "default" else None) if t]
-    if tags:
-        line += f'<span foreground="{SCOPE_COLOR}">  [{esc(", ".join(tags))}]</span>'
-    return line
-
-
-def run_wofi():
-    entries = all_entries()
-    if not entries:
-        subprocess.run([
-            "notify-send", "-u", "critical",
-            "-i", "/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-error.png", "Keybindings",
-            "Couldn't parse any keybindings -- check the configs are readable",
-        ])
-        sys.exit(1)
-    # --height 680 is what --lines 12 drew; --lines sizes the list from the
-    # rows wofi has at its first draw, so it sometimes came up one row tall
-    # (reproduced 2026-09-29).
-    result = subprocess.run(
-        ["wofi", "--dmenu", "--insensitive", "--matching", "fuzzy",
-         "--prompt", SEARCH_HINT, "--height", "680"],
-        input="\n".join(wofi_line(e) for e in entries), capture_output=True, text=True,
-    )
-    selection = html.unescape(re.sub(r"<[^>]+>", "", result.stdout.strip()))
-    selection = re.sub(r"\s{2,}", "  ", selection)
-    if not selection:
-        return
-    # Popen, not run: wl-copy stays alive to serve the selection.
-    proc = subprocess.Popen(["wl-copy"], stdin=subprocess.PIPE, text=True)
-    proc.stdin.write(selection)
-    proc.stdin.close()
-    subprocess.run([
-        "notify-send", "-u", "low",
-        "-i", "/usr/share/icons/candy-icons/apps/scalable/org.kde.plasma.clipboard.svg",
-        "Keybinding (copied)", selection,
-    ])
+def run_panel():
+    """The desktop front-end is mudra, a Vyom tool (Super+Shift+/), which
+    reads `--json` from this script."""
+    os.execvp(os.path.expanduser("~/.local/bin/vyom"), ["vyom", "mudra"])
 
 
 def ansi(hex_color):
@@ -639,7 +602,7 @@ def run_check():
 def main():
     args = sys.argv[1:]
     if not args:
-        run_wofi()
+        run_panel()
     elif args[0] == "--tmux-fzf":
         run_tmux_fzf()
     elif args[0] == "--list":

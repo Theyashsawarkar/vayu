@@ -3,7 +3,7 @@
 #   on:  access-point glyph + how many devices are connected, teal border;
 #        the tooltip has the name, password, devices and internet source
 #   off: nothing (waybar hides an empty module)
-# Click opens the Wi-Fi picker (which can start/stop it), right click turns
+# Click opens the hotspot panel (vyom tarang hotspot), right click turns
 # it off. Refreshed by bar-events.py (signal 15) when NetworkManager's
 # active connections change or a device joins or leaves (`iw event`), and
 # every 30 s for devices that vanish without leaving (off is one nmcli call).
@@ -21,4 +21,4 @@ jq -c --arg icon "$ICON" '
      class: "on",
      tooltip: ("Hotspot \"\(.ssid)\" (\(.band))\nPassword: \(.password)\nInternet: \(if .internet == "" then "none (plug in ethernet)" else .internet end)\n"
                + (if .client_count == 0 then "No devices connected" else "\(.client_count) connected:\n" + $devs end)
-               + "\n\nClick: Wi-Fi menu · Right click: turn off")}' <<<"$s"
+               + "\n\nClick: hotspot panel · Right click: turn off")}' <<<"$s"

@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
 # Super+Ctrl+a: stop the laptop ringing if the phone rang it, otherwise
-# pick one of the current notification's actions in wofi (mako's left
+# pick one of the current notification's actions in a Vyom panel (mako's left
 # click only ever runs the default one). E.g. Accept/Reject a phone pairing
 # request, Undo a clipboard received from the phone, Show a received file
 # in its folder.
 # keybind: Sway/notification actions | Enter | Run the highlighted notification action
 #
 # makoctl menu parses every dash-option after it as its own (it rejected
-# wofi's -i/-p), so it gets this script back, with no arguments, as the
-# picker program; that call runs wofi.
+# a picker's -p), so it gets this script back, with no arguments, as the
+# picker program; that call runs `vyom dmenu` (stdin: the actions, stdout:
+# the pick, in Vyom's order: no cache reshuffling Accept/Reject).
 if [ -n "$NOTIFICATION_ACTIONS_PICK" ]; then
-  # No cache: wofi moves past picks to the top, so Accept/Reject would
-  # swap places depending on what was chosen before.
-  exec wofi --dmenu -i --cache-file /dev/null -p "Action "
+  exec "$HOME/.local/bin/vyom" dmenu -p "Action"
 fi
 
 # A ring comes first and never goes through mako: on 2026-09-29 one could

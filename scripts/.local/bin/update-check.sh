@@ -93,4 +93,6 @@ notify-send -u normal \
     "Desktop update available ($CHANNEL)" \
     "$COUNT new commit$PLURAL_S -- latest: \"$LATEST_SUBJECT\""
 
-"$HOME/.local/bin/nwg-bar-launch" -t update-bar.json -s "$HOME/.config/nwg-bar/update-bar-style.css" -i 40
+# Ask with a Vyom panel (vyom dmenu): Enter on "Update now" applies it.
+choice=$(printf 'Update now\nLater\n' | "$HOME/.local/bin/vyom" dmenu -p "Desktop update: $COUNT new commit$PLURAL_S") || exit 0
+[ "$choice" = "Update now" ] && exec "$HOME/.local/bin/update-apply.sh"

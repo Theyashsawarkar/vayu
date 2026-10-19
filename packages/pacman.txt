@@ -59,11 +59,9 @@ mpv
 neovim
 networkmanager
 network-manager-applet
-networkmanager-dmenu
 noto-fonts
 noto-fonts-emoji
 nvm
-nwg-bar
 pacman-contrib
 pavucontrol
 pgcli
@@ -110,7 +108,6 @@ wget
 wireless-regdb
 wireplumber
 wl-clipboard
-wofi
 wtype
 xdg-desktop-portal-wlr
 xdg-utils

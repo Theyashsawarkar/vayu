@@ -251,18 +251,27 @@ your saved network by itself.
 - **"needs dnsmasq":** `sudo pacman -S dnsmasq` (`install.sh` installs it
   on new machines).
 
-## Bar: the ⚙ (or Super+Q) doesn't open quick settings
+## Panels: a key (Super+D, Super+Shift+W...) or a bar click opens nothing
 
-Quick settings is [Vyom](https://github.com/Theyashsawarkar/vyom), its own
-repo. A machine set up before it was added doesn't have it yet:
+Every launcher and panel is a [Vyom](https://github.com/Theyashsawarkar/vyom)
+tool, each its own repo. See what Vyom has loaded and why anything is
+skipped:
 
 ```sh
-~/dotfiles/install.sh          # safe to re-run: clones it and links ~/.local/bin/vyom
-vyom daemon                    # or log out and back in (sway starts it)
+vyom list                                  # every tool: ok, or what it needs
+tail -20 ~/.local/state/vyom/daemon.log    # errors from the panels
 ```
 
-`vyom quick` in a terminal shows any error. It needs `gtk4-layer-shell`
-(install.sh installs it) and `python-gobject`.
+- **`vyom: command not found`, or a tool missing from the list:** a machine
+  set up before Vyom (or before a tool was added) doesn't have it yet.
+  `~/dotfiles/install.sh` (safe to re-run) clones Vyom and every tool in
+  `VYOM_TOOLS` and updates the ones already there.
+- **"needs X":** install X (`vyom list` names it), then `vyom reload`.
+- **Nothing at all, even `vyom dvara` in a terminal:** Vyom needs
+  `gtk4-layer-shell` and `python-gobject` (install.sh installs both).
+  Restart it with `vyom quit; vyom daemon`.
+- **The panel shows but looks like a flat box:** SwayFX's blur behind it
+  comes from `layer_effects "vyom"` in sway's config; reload sway.
 
 ## Login: the desktop doesn't start after logging in
 
