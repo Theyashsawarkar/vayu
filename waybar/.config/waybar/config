@@ -37,19 +37,19 @@
 		// The apps on each workspace as icons next to its number.
 		"format": "{name}{windows}",
 		"format-window-separator": "",
-		"window-rewrite-default": " \uf2d0",
+		"window-rewrite-default": "  \uf2d0",
 		"window-rewrite": {
-			"class<kitty|foot|Alacritty|org.wezfurlong.wezterm>": " \uf489",
-			"class<firefox|librewolf|zen>": " 󰈹",
-			"class<chromium|google-chrome|brave-browser>": " \uf268",
-			"class<code|code-oss|Code|dev.zed.Zed|zed>": " 󰨞",
-			"class<org.gnome.Nautilus|thunar|nemo|pcmanfm>": " \uf07b",
-			"class<discord|vesktop|Slack|slack>": " 󰭹",
-			"class<Spotify|spotify|mpv|rmpc>": " 󰝚",
-			"class<jetbrains-studio|android-studio>": " 󰀲",
-			"class<org.kde.kdeconnect.*>": " 󰄜",
-			"class<libreoffice.*|soffice>": " 󰈙",
-			"class<pavucontrol|org.pulseaudio.pavucontrol>": " 󰕾"
+			"class<kitty|foot|Alacritty|org.wezfurlong.wezterm>": "  \uf489",
+			"class<firefox|librewolf|zen>": "  󰈹",
+			"class<chromium|google-chrome|brave-browser>": "  \uf268",
+			"class<code|code-oss|Code|dev.zed.Zed|zed>": "  󰨞",
+			"class<org.gnome.Nautilus|thunar|nemo|pcmanfm>": "  \uf07b",
+			"class<discord|vesktop|Slack|slack>": "  󰭹",
+			"class<Spotify|spotify|mpv|rmpc>": "  󰝚",
+			"class<jetbrains-studio|android-studio>": "  󰀲",
+			"class<org.kde.kdeconnect.*>": "  󰄜",
+			"class<libreoffice.*|soffice>": "  󰈙",
+			"class<pavucontrol|org.pulseaudio.pavucontrol>": "  󰕾"
 		},
 		"persistent-workspaces": {
 			"1": [],
@@ -65,7 +65,7 @@
 		// icon's weight next to it (this sun fills more of its box than
 		// the speaker does, so 150% looked bigger); rise='-1pt' centres
 		// it on the digits, measured from screenshots (2026-09-29).
-		"format": "<span size='125%' rise='-1pt'>{icon}</span>  {percent}%",
+		"format": "<span size='125%' rise='-1pt' color='#CBA6F7'>{icon}</span>  {percent}%",
 		"format-icons": ["󰃞", "󰃟", "󰃠"],
 		"tooltip-format": "Click: drag to set   Scroll: +/-5%",
 		"on-click": "$HOME/.local/bin/brightness-slider.sh",
@@ -123,11 +123,11 @@
 	"network": {
 		// Just the icon (Wi-Fi signal or the wired-network glyph), then the
 		// speed next to it; the network name and IP are in the tooltip.
-		"format-wifi": "<span size='150%' rise='-2pt'>{icon}</span>",
-		"format-ethernet": "<span size='150%' rise='-2pt'>󰌗</span>",
-		"format-disconnected": "<span size='150%' rise='-2pt'>󰌘</span>",
-		"format-disabled": "<span size='150%' rise='-2pt'>󰖪</span>",
-		"format-linked": "<span size='150%' rise='-2pt'>󰌘</span>",
+		"format-wifi": "<span size='150%' rise='-2pt' color='#CBA6F7'>{icon}</span> ",
+		"format-ethernet": "<span size='150%' rise='-2pt' color='#CBA6F7'>󰌗</span> ",
+		"format-disconnected": "<span size='150%' rise='-2pt' color='#F38BA8'>󰌘</span> ",
+		"format-disabled": "<span size='150%' rise='-2pt' color='#F38BA8'>󰖪</span> ",
+		"format-linked": "<span size='150%' rise='-2pt' color='#F38BA8'>󰌘</span> ",
 		"format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
 		"interval": 30,
 		"tooltip-format-wifi": "{essid}\nSignal: {signalStrength}%  ({signaldBm} dBm)\nFrequency: {frequency} GHz\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
@@ -151,7 +151,7 @@
 		"interval": 2,
 		// Fixed-width values (monospace): the capsule never jitters as the
 		// numbers change length, without a min-width that left a gap.
-		"format": "<span color='#A6E3A1'>\uf063</span>{bandwidthDownBytes:<8} <span color='#FAB387'>\uf062</span>{bandwidthUpBytes:<8}",
+		"format": "<span color='#CBA6F7'>\uf063</span>{bandwidthDownBytes:<8} <span color='#CBA6F7'>\uf062</span>{bandwidthUpBytes:<8}",
 		"tooltip": false
 	},
 
@@ -189,9 +189,9 @@
 			"warning": 30,
 			"moderate": 60
 		},
-		"format": "{icon}  {capacity}%",
-		"format-charging": "{icon}  {capacity}%",
-		"format-plugged": "{icon}  {capacity}%",
+		"format": "<span color='#CBA6F7'>{icon}</span>  {capacity}%",
+		"format-charging": "<span color='#CBA6F7'>{icon}</span>  {capacity}%",
+		"format-plugged": "<span color='#CBA6F7'>{icon}</span>  {capacity}%",
 		"format-icons": {
 			"charging": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
 			"default": ["󰁺", "󰁽", "󰁿", "󰂁", "󰁹"]
@@ -207,8 +207,8 @@
 		// screenshots, 2026-09-29). An icon-only span was tried before
 		// and "broke", but that was the threshold-object format-icons
 		// bug below hiding the icon, not the span.
-		"format": "<span size='150%' rise='-2pt'>{icon}</span>  {volume}%",
-		"format-muted": "<span size='150%' rise='-2pt'>󰝟</span>  Muted",
+		"format": "<span size='150%' rise='-2pt' color='#CBA6F7'>{icon}</span>  {volume}%",
+		"format-muted": "<span size='150%' rise='-2pt' color='#F38BA8'>󰝟</span>  Muted",
 		// Plain array, NOT waybar's threshold-object form
 		// ({"icon":...,"max":...}) -- that form is real and documented
 		// (waybar's own man page and source, src/ALabel.cpp), and was
@@ -241,8 +241,8 @@
 
 	// Now playing (MPD, played through rmpc). Hidden when stopped.
 	"mpd": {
-		"format": "<span color='#F5C2E7'>󰝚</span>  {title}<span color='#9399B2'> · {artist}</span>",
-		"format-paused": "<span color='#F5C2E7'>󰏤</span>  {title}<span color='#9399B2'> · paused</span>",
+		"format": "<span color='#CBA6F7'>󰝚</span>  {title}<span color='#9399B2'> · {artist}</span>",
+		"format-paused": "<span color='#CBA6F7'>󰏤</span>  {title}<span color='#9399B2'> · paused</span>",
 		"format-stopped": "",
 		"format-disconnected": "",
 		"max-length": 48,

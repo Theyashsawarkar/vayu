@@ -694,7 +694,7 @@ tooltip label {
 }
 #clockbox #clock.time { font-weight: bold; }
 #clockbox #clock:not(.time) { color: #A6ADC8; }
-#connectivity #network { color: #89DCEB; padding-right: 2px; }
+#connectivity #network { color: #CDD6F4; padding: 0 4px 0 12px; }
 /* Bluetooth shows only a connected device; otherwise it takes no space. */
 #connectivity #bluetooth { padding: 0; }
 #connectivity #bluetooth.connected { padding: 0 9px; }
@@ -713,10 +713,10 @@ tooltip label {
    Each app icon carries its own leading space (config: window-rewrite),
    so an empty workspace is only its number and stays narrow.
    =================================================================== */
-#workspaces { padding: 0 4px; }
+#workspaces { padding: 0 6px; }
 #workspaces button {
-    padding: 0 9px;
-    margin: 4px 1px;
+    padding: 0 12px;
+    margin: 5px 3px;
     min-width: 0;
     border: none;
     border-radius: 12px;
@@ -736,3 +736,21 @@ tooltip label {
     box-shadow: none;
 }
 #workspaces button.urgent { background: #F38BA8; color: #11111B; }
+
+/* ===================================================================
+   ONE ACCENT (2026-10-19): Vayu's primary, Mauve #CBA6F7, is the icon
+   color across the bar (set on each icon in the config's formats, and
+   here for icon-only capsules); text is the base silver. Other colors
+   only where they carry meaning: red for disconnected / muted / critical
+   battery, peach for a battery running low.
+   =================================================================== */
+#pulseaudio, #backlight, #battery, #custom-docker, #custom-phone,
+#system #pulseaudio, #system #backlight, #system #battery,
+#clockbox #clock.time { color: #CDD6F4; }
+#custom-caffeine.active, #custom-hotspot.on, #custom-quick,
+#clockbox #custom-notifications, #custom-notifications.normal { color: #CBA6F7; }
+#custom-hotspot.on { border-color: rgba(203, 166, 247, 0.6); }
+#custom-notifications.dnd, #clockbox #custom-notifications.dnd { color: #F38BA8; }
+#system #pulseaudio.muted { color: #F38BA8; }
+#system #battery.warning:not(.charging) { color: #FAB387; }
+#system #battery.critical:not(.charging) { color: #F38BA8; }

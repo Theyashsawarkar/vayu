@@ -19,6 +19,15 @@ full branch/release process.
   filled mauve chip with its number and the icons of the apps in it,
   other occupied ones the number and icons in soft silver, empty ones a
   dim number, urgent ones red.
+- One accent: Vayu's primary, Mauve #CBA6F7, is now the icon color across
+  the bar (network, speed arrows, volume, brightness, battery, the bell,
+  docker, caffeine, hotspot, the gear, now playing), text the base silver.
+  Other colors only where they mean something: red for disconnected,
+  muted, do not disturb and a critical battery, peach for a low one.
+- The enlarged network icon was cropped on its right: a trailing space
+  and more padding give the 150% glyph its room.
+- Workspace chips were cramped: wider chips, more space between them and
+  between the number and its app icons.
 - The speed segment had a 177px min-width (against jitter as the numbers
   change length) that GTK centred the text in, leaving a gap after the
   icon. The values are now fixed-width in the format (monospace), so it
