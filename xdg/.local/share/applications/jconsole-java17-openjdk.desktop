@@ -1,0 +1,14 @@
+[Desktop Entry]
+# Vayu: hidden from launchers (a dependency's or helper's entry, or replaced
+# by a Vyom tool). Delete this file to show it again.
+NoDisplay=true
+Name=OpenJDK Java 17 Console
+Name[fi]=OpenJDK Java 17 - konsoli
+Comment=OpenJDK Java 17 Monitoring & Management Console
+Comment[fi]=OpenJDK Java 17 - valvonta- ja hallintakonsoli
+Keywords=java;console;monitoring
+Exec=/usr/lib/jvm/java-17-openjdk/bin/jconsole
+Terminal=false
+Type=Application
+Icon=java17-openjdk
+Categories=Application;System;

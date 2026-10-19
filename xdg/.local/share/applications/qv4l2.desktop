@@ -1,0 +1,14 @@
+[Desktop Entry]
+# Vayu: hidden from launchers (a dependency's or helper's entry, or replaced
+# by a Vyom tool). Delete this file to show it again.
+NoDisplay=true
+Name=Qt V4L2 test Utility
+Name[pt]=Utilitário de teste V4L2
+Comment=Allow testing Video4Linux devices
+Comment[pt]=Permite testar dispositivos Video4Linux
+Exec=qv4l2
+Icon=qv4l2
+Terminal=false
+Type=Application
+Categories=AudioVideo;
+Keywords=video;grabber;V4L;

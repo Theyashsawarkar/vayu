@@ -624,11 +624,10 @@ exec systemctl --user restart phone-events.service
 for_window [class=".*"] inhibit_idle fullscreen
 for_window [app_id=".*"] inhibit_idle fullscreen
 
-# No nm-applet/blueman-applet: waybar has no tray to show them, and nothing
-# needs them (WiFi secrets are stored by NetworkManager itself, psk-flags=0;
-# bluez powers the adapter on by itself; wifi-picker and bluetooth-picker
-# cover the rest). They cost ~170 MB between them. Both packages stay for
-# nm-connection-editor and blueman-manager, which the pickers open.
+# No nm-applet/blueman-applet: Vyom's tarang (Wi-Fi) and setu (Bluetooth)
+# cover them (WiFi secrets are stored by NetworkManager itself, psk-flags=0;
+# bluez powers the adapter on by itself), so neither package is installed.
+# Advanced network settings: nmtui.
 
 # Battery Daemon: Warns at 20%, Critical at 10%, Forces Suspend at 5%.
 # Systemd user service (systemd/.config/systemd/user/batsignal.service) rather

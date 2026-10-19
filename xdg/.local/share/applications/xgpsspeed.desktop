@@ -1,0 +1,13 @@
+[Desktop Entry]
+# Vayu: hidden from launchers (a dependency's or helper's entry, or replaced
+# by a Vyom tool). Delete this file to show it again.
+NoDisplay=true
+Encoding=UTF-8
+Name=xgpsspeed
+GenericName=GPS speedometer
+Comment=Display GPS speed from a gpsd daemon
+Exec=xgpsspeed
+Icon=/usr/share/gpsd/icons/gpsd-logo.png
+Terminal=false
+Type=Application
+Categories=Application;Maps;Utility;

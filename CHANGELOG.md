@@ -5,6 +5,27 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (app launcher: 37 entries down to 17)
+
+- Uninstalled what Vyom made redundant: Bluetooth Manager (blueman; setu
+  replaces it), the NetworkManager applet with Advanced Network
+  Configuration (tarang; `nmtui` stays for advanced settings), the Foot
+  terminal (kitty is the terminal) and Qt6 Settings (qt6ct; Qt theming was
+  never wired up). Off packages/pacman.txt too.
+- Hidden from every launcher (dvara included), not uninstalled, because
+  other packages need them: the three Avahi browsers (avahi: CUPS, MPD,
+  PipeWire), the V4L2 webcam test tools (ffmpeg), xgps / xgpsspeed (gpsd:
+  waybar), OpenJDK Console / Shell (Android builds), the KDE Connect app,
+  indicator and SMS entries (doot replaces them; the daemon stays), Thunar
+  Preferences and Bulk Rename. Each is a copy of its .desktop file with
+  NoDisplay=true in xdg/.local/share/applications (delete one to show it
+  again); ~/.local/share/applications is now a real directory
+  (STOW_REAL_DIRS), so apps that add their own entries there don't write
+  into the repo.
+- Found doing it: `pacman -Rns blueman` also removed python-cairo, which
+  urja's charge ring draws with (PyGObject's cairo support). Reinstalled
+  and now listed explicitly in packages/pacman.txt.
+
 ## 2026-10-19 (wofi and nwg-bar replaced by Vyom and its tools)
 
 - Every wofi popup and the nwg-bar power menu is now a

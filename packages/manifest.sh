@@ -67,7 +67,7 @@ USER_UNITS_ENABLE=(
 STOW_REAL_DIRS=(
   .claude
   .config .config/gtk-3.0 .config/gtk-4.0 .config/systemd .config/systemd/user
-  .local .local/bin .local/share .local/state
+  .local .local/bin .local/share .local/share/applications .local/state
   .tmux .tmux/scripts
 )
 
