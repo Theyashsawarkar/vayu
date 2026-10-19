@@ -22,6 +22,8 @@ full branch/release process.
   again); ~/.local/share/applications is now a real directory
   (STOW_REAL_DIRS), so apps that add their own entries there don't write
   into the repo.
+- Also uninstalled Beekeeper Studio (a SQL GUI nothing needs; off
+  packages/aur.txt).
 - Found doing it: `pacman -Rns blueman` also removed python-cairo, which
   urja's charge ring draws with (PyGObject's cairo support). Reinstalled
   and now listed explicitly in packages/pacman.txt.
