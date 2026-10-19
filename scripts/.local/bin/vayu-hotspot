@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+# vayu-hotspot: share this laptop's internet over Wi-Fi (a WPA2 hotspot),
+# through NetworkManager.
+#
+#   vayu-hotspot                      status (same as `status`)
+#   vayu-hotspot on [--ssid NAME] [--password PW] [--band bg|a] [--channel N]
+#   vayu-hotspot off | toggle
+#   vayu-hotspot status [--json]      on/off, name, password, clients, internet source
+#   vayu-hotspot clients              devices connected right now
+#   vayu-hotspot qr                   a QR code phones scan to join (needs qrencode)
+#   --device <wifi-dev>               which Wi-Fi card, when there's more than one
+#
+# One NetworkManager connection, "Vayu Hotspot", created on first use:
+# Wi-Fi in AP mode, IPv4 shared (NM hands out 10.42.0.x through dnsmasq and
+# NATs it to whatever has the internet), WPA2 only. Name and password are
+# kept in it; the first password is generated (three groups of four, easy
+# to type on a phone) and changed with --password. The channel is pinned to
+# one every country allows (6 on 2.4 GHz, 36 on 5 GHz): left to choose,
+# NetworkManager picked 13, which phones set to a US region can't see.
+#
+# Nothing about the hardware is assumed: it uses the first Wi-Fi device
+# NetworkManager says can be an access point (or --device), checks 5 GHz
+# support before using it, turns the Wi-Fi radio on if it's off (and says
+# so when a hardware switch blocks it), and works without `iw` (just no
+# per-device client list then).
+#
+# Most Wi-Fi cards can't host and stay connected to a Wi-Fi network at the
+# same time under NetworkManager, so the hotspot takes over wlan0: share a
+# wired connection (or a USB-tethered phone). Started while on Wi-Fi, it
+# says so and that Wi-Fi drops. Clients only reach the internet past
+# Docker's firewall thanks to the dispatcher hook in
+# system/etc/NetworkManager/dispatcher.d/50-vayu-hotspot (system/apply.sh).
+set -uo pipefail
+# Run from waybar, wofi or keys too, which lack the login shell's PATH.
+case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH=$HOME/.local/bin:$PATH ;; esac
+
+CON="Vayu Hotspot"
+B=$'\e[1m' D=$'\e[2m' G=$'\e[32m' Y=$'\e[33m' X=$'\e[0m'
+[ -t 1 ] || B="" D="" G="" Y="" X=""
+
+die() { printf 'vayu-hotspot: %s\n' "$*" >&2; exit 1; }
+command -v nmcli >/dev/null || die "needs NetworkManager (nmcli)"
+
+# --device may come anywhere on the command line.
+DEV="" args=()
+while [ $# -gt 0 ]; do
+  case $1 in --device) DEV=${2:-}; shift 2 ;; *) args+=("$1"); shift ;; esac
+done
+set -- "${args[@]}"
+
+wifi_devs() { nmcli -t -f DEVICE,TYPE device | awk -F: '$2 == "wifi" { print $1 }'; }
+prop() { nmcli -g "WIFI-PROPERTIES.$2" device show "$1" 2>/dev/null; }
+if [ -z "$DEV" ]; then
+  for d in $(wifi_devs); do [ "$(prop "$d" AP)" = yes ] && { DEV=$d; break; }; done
+  if [ -z "$DEV" ]; then
+    d=$(wifi_devs | head -1)
+    [ -n "$d" ] || die "no Wi-Fi device found"
+    die "this laptop's Wi-Fi card ($d, $(nmcli -g GENERAL.DRIVER device show "$d" 2>/dev/null) driver) can't be an access point, so it can't host a hotspot"
+  fi
+fi
+wifi_devs | grep -qxF "$DEV" || die "$DEV isn't a Wi-Fi device (have: $(wifi_devs | paste -sd' ' -))"
+
+# Tell the waybar capsule (custom/hotspot, signal 15) to redraw now.
+bar() { command -v waybar-signal >/dev/null && waybar-signal 15 >/dev/null 2>&1; true; }
+
+exists() { nmcli -t -f NAME connection show | grep -qxF "$CON"; }
+active() { nmcli -t -f NAME connection show --active | grep -qxF "$CON"; }
+field() { nmcli -s -g "$1" connection show "$CON" 2>/dev/null; }
+# The device that has the internet (default route), other than the hotspot's.
+upstream() { ip -4 route show default 2>/dev/null | awk -v w="$DEV" '{ for (i = 1; i < NF; i++) if ($i == "dev" && $(i+1) != w) { print $(i+1); exit } }'; }
+upstream_name() {
+  local d; d=$(upstream); [ -n "$d" ] || return 0
+  printf '%s (%s)' "$(nmcli -t -f GENERAL.CONNECTION device show "$d" 2>/dev/null | cut -d: -f2-)" "$d"
+}
+
+gen_password() {  # xxxx-xxxx-xxxx without look-alike characters
+  local a=abcdefghjkmnpqrstuvwxyz23456789 p="" i
+  for i in $(seq 1 12); do p+=${a:$((RANDOM % ${#a})):1}; ((i % 4 == 0 && i < 12)) && p+=-; done
+  printf '%s' "$p"
+}
+
+default_channel() { [ "$1" = a ] && echo 36 || echo 6; }
+
+create() {
+  local ssid=$1 pw=$2 band=$3 ch=$4
+  nmcli connection add type wifi ifname "$DEV" con-name "$CON" autoconnect no ssid "$ssid" \
+    802-11-wireless.mode ap 802-11-wireless.band "$band" 802-11-wireless.channel "$ch" \
+    ipv4.method shared ipv6.method disabled \
+    wifi-sec.key-mgmt wpa-psk wifi-sec.proto rsn wifi-sec.pairwise ccmp wifi-sec.group ccmp \
+    wifi-sec.psk "$pw" >/dev/null || die "couldn't create the hotspot connection"
+}
+
+# Who's connected, as "mac <TAB> ip <TAB> name" lines, all without root:
+# associated stations from `iw` (or the neighbour table without it), their
+# addresses from the neighbour table, and their names from the hotspot's
+# own DNS server (NM's dnsmasq answers reverse lookups from its leases;
+# the leases file itself is root-only).
+clients() {
+  active || return 0
+  local macs mac ip gw
+  gw=$(ip -4 -o addr show dev "$DEV" 2>/dev/null | awk '{ sub("/.*", "", $4); print $4; exit }')
+  # A device that switches Wi-Fi off without saying goodbye stays in the
+  # station list until a firmware timeout (minutes): skip any that sent
+  # nothing for 90 s (connected phones, even asleep, check in more often).
+  if command -v iw >/dev/null; then
+    macs=$(iw dev "$DEV" station dump 2>/dev/null | awk '/^Station/ { m = $2 } /inactive time:/ && $3 < 90000 { print m }')
+  else macs=$(ip neigh show dev "$DEV" 2>/dev/null | awk '/lladdr/ && !/FAILED/ { print $3 }'); fi
+  for mac in $macs; do
+    ip=$(ip neigh show dev "$DEV" 2>/dev/null | awk -v m="$mac" 'tolower($3) == tolower(m) { print $1; exit }')
+    printf '%s\t%s\t%s\n' "$mac" "$ip" "$([ -n "$ip" ] && [ -n "$gw" ] && ptr "$ip" "$gw")"
+  done
+}
+
+# ptr <ip> <dns server>: the name dnsmasq gave <ip>, from a reverse lookup.
+ptr() {
+  python3 - "$1" "$2" <<'PY' 2>/dev/null
+import socket, struct, sys
+ip, server = sys.argv[1], sys.argv[2]
+qname = b"".join(bytes([len(p)]) + p.encode() for p in reversed(ip.split("."))) + b"\x07in-addr\x04arpa\x00"
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.settimeout(0.5)
+s.sendto(struct.pack(">HHHHHH", 0x5a5a, 0x0100, 1, 0, 0, 0) + qname + b"\x00\x0c\x00\x01", (server, 53))
+r = s.recv(512)
+if struct.unpack(">H", r[6:8])[0] == 0: sys.exit()
+def name(i):
+    out = []
+    while r[i]:
+        if r[i] & 0xC0:
+            return out + name(struct.unpack(">H", r[i:i + 2])[0] & 0x3FFF)
+        out.append(r[i + 1:i + 1 + r[i]].decode(errors="replace")); i += 1 + r[i]
+    return out
+i = 12 + len(qname) + 4                      # past the question
+i += 2 if r[i] & 0xC0 else len(qname)        # answer's name
+print(".".join(name(i + 10)).split(".")[0])  # past type, class, ttl, length
+PY
+}
+
+status() {
+  local json=${1:-} on=false ssid="" pw="" band="" up n=0
+  active && on=true
+  if exists; then ssid=$(field 802-11-wireless.ssid); pw=$(field 802-11-wireless-security.psk); band=$(field 802-11-wireless.band); fi
+  up=$(upstream_name)
+  $on && n=$(clients | grep -c .)
+  if [ "$json" = --json ]; then
+    command -v jq >/dev/null || die "--json needs jq"
+    jq -n --argjson on "$on" --arg ssid "$ssid" --arg password "$pw" --arg band "$band" --arg device "$DEV" \
+      --arg upstream "$up" --argjson count "$n" --arg clients "$(clients)" \
+      '{on: $on, ssid: $ssid, password: $password, band: (if $band == "a" then "5 GHz" elif $band == "" then "" else "2.4 GHz" end),
+        device: $device, internet: $upstream, client_count: $count,
+        clients: [$clients | split("\n")[] | select(. != "") | split("\t") | {mac: .[0], ip: .[1], name: .[2]}]}'
+    return
+  fi
+  if $on; then printf '%s●%s Hotspot %son%s  %s%s%s\n' "$G" "$X" "$B" "$X" "$B" "$ssid" "$X"
+  else printf '%s○%s Hotspot %soff%s\n' "$D" "$X" "$B" "$X"; fi
+  [ -n "$ssid" ] && printf '  name      %s\n  password  %s\n  band      %s, channel %s\n' "$ssid" "$pw" "$([ "$band" = a ] && echo "5 GHz" || echo "2.4 GHz")" "$(field 802-11-wireless.channel)"
+  printf '  internet  %s\n' "${up:-${Y}none: plug in ethernet or tether a phone over USB${X}}"
+  if $on; then
+    printf '  clients   %s\n' "$n"
+    clients | while IFS=$'\t' read -r mac ip name; do printf '            %s %s %s%s%s\n' "${name:-unknown}" "$ip" "$D" "$mac" "$X"; done
+  fi
+  exists || printf '\n  %s`vayu-hotspot on` creates it (name "%s-hotspot", a generated password).%s\n' "$D" "$(hostname)" "$X"
+}
+
+on() {
+  local ssid="" pw="" band="" ch=""
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --channel) ch=$2; shift 2 ;;
+      --ssid) ssid=$2; shift 2 ;;
+      --password) pw=$2; shift 2 ;;
+      --band) band=$2; shift 2 ;;
+      *) die "unknown option $1" ;;
+    esac
+  done
+  [ -z "$pw" ] || [ ${#pw} -ge 8 ] || die "the password needs at least 8 characters"
+  [ -z "$band" ] || [ "$band" = bg ] || [ "$band" = a ] || die "--band is bg (2.4 GHz) or a (5 GHz)"
+  [ "$band" != a ] || [ "$(prop "$DEV" 5GHZ)" = yes ] || die "this Wi-Fi card ($DEV) has no 5 GHz: use --band bg"
+  [ "$(prop "$DEV" AP)" = yes ] || die "$DEV can't be an access point, so it can't host a hotspot"
+  # NetworkManager's "shared" mode hands out addresses through dnsmasq.
+  command -v dnsmasq >/dev/null || die "needs dnsmasq for handing out addresses (pacman -S dnsmasq)"
+  if [ "$(nmcli radio wifi)" != enabled ]; then
+    nmcli radio wifi on 2>/dev/null; sleep 1
+    [ "$(nmcli radio wifi)" = enabled ] || die "Wi-Fi is switched off and can't be turned on (a hardware switch or rfkill: rfkill list)"
+    echo "Turned Wi-Fi on."
+  fi
+  if rfkill list wifi 2>/dev/null | grep -q "Hard blocked: yes"; then
+    die "Wi-Fi is blocked by a hardware switch or key; turn it on first"
+  fi
+  if ! exists; then
+    create "${ssid:-$(hostname)-hotspot}" "${pw:-$(gen_password)}" "${band:-bg}" "${ch:-$(default_channel "${band:-bg}")}"
+  else
+    local mods=()
+    [ -n "$ssid" ] && mods+=(802-11-wireless.ssid "$ssid")
+    [ -n "$pw" ] && mods+=(wifi-sec.psk "$pw")
+    [ -n "$band" ] && mods+=(802-11-wireless.band "$band")
+    # A new band needs a channel from that band; an explicit one wins.
+    if [ -n "$ch" ]; then mods+=(802-11-wireless.channel "$ch")
+    elif [ -n "$band" ] || [ "$(field 802-11-wireless.channel)" = 0 ]; then
+      mods+=(802-11-wireless.channel "$(default_channel "${band:-$(field 802-11-wireless.band)}")"); fi
+    [ ${#mods[@]} -eq 0 ] || nmcli connection modify "$CON" "${mods[@]}" || die "couldn't change the hotspot"
+  fi
+  local busy; busy=$(nmcli -t -f DEVICE,STATE,CONNECTION device | awk -F: -v d="$DEV" -v c="$CON" '$1 == d && $2 == "connected" && $3 != c { print $3 }')
+  [ -n "$busy" ] && printf '%s!%s Wi-Fi "%s" disconnects: this card can host or join, not both.\n' "$Y" "$X" "$busy"
+  [ -z "$(upstream)" ] && [ -z "$busy" ] && printf '%s!%s No internet to share (no wired or tethered connection); devices can join but not browse.\n' "$Y" "$X"
+  active && nmcli connection down "$CON" >/dev/null 2>&1
+  nmcli connection up "$CON" >/dev/null 2>&1 || { bar
+    [ "$(field 802-11-wireless.band)" = a ] && die "couldn't start it on 5 GHz (this card's firmware often refuses to host there): try --band bg"
+    die "couldn't start the hotspot (nmcli connection up \"$CON\" shows why)"
+  }
+  bar
+  status
+}
+
+off() { active || { echo "Hotspot is already off."; return; }; nmcli connection down "$CON" >/dev/null && echo "Hotspot off."; bar; }
+
+qr() {
+  exists || die "no hotspot yet: vayu-hotspot on"
+  command -v qrencode >/dev/null || die "needs qrencode (pacman -S qrencode)"
+  local ssid pw
+  ssid=$(field 802-11-wireless.ssid) pw=$(field 802-11-wireless-security.psk)
+  esc() { sed 's/[\\;,:"]/\\&/g' <<<"$1"; }
+  qrencode -t ansiutf8 "WIFI:T:WPA;S:$(esc "$ssid");P:$(esc "$pw");;"
+  printf '%s  /  %s\n' "$ssid" "$pw"
+}
+
+case ${1:-status} in
+  status) status "${2:-}" ;;
+  on) shift; on "$@" ;;
+  off) off ;;
+  toggle) if active; then off; else on; fi ;;
+  clients) clients | while IFS=$'\t' read -r mac ip name; do printf '%s\t%s\t%s\n' "${name:-unknown}" "$ip" "$mac"; done ;;
+  qr) qr ;;
+  -h | --help) sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *) die "unknown command $1 (try --help)" ;;
+esac

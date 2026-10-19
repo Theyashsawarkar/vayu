@@ -211,6 +211,46 @@ battery and backlight are found at runtime. To see what this machine gets:
 original hardware: hibernate stays masked (it broke amdgpu resume there),
 and the greeter layout assumes a 1920x1080 panel (160x45 console).
 
+## Hotspot: devices join but nothing loads
+
+The hotspot (`vayu-hotspot on`, the Wi-Fi menu, or the teal capsule) shares
+this laptop's internet. Devices that connect but can't open anything are
+almost always being dropped by the firewall: Docker and ufw set the FORWARD
+chain to DROP, and the hook that lets hotspot traffic through isn't
+installed. Install it and restart the hotspot:
+
+```sh
+~/dotfiles/system/apply.sh        # installs /etc/NetworkManager/dispatcher.d/50-vayu-hotspot
+vayu-hotspot off && vayu-hotspot on
+sudo iptables -S FORWARD | grep vayu-hotspot   # two ACCEPT rules while it's on
+```
+
+Also check `vayu-hotspot status` shows an **internet** source: the hotspot
+shares a wired connection or a USB-tethered phone, not Wi-Fi (next
+section). See the 2026-10-19 hotspot entry in `CHANGELOG.md`.
+
+## Hotspot: my Wi-Fi disconnected when I started it
+
+By design. NetworkManager can't keep this Wi-Fi card connected to a
+network while it hosts one (most laptop cards can't, or only on the same
+channel), so the hotspot takes the Wi-Fi card over and shares the wired
+connection instead. `vayu-hotspot on` warns before it drops Wi-Fi.
+`vayu-hotspot off` gives the card back; NetworkManager then reconnects to
+your saved network by itself.
+
+## Hotspot: my phone doesn't see it, or it won't start
+
+- **Not in the phone's list:** the hotspot uses channel 6 (2.4 GHz), which
+  every country allows. If you set another one, go back to it:
+  `vayu-hotspot on --channel 6`.
+- **"couldn't start it on 5 GHz":** many cards' firmware refuses to host on
+  5 GHz until it has seen a 5 GHz network nearby. Use `--band bg`.
+- **"can't be an access point":** this laptop's Wi-Fi card doesn't support
+  hosting at all (`iw list` has no `AP` under "Supported interface modes").
+  A USB Wi-Fi adapter that does works: `vayu-hotspot on --device <its name>`.
+- **"needs dnsmasq":** `sudo pacman -S dnsmasq` (`install.sh` installs it
+  on new machines).
+
 ## Login: the desktop doesn't start after logging in
 
 The screen returns to the login prompt or goes black. Sway's own log goes to

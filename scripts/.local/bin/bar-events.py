@@ -13,6 +13,9 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               kdeconnectd appearing on / leaving the bus
   docker      14              docker.service ActiveState (system systemd),
                               then `docker events` start/die while it runs
+  hotspot     15              NetworkManager's ActiveConnections, and
+                              `iw event` new/del station (a device joined
+                              or left the hotspot)
 
 Caps Lock / Num Lock (9, 10) are signalled by sway's --release binds and
 keylock-toggle.sh. Everything else on the bar is waybar-internal.
@@ -32,7 +35,9 @@ import sys
 
 from gi.repository import Gio, GLib
 
-WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "caffeine": 12, "phone": 13, "docker": 14}
+WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "caffeine": 12, "phone": 13, "docker": 14, "hotspot": 15}
+NM = "org.freedesktop.NetworkManager"
+iw_events = None  # the running `iw event` Gio.Subprocess
 KDECONNECT = "org.kde.kdeconnect"
 PHONE_SIGNALS = [  # (interface, member)
     (f"{KDECONNECT}.device", "reachableChanged"),
@@ -159,6 +164,32 @@ def read_docker_events(stream, proc):
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
 
 
+def watch_stations():
+    """`iw event` prints "<dev>: new station <mac>" / "del station" as
+    devices join or leave any access point on this machine (the hotspot)."""
+    global iw_events
+    try:
+        iw_events = Gio.Subprocess.new(["iw", "event"],
+                                       Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("no `iw event`, hotspot capsule only updates on its timer:", e.message)
+        return
+    stream = Gio.DataInputStream.new(iw_events.get_stdout_pipe())
+
+    def got_line(s, result):
+        try:
+            line, _ = s.read_line_finish_utf8(result)
+        except GLib.Error:
+            line = None
+        if line is None:
+            return  # iw exited
+        if " station " in line:
+            refresh("hotspot")
+        s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
+
+    stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
+
+
 def main():
     global docker_active
     if sys.argv[1:] == ["--tmux-docker"]:
@@ -186,6 +217,14 @@ def main():
                                      lambda *a: refresh("phone"), lambda *a: refresh("phone"))
 
     watch_unit(system, "docker.service", on_docker_state)
+
+    # Hotspot: a connection going up or down, and devices joining/leaving
+    # (`iw event` needs no root; NM's leases folder is root-only).
+    system.signal_subscribe(NM, "org.freedesktop.DBus.Properties", "PropertiesChanged",
+                            "/org/freedesktop/NetworkManager", None, Gio.DBusSignalFlags.NONE,
+                            lambda c, s, p, i, m, params: "ActiveConnections" in params.unpack()[1]
+                            and refresh("hotspot"))
+    watch_stations()
 
     # Whatever changed while this wasn't running.
     for name in WAYBAR_SIGNAL:

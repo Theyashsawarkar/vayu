@@ -13,6 +13,19 @@ than asking the user to paste sudo commands.
 `AGENTS.md` holds the same rules for other agents (Codex, Aider...): a
 change to a rule here goes there too.
 
+## Hardware: detect it, never assume it
+
+Vayu runs on more than the laptop it was built on (different CPUs, GPUs,
+Wi-Fi cards, batteries, screens). Anything hardware-related is detected at
+runtime or install time, with a clear message when the hardware can't do
+it: device names (`wlan0`, `BAT0`, `eDP-1`) are looked up, not written in;
+capabilities are checked before use (e.g. vayu-hotspot asks NetworkManager
+whether the Wi-Fi card can be an access point and has 5 GHz); packages
+that depend on the CPU or GPU come from `packages/hardware.sh`. A feature
+the hardware can't support says so and how to get around it, instead of
+failing silently. Known limits go in `docs/TROUBLESHOOTING.md`
+("Hardware: a different laptop...").
+
 ## Plugins: every plugin in its own repository
 
 Every plugin we create for any tool (tmux, Neovim, zsh, waybar, rmpc...)

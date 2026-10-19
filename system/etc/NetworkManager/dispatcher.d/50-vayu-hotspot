@@ -1,0 +1,42 @@
+#!/bin/sh
+# NetworkManager dispatcher: lets the Vayu hotspot's clients get an address
+# and reach the internet. Two firewalls stand in the way, both with a
+# default DROP: ufw's INPUT (so a joining phone's DHCP request and DNS
+# lookups never reach NetworkManager's dnsmasq: it associates and then sits
+# at "connecting" with no address -- found testing with a real phone) and
+# Docker/ufw's FORWARD (so nothing it sends gets through to the internet).
+# Only while the hotspot is up, removed when it goes down:
+#   INPUT    DHCP (udp 67) and DNS (udp/tcp 53) from the hotspot interface
+#   FORWARD  anything in from it, and replies back out to it
+# Tagged with a comment so they can't pile up.
+#
+# NM runs this as root with $1 = interface, $2 = action, and the
+# connection's name in $CONNECTION_ID (vayu-hotspot names it "Vayu Hotspot").
+[ "$CONNECTION_ID" = "Vayu Hotspot" ] || exit 0
+command -v iptables >/dev/null 2>&1 || exit 0
+iface=$1 tag=vayu-hotspot
+
+rule_in()   { iptables "$1" FORWARD $2 -i "$iface" -m comment --comment "$tag" -j ACCEPT; }
+rule_out()  { iptables "$1" FORWARD $2 -o "$iface" -m conntrack --ctstate RELATED,ESTABLISHED -m comment --comment "$tag" -j ACCEPT; }
+rule_svc()  { iptables "$1" INPUT $2 -i "$iface" -p "$3" --dport "$4" -m comment --comment "$tag" -j ACCEPT; }
+services() {  # services <-I 1 | -D "">
+  rule_svc "$1" "$2" udp 67 && rule_svc "$1" "$2" udp 53 && rule_svc "$1" "$2" tcp 53
+}
+remove() {
+  while rule_in -D "" 2>/dev/null; do :; done
+  while rule_out -D "" 2>/dev/null; do :; done
+  while services -D "" 2>/dev/null; do :; done
+}
+
+case $2 in
+  up)
+    remove
+    rule_out -I 1
+    rule_in -I 1
+    services -I 1
+    ;;
+  down | pre-down)
+    remove
+    ;;
+esac
+exit 0

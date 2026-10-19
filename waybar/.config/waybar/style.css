@@ -30,6 +30,7 @@ window#waybar {
 #network,
 #backlight,
 #bluetooth,
+#custom-hotspot,
 #custom-phone,
 #custom-caffeine,
 #pulseaudio,
@@ -52,7 +53,7 @@ window#waybar {
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-#clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #bluetooth, #custom-phone, #backlight, #pulseaudio, #battery, #custom-power {
+#clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #custom-hotspot, #bluetooth, #custom-phone, #backlight, #pulseaudio, #battery, #custom-power {
     padding: 0 12px;
 }
 
@@ -528,6 +529,14 @@ window#waybar {
     border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
 }
 
+/* Hotspot (vayu-hotspot), right after the network capsule and only while
+   it's on: Teal, so "this laptop is sharing" reads apart from the green
+   "connected" borders. */
+#custom-hotspot.on {
+    color: #94E2D5;
+    border-color: rgba(148, 226, 213, 0.55);
+}
+
 /* A phone is asking to pair: Yellow, like a pending decision */
 #custom-phone.request {
     border-color: rgba(249, 226, 175, 0.6);
@@ -623,7 +632,7 @@ tooltip label {
    accent (Mauve) for "you're pointing at something", power keeps red. */
 #workspaces:hover, #clock:hover, #custom-docker:hover, #custom-capslock:hover,
 #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover,
-#custom-wallpaper:hover, #network:hover, #bluetooth:hover, #custom-phone:hover,
+#custom-wallpaper:hover, #network:hover, #custom-hotspot:hover, #bluetooth:hover, #custom-phone:hover,
 #custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
     border-color: #CBA6F7;
     box-shadow: 0 0 6px rgba(203, 166, 247, 0.35);

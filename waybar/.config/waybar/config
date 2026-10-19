@@ -5,7 +5,7 @@
 	"spacing": 8,
 
 	"modules-center": ["custom/notifications", "clock#time", "clock"],
-	"modules-left": ["sway/workspaces", "bluetooth", "network", "network#speed"],
+	"modules-left": ["sway/workspaces", "bluetooth", "network", "custom/hotspot", "network#speed"],
 
 	"modules-right": [
 		"custom/capslock",
@@ -128,6 +128,16 @@
 		"tooltip-format-disconnected": "Disconnected",
 		"tooltip-format-disabled": "Wi-Fi disabled (rfkill)",
 		"on-click": "$HOME/.local/bin/wifi-picker.py"
+	},
+
+	// Shown only while the hotspot (vayu-hotspot) is on: devices connected.
+	"custom/hotspot": {
+		"exec": "$HOME/.local/bin/hotspot-status.sh",
+		"interval": 30,
+		"signal": 15,
+		"return-type": "json",
+		"on-click": "$HOME/.local/bin/toggle-popup.sh wifi wofi $HOME/.local/bin/wifi-picker.py",
+		"on-click-right": "$HOME/.local/bin/vayu-hotspot off"
 	},
 
 	"network#speed": {

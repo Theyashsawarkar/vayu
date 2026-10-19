@@ -5,6 +5,62 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-19 (Wi-Fi hotspot: share this laptop's internet)
+
+- There was no way to start a hotspot on this desktop at all. New
+  `vayu-hotspot` (on / off / toggle / status / clients / qr): a WPA2
+  hotspot through NetworkManager, one connection "Vayu Hotspot", named
+  "<hostname>-hotspot" with a generated password in three groups of four
+  (easy to type on a phone; `--ssid` / `--password` change them). `qr`
+  prints a code phones scan to join; `status --json` is for the bar and
+  for Vyom.
+- Works on other laptops: nothing is assumed about the hardware. It uses
+  the first Wi-Fi device NetworkManager says can be an access point (or
+  `--device`), refuses 5 GHz on cards without it, turns the Wi-Fi radio on
+  if it's off, names a hardware switch block, and works without `iw`. A
+  card that can't host says so, with the way around it (a USB adapter).
+- Channel pinned to 6 (2.4 GHz) / 36 (5 GHz): left to choose,
+  NetworkManager picked channel 13, which phones set to a US region can't
+  see.
+- Two firewalls stood in the way, both default DROP. New dispatcher hook
+  `system/etc/NetworkManager/dispatcher.d/50-vayu-hotspot` opens them only
+  while the hotspot is up (tagged rules, removed when it goes down):
+  ufw's INPUT for DHCP (udp 67) and DNS (53) from the hotspot, without
+  which a phone associates and then sits at "connecting" with no address;
+  and Docker/ufw's FORWARD (in from the hotspot, replies back), without
+  which nothing it sends gets out.
+- Tested with a real phone (CMF Phone 2 Pro, Android 16, over adb): it
+  sees "Ace-hotspot" on channel 6, joins with the generated password, gets
+  10.42.0.201, Android marks the network validated and uses it as the
+  default (not mobile data), 20/20 pings at 7 ms minimum, and the laptop's
+  wlan0 carried 15 MB of its traffic. The first attempt is what found the
+  INPUT rules missing. The phone was put back as it was (Wi-Fi off, test
+  network forgotten).
+- `clients` lists devices without root: associated stations from `iw`,
+  their address from the neighbour table, their name from a reverse lookup
+  to the hotspot's own DNS (dnsmasq knows it from the lease; the leases
+  file is root-only). A device that switches Wi-Fi off without leaving
+  stays in the station list for minutes, so stations silent for 90 s don't
+  count.
+- The hotspot takes the Wi-Fi card over (this Intel 8265, like most cards,
+  can't host and stay on a network under NetworkManager), so it shares a
+  wired or USB-tethered connection; it warns before Wi-Fi drops.
+  Troubleshooting has three new hotspot sections.
+- Waybar: a teal `custom/hotspot` capsule next to the network one, only
+  while the hotspot is on: devices connected, and a tooltip with the
+  name, password, devices and internet source. Click opens the Wi-Fi menu,
+  right click turns it off. Refreshed by bar-events.py (signal 15) when
+  NetworkManager's active connections change or `iw event` reports a
+  device joining or leaving, plus a 30 s timer for devices that vanish.
+- The Wi-Fi menu (wifi-picker.py) has "Start hotspot" / "Stop hotspot
+  (N connected)" / "Copy hotspot password" rows.
+- Fixed while testing: scripts started by waybar and wofi don't have
+  `~/.local/bin` on PATH (sway's environment), so the capsule showed
+  nothing until the scripts added it themselves.
+- New packages: dnsmasq (NetworkManager's shared mode needs it), iw,
+  qrencode, and gtk4-layer-shell (for Vyom, the coming wofi replacement).
+- CLAUDE.md / AGENTS.md: a "Hardware: detect it, never assume it" rule.
+
 ## 2026-10-19 (the PR popup is now sangam, a command too)
 
 - tmux-gh-pr became [sangam](https://github.com/Theyashsawarkar/sangam)

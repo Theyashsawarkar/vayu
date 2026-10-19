@@ -30,6 +30,10 @@ does nothing or fires the wrong action.
 """
 import importlib.machinery
 import importlib.util
+import json
+import os
+import re
+import subprocess
 import sys
 
 NMDM_PATH = "/usr/bin/networkmanager_dmenu"
@@ -146,11 +150,52 @@ _orig_create_other_actions = nmdm.create_other_actions
 
 def wifi_only_other_actions(client):
     """WiFi-only menu -- strips the Bluetooth toggle upstream mixes in.
-    Bluetooth gets its own separate picker with its own unique options."""
+    Bluetooth gets its own separate picker with its own unique options.
+    Adds the hotspot (vayu-hotspot) rows."""
     return [
         a for a in _orig_create_other_actions(client) if a.func is not nmdm.toggle_bluetooth
-    ]
+    ] + hotspot_actions()
 
+
+# Full path: wofi runs from sway, without the login shell's PATH.
+HOTSPOT = os.path.expanduser("~/.local/bin/vayu-hotspot")
+
+
+def _hotspot(*args):
+    """Runs vayu-hotspot and shows its first line (or its error) as a
+    notification; the waybar capsule updates on its own."""
+    r = subprocess.run([HOTSPOT, *args], capture_output=True, text=True)
+    out = (r.stdout or r.stderr).strip().splitlines()
+    msg = re.sub(r"\x1b\[[0-9;]*m", "", out[0] if out else "")
+    subprocess.run(["notify-send", "-a", "Hotspot", "-i", "network-wireless-hotspot",
+                    "Hotspot" if r.returncode == 0 else "Hotspot failed", msg])
+
+
+def _copy_hotspot_password(password):
+    subprocess.run(["wl-copy"], input=password, text=True)
+    subprocess.run(["notify-send", "-a", "Hotspot", "-i", "network-wireless-hotspot",
+                    "Hotspot", "Password copied"])
+
+
+def hotspot_actions():
+    """Start/stop rows for the hotspot, only when vayu-hotspot exists and
+    this laptop's Wi-Fi card can be an access point (it says so if not)."""
+    try:
+        r = subprocess.run([HOTSPOT, "status", "--json"], capture_output=True, text=True, timeout=5)
+        st = json.loads(r.stdout) if r.returncode == 0 else None
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        st = None
+    if not st:
+        return []
+    if st["on"]:
+        n = st["client_count"]
+        return [nmdm.Action(f"Stop hotspot \"{st['ssid']}\" ({n} connected)", _hotspot, ["off"], active=True),
+                nmdm.Action(f"Copy hotspot password ({st['password']})", _copy_hotspot_password, [st["password"]])]
+    return [nmdm.Action("Start hotspot (share this laptop's internet)", _hotspot, ["on"])]
+
+
+# The hotspot rows are commands too (same color as Rescan/Disable).
+_COMMAND_FUNCS |= {_hotspot, _copy_hotspot_password}
 
 nmdm.get_wofi_highlight_markup = themed_markup
 nmdm.get_selection = themed_get_selection
