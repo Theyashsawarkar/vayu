@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (tmux: Claude waiting, Claude limit and dev servers capsules)
+
+- **󰚩 N waiting**: Claude sessions in other panes that finished their turn
+  or ask for permission (Claude Code's hooks call `claude-tmux`; looking at
+  the pane clears it). Click it, or `prefix a`, to jump to the one that has
+  waited longest. The pane you're looking at never counts.
+- **󰊚 account N%**: the active Claude account (vesha) and its 5-hour usage,
+  green / yellow / red; it follows `vesha waybar`, so a switch shows at once.
+  Shown with two accounts or more.
+- **󰒋 :3000 :5173**: dev servers you're running (ports opened by your
+  processes from inside a project folder, checked every 15 s by
+  `dev-ports`); click a port to open it in the browser.
+- Every capsule takes the theme's colours (varna 0.1.4: `@attention`,
+  `@dev`, `@ok`/`@warn`/`@error`); clicks go through `bar-click.sh`.
+- `claude-hooks-install.sh` registers the new hooks (Stop, Notification,
+  UserPromptSubmit, SessionStart, SessionEnd) next to the keybinding check.
+
 ## 2026-10-21 (varna and vinyasa: one theme for every tool, and a settings app)
 
 - [varna](https://github.com/Theyashsawarkar/varna), the theme engine (its

@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""Dev servers you're running: the TCP ports your own processes listen on
+from inside a project folder (a directory under $HOME, not $HOME itself),
+so daemons (KDE Connect, mpd, syncthing, the browser) don't show up.
+
+  dev-ports              the ports, one per line: "3000 node ~/code/app"
+  dev-ports --set-tmux   sets tmux's @dev_ports ("3000 5173") and
+                         @dev_ports_fmt (the capsule's clickable ports);
+                         bar-events.py runs this every 15 s
+"""
+import os
+import re
+import subprocess
+import sys
+
+HOME = os.path.expanduser("~")
+MAX = 4   # ports shown in the capsule; the rest are "+N"
+IGNORE = {"adb", "kdeconnectd", "mpd", "syncthing"}   # listen on ports, but aren't servers you'd open
+
+
+def ports():
+    try:
+        out = subprocess.run(["ss", "-ltnpH"], capture_output=True, text=True, timeout=3).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    found = {}
+    for line in out.splitlines():
+        cols = line.split()
+        if len(cols) < 6:
+            continue
+        port = cols[3].rsplit(":", 1)[-1]
+        m = re.search(r'\("([^"]+)",pid=(\d+)', line)   # only our own processes are listed with a pid
+        if not port.isdigit() or int(port) < 1024 or not m:
+            continue
+        name, pid = m.group(1), m.group(2)
+        if name in IGNORE:
+            continue
+        try:
+            cwd = os.readlink(f"/proc/{pid}/cwd")
+        except OSError:
+            continue
+        if not cwd.startswith(HOME + "/") or "/." in cwd[len(HOME):]:   # a project folder, not ~ or ~/.config...
+            continue
+        found.setdefault(int(port), (name, cwd.replace(HOME, "~", 1)))
+    return sorted(found.items())
+
+
+def set_tmux(items):
+    nums = [str(p) for p, _ in items]
+    shown = nums[:MAX]
+    fmt = " ".join(f"#[range=user|dev{p}]:{p}#[norange]" for p in shown)
+    if len(nums) > MAX:
+        fmt += f" +{len(nums) - MAX}"
+    for k, v in (("@dev_ports", " ".join(nums)), ("@dev_ports_fmt", fmt)):
+        cur = subprocess.run(["tmux", "show", "-gv", k], capture_output=True, text=True).stdout.rstrip("\n")
+        if cur != v:
+            subprocess.run(["tmux", "set", "-g", k, v], capture_output=True)
+    subprocess.run(["tmux", "refresh-client", "-S"], capture_output=True)
+
+
+if __name__ == "__main__":
+    items = ports()
+    if sys.argv[1:] == ["--set-tmux"]:
+        set_tmux(items)
+    else:
+        for p, (name, cwd) in items:
+            print(f"{p} {name} {cwd}")

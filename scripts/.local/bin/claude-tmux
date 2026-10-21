@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Claude sessions waiting for you, for tmux's bar.
+#
+# Claude Code's hooks call this (claude-hooks-install.sh registers them):
+#   claude-tmux hook Stop|Notification   the session in this pane finished its
+#                                         turn or asks for permission: waiting
+#   claude-tmux hook UserPromptSubmit|SessionStart|SessionEnd   not waiting
+# tmux calls it when you look at a pane, and for the capsule's click / key:
+#   claude-tmux seen <pane>   you're looking at it: not waiting any more
+#   claude-tmux next          jump to the session that has waited longest
+#   claude-tmux count         recount (sets @claude_waiting)
+#
+# A pane's state is its @claude_wait option (the time it started waiting);
+# @claude_waiting is how many there are, which the capsule shows. A pane you
+# are looking at when Claude stops never counts.
+set -u
+
+recount() {
+  local n
+  n=$(tmux list-panes -a -F '#{@claude_wait}' 2>/dev/null | grep -c '[0-9]')
+  tmux set -g @claude_waiting "$n" 2>/dev/null
+  tmux refresh-client -S 2>/dev/null
+  return 0
+}
+
+watching() {   # is this pane on screen in an attached client right now?
+  [ "$(tmux display -p -t "$1" '#{&&:#{&&:#{pane_active},#{window_active}},#{session_attached}}' 2>/dev/null)" = 1 ]
+}
+
+case "${1:-}" in
+  hook)
+    cat >/dev/null 2>&1   # the hook's JSON on stdin: not needed
+    pane="${TMUX_PANE:-}"
+    [ -n "$pane" ] && [ -n "${TMUX:-}" ] || exit 0   # not inside tmux
+    case "${2:-}" in
+      Stop|Notification)
+        if watching "$pane"; then
+          tmux set -p -t "$pane" -u @claude_wait 2>/dev/null
+        else
+          tmux set -p -t "$pane" @claude_wait "$(date +%s)" 2>/dev/null
+        fi ;;
+      *) tmux set -p -t "$pane" -u @claude_wait 2>/dev/null ;;
+    esac
+    recount ;;
+  seen)
+    [ -n "${2:-}" ] && tmux set -p -t "$2" -u @claude_wait 2>/dev/null
+    recount ;;
+  next)
+    target=$(tmux list-panes -a -F '#{@claude_wait} #{pane_id}' 2>/dev/null | grep '^[0-9]' | sort -n | head -1 | cut -d' ' -f2)
+    if [ -z "$target" ]; then
+      notify-send -a tmux -i utilities-terminal tmux "No Claude session is waiting for you" 2>/dev/null
+      exit 0
+    fi
+    tmux switch-client -t "$target" 2>/dev/null
+    tmux select-window -t "$target" 2>/dev/null
+    tmux select-pane -t "$target" 2>/dev/null
+    tmux set -p -t "$target" -u @claude_wait 2>/dev/null
+    recount ;;
+  count) recount ;;
+  *) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac
+exit 0

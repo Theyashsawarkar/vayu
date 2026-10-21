@@ -18,7 +18,11 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               or left the hotspot)
 
 tmux's "to review" capsule (@gh_reviews) is set from gh-review-count every
-5 minutes (GitHub has no push for "review requested" to a desktop).
+5 minutes (GitHub has no push for "review requested" to a desktop). Its dev
+servers capsule (@dev_ports) from dev-ports every 15 seconds (listening
+sockets have no event). Its Claude limit capsule (@claude_limit, and
+@claude_limit_class ok/warn/full) follows `vesha waybar`, which prints a
+line whenever the active account or its usage changes.
 
 Caps Lock / Num Lock (9, 10) are signalled by sway's --release binds and
 keylock-toggle.sh. Everything else on the bar is waybar-internal.
@@ -178,6 +182,55 @@ def gh_reviews():
     return True
 
 
+def dev_ports():
+    """Runs dev-ports in the background; it sets tmux's @dev_ports. Keeps the timer going."""
+    try:
+        Gio.Subprocess.new([os.path.expanduser("~/.local/bin/dev-ports"), "--set-tmux"],
+                           Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("dev-ports:", e.message)
+    return True
+
+
+def claude_limit_line(stream, result, proc):
+    """One line from `vesha waybar`: the active account and its 5-hour usage."""
+    import json
+    try:
+        line, _ = stream.read_line_finish_utf8(result)
+    except GLib.Error:
+        line = None
+    if line is None:   # vesha stopped (or isn't installed): hide the capsule, retry later
+        subprocess.run(["tmux", "set", "-gu", "@claude_limit"], capture_output=True)
+        GLib.timeout_add_seconds(300, watch_claude_limit)
+        return
+    try:
+        d = json.loads(line)
+        text, cls = d.get("text", ""), d.get("class", "")
+    except ValueError:
+        text, cls = "", ""
+    if text and cls in ("ok", "warn", "full"):
+        subprocess.run(["tmux", "set", "-g", "@claude_limit", text], capture_output=True)
+        subprocess.run(["tmux", "set", "-g", "@claude_limit_class", cls], capture_output=True)
+    else:   # one account, or usage unknown: nothing worth a capsule
+        subprocess.run(["tmux", "set", "-gu", "@claude_limit"], capture_output=True)
+    subprocess.run(["tmux", "refresh-client", "-S"], capture_output=True)
+    stream.read_line_async(GLib.PRIORITY_DEFAULT, None, claude_limit_line, proc)
+
+
+def watch_claude_limit():
+    vesha = os.path.expanduser("~/.local/bin/vesha")
+    if not os.access(vesha, os.X_OK):
+        return False
+    try:
+        proc = Gio.Subprocess.new([vesha, "waybar"], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("vesha waybar:", e.message)
+        return False
+    stream = Gio.DataInputStream.new(proc.get_stdout_pipe())
+    stream.read_line_async(GLib.PRIORITY_DEFAULT, None, claude_limit_line, proc)
+    return False
+
+
 def watch_stations():
     """`iw event` prints "<dev>: new station <mac>" / "del station" as
     devices join or leave any access point on this machine (the hotspot)."""
@@ -242,6 +295,9 @@ def main():
 
     gh_reviews()
     GLib.timeout_add_seconds(300, gh_reviews)
+    dev_ports()
+    GLib.timeout_add_seconds(15, dev_ports)
+    watch_claude_limit()
 
     # Whatever changed while this wasn't running.
     for name in WAYBAR_SIGNAL:
