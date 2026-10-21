@@ -77,7 +77,6 @@ qrencode
 qt6-multimedia-ffmpeg
 qt6-svg
 ripgrep
-rmpc
 rtkit
 seahorse
 slurp

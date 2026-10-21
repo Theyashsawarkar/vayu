@@ -5,6 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (nāda: our own music player, replacing rmpc)
+
+- New app, its own repo: [nāda](https://github.com/Theyashsawarkar/nada),
+  cloned by install.sh (`setup_apps`, `VAYU_APPS` in packages/manifest.sh)
+  into `~/.local/share/nada`, `nada` linked into `~/.local/bin`. It opens on
+  the playing song's synced lyrics (Home, `0`), with the cover, singers,
+  views and release age on the right; the queue (`1`) lines up what plays
+  next like YouTube and is edited with vim keys; YouTube search (`3`);
+  `D` downloads a YouTube song into `~/Music/YouTube` while it keeps
+  playing. MPD stays the engine.
+- `Super+Shift+M` now opens nāda (was rmpc); new `Super+Alt+Space` /
+  `Super+Alt+.` / `Super+Alt+,` play/pause, next and previous without
+  opening anything. Media keys already go through playerctl, which nāda
+  answers over MPRIS. sway starts `nada daemon` at login.
+- waybar: the music module right of the workspaces is now nāda's
+  (`custom/nada`): moving bars and the title while playing, a pause sign
+  when paused, a progress ring while downloading, gone when stopped. Click
+  pauses, scroll seeks 10 s, middle click skips, right click opens nāda.
+- raga (v0.1.2) plays music in nāda instead of `rmpc addyt`.
+- rmpc removed: its stow package, `rmpc-toggle.sh` and its pacman entry.
+- The keybinding search (`Super+Shift+/`) lists nāda's 47 keys (source
+  "Nada", pink).
+
 ## 2026-10-19 (every Vyom popup the same size; key names instead of symbols)
 
 - Every Vyom panel (apps, calculator, emoji, Wi-Fi, power menu, battery,

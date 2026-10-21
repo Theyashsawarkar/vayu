@@ -31,7 +31,7 @@ failing silently. Known limits go in `docs/TROUBLESHOOTING.md`
 
 ## Plugins: every plugin in its own repository
 
-Every plugin we create for any tool (tmux, Neovim, zsh, waybar, rmpc...)
+Every plugin we create for any tool (tmux, Neovim, zsh, waybar, Vyom...)
 lives in its **own repository** under github.com/Theyashsawarkar, and vayu
 **pulls it in** through that tool's plugin mechanism. Plugin source is never
 copied into this repo. That way each plugin is independent: it is tested,

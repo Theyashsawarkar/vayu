@@ -656,7 +656,7 @@ tooltip label {
 #clockbox,
 #connectivity,
 #system,
-#mpd,
+#custom-nada,
 #custom-quick {
     background-color: rgba(17, 17, 27, 0.92);
     color: #CDD6F4;
@@ -667,10 +667,11 @@ tooltip label {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 #clockbox, #connectivity, #system { padding: 0 4px; }
-#mpd { padding: 0 14px; }
+#custom-nada { padding: 0 14px; font-family: "JetBrainsMono Nerd Font", "Inter", sans-serif; }
+#custom-nada.stopped { padding: 0; margin: 0; border: none; background: none; }
 #custom-quick { padding: 0 14px; color: #CBA6F7; }
 #clockbox:hover, #connectivity:hover, #system:hover,
-#mpd:hover, #custom-quick:hover {
+#custom-nada:hover, #custom-quick:hover {
     background-color: rgba(30, 30, 46, 0.95);
     border-color: rgba(203, 166, 247, 0.9);
 }
@@ -702,7 +703,7 @@ tooltip label {
 #connectivity #network.speed { color: #A6ADC8; font-size: 11px; padding-left: 8px; padding-right: 6px; min-width: 0; }
 /* (the old 177px min-width against jitter is replaced by fixed-width
    values in the config's format, so no centred gap) */
-#mpd.paused { color: #A6ADC8; }
+#custom-nada.pause { color: #A6ADC8; }
 
 /* ===================================================================
    WORKSPACES (2026-10-19): chips instead of underlined numbers.

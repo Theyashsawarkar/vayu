@@ -11,7 +11,7 @@
 	// caffeine), then connectivity, then system, then quick settings (which
 	// also has the power menu and lock). Rare toggles (theme, wallpaper, DND, power profile...) live in
 	// quick settings (vyom quick), not on the bar.
-	"modules-left": ["sway/workspaces", "mpd"],
+	"modules-left": ["sway/workspaces", "custom/nada"],
 	"modules-center": ["group/clockbox"],
 	"modules-right": [
 		"custom/capslock",
@@ -240,18 +240,20 @@
 	},
 
 	// Now playing (MPD, played through rmpc). Hidden when stopped.
-	"mpd": {
-		"format": "<span color='#CBA6F7'>󰝚</span>  {title}<span color='#9399B2'> · {artist}</span>",
-		"format-paused": "<span color='#CBA6F7'>󰏤</span>  {title}<span color='#9399B2'> · paused</span>",
-		"format-stopped": "",
-		"format-disconnected": "",
-		"max-length": 48,
-		"interval": 5,
-		"tooltip-format": "{artist}\n{album}\n{elapsedTime:%M:%S} / {totalTime:%M:%S}\n\nClick: play/pause · Right click: rmpc",
-		"on-click": "rmpc togglepause",
-		"on-click-right": "$HOME/.local/bin/rmpc-toggle.sh"
+	// What's playing (nāda), right after the workspaces: moving bars and the
+	// title while playing, still bars when paused, gone when nothing plays,
+	// a progress ring while a YouTube song downloads. `nada waybar` streams
+	// it (MPD idle events, so it changes the moment the song does).
+	"custom/nada": {
+		"exec": "$HOME/.local/bin/nada waybar",
+		"return-type": "json",
+		"escape": false,
+		"on-click": "$HOME/.local/bin/nada ctl toggle",
+		"on-click-middle": "$HOME/.local/bin/nada ctl next",
+		"on-click-right": "$HOME/.local/bin/nada",
+		"on-scroll-up": "$HOME/.local/bin/nada ctl seek +10",
+		"on-scroll-down": "$HOME/.local/bin/nada ctl seek -10"
 	},
-
 	// Quick settings (Vyom): Wi-Fi, Bluetooth, hotspot, DND, caffeine,
 	// theme, wallpaper, power profile, volume, brightness, lock, power.
 	"custom/quick": {

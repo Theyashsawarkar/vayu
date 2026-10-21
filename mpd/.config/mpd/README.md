@@ -1,6 +1,6 @@
 # mpd
 
-The actual player/backend for the music setup -- rmpc (`../../rmpc/`)
+The actual player/backend for the music setup -- nāda (github.com/Theyashsawarkar/nada, replacing rmpc)
 is only ever the UI on top of this. Replaced termusic entirely (see
 `docs/ARCHITECTURE.md` for the full story of why) rather than patching
 around its one real problem (a broken search feature) forever.

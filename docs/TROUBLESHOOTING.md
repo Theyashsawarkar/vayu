@@ -381,7 +381,7 @@ tool: `sudo rm -rf /usr/local/bin/vayu-elevate /usr/local/lib/vayu-elevate`.
 ## Keys: I don't know (or forgot) a keybinding
 
 `Super+Shift+/` searches every keybinding on the system (sway, tmux, kitty,
-zed, rmpc, popups, and the SysRq combos above). In tmux, `prefix ?` lists
+zed, nāda, the Vyom panels, popups, and the SysRq combos above). In tmux, `prefix ?` lists
 tmux's keys and runs the one you pick. Search action then object:
 "kill window", "reboot hung".
 

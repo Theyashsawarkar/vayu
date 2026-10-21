@@ -116,7 +116,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 | Component     | Software                                          |
 | -------------- | -------------------------------------------------- |
 | Music Daemon   | MPD (real filesystem watcher, zero third-party API) |
-| Music Client   | rmpc (TUI, Catppuccin Mocha themed, real compositor glass) |
+| Music Player   | [nāda](https://github.com/Theyashsawarkar/nada) (own app: MPD + YouTube, synced lyrics, autoplay, downloads, vim keys) |
 | Search/Download | [raga](https://github.com/Theyashsawarkar/raga) (a Vyom tool: YouTube into MPD or mpv, thumbnails, yt-dlp) |
 
 ---
@@ -137,7 +137,6 @@ Each directory represents an independent package managed by GNU Stow.
 ├── mako/
 ├── mpd/             # MPD daemon config (music_directory, auto_update)
 ├── nvim/
-├── rmpc/            # MPD TUI client + Catppuccin Mocha theme
 ├── scripts/         # ~/.local/bin utilities used by sway keybindings
 ├── sway/
 ├── systemd/         # ~/.config/systemd/user units (wallpaper, swayidle,
@@ -189,7 +188,7 @@ Install individual packages:
 ```bash
 stow kitty tmux nvim zed zsh scripts systemd gtk xdg
 stow sway waybar mako vyom
-stow mpd rmpc
+stow mpd
 ```
 
 Or install everything (`packages/` and `docs/` aren't stow packages, so they're excluded):

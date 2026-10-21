@@ -47,7 +47,7 @@ USER_UNITS_NOW=(
   batsignal.service
   battery-warning-dismiss.service
   battery-limit-watch.service
-  mpd.service               # rmpc's music daemon
+  mpd.service               # the music daemon nāda plays through
   ydotool.service           # ydotoold, for ydotool key/type in pickers
 )
 # User units enabled only: they start with sway (WantedBy=sway-session.target).
@@ -77,6 +77,9 @@ STOW_REAL_DIRS=(
 # hotspot, Bluetooth, phone, Docker, notifications, YouTube, keybindings,
 # battery, power menu, quick settings.
 VYOM_TOOLS=(dvara ganit smriti bhava tarang setu doot patra suchana raga mudra urja vishram kendra)
+# Vayu's own apps, each its own repo, cloned into ~/.local/share/<name>
+# with bin/<name> linked into ~/.local/bin (install.sh setup_apps).
+VAYU_APPS=(nada)
 
 # Supplementary groups for the installing user.
 #   docker  run docker without sudo

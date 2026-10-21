@@ -67,6 +67,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/vyom/core/vyom",
     *sorted(p for p in (HOME / ".local/share/vyom/plugins").glob("*/*")
             if (p / "__init__.py").exists()),
+    # nāda, the music player (its own repo): keys annotated in its package.
+    HOME / ".local/share/nada/nada",
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # vayu-elevate's approval window (ai/elevate/dialog.py, root-owned).
@@ -82,6 +84,7 @@ SOURCE_COLORS = {
     "rmpc": "#CBA6F7",   # Mauve
     "Kernel": "#F38BA8", # Red
     "Vyom": "#B4BEFE",   # Lavender
+    "Nada": "#F5C2E7",   # Pink
 }
 SCOPE_COLOR = "#FAB387"   # Peach
 DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults

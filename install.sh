@@ -623,6 +623,19 @@ setup_vyom() {
   ln -sfn "$base/core/bin/vyom" "$HOME/.local/bin/vyom"
 }
 
+setup_apps() {
+  # Vayu's own apps (VAYU_APPS, manifest.sh), each its own repo (CLAUDE.md
+  # "Plugins"): nāda, the music player. Cloned into ~/.local/share/<app>,
+  # bin/<app> linked into ~/.local/bin. Re-running pulls updates.
+  local app
+  mkdir -p "$HOME/.local/bin"
+  for app in "${VAYU_APPS[@]}"; do
+    clone_or_pull "https://github.com/Theyashsawarkar/$app" "$HOME/.local/share/$app" ||
+      { warn "$app: clone failed"; continue; }
+    ln -sfn "$HOME/.local/share/$app/bin/$app" "$HOME/.local/bin/$app"
+  done
+}
+
 clone_or_pull() {  # url dest: clone, or fast-forward an existing clone
   if [ -d "$2/.git" ]; then
     git -C "$2" pull -q --ff-only || warn "couldn't update $2 (local changes?)"
@@ -812,6 +825,7 @@ run_step "Installing the AI tools (vayu-elevate, ai/)" apply_ai
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
 run_step "Setting up Vyom (launcher and panels)" setup_vyom
+run_step "Setting up Vayu apps (${VAYU_APPS[*]})" setup_apps
 run_step "Installing Neovim plugins (lazy.nvim)" setup_nvim
 run_step "Enabling corepack (pnpm, yarn)" setup_node
 run_step "Installing Homebrew + formulae (${BREW_FORMULAE[*]})" setup_brew

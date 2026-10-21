@@ -5,7 +5,7 @@ The live, always-complete list is **`Super+Shift+/`** (every source below, in
 binding). Both come from `scripts/.local/bin/keybind-search.py`, which re-reads the
 real configs every time: sway (`#:` line above each `bindsym`), tmux (`bind -N`
 notes, stock keys marked `default`), kitty (`#:` above each `map`), Zed
-(`keymap.json`), rmpc (`config.ron`), and keys that exist only inside popup scripts
+(`keymap.json`), nāda and the Vyom tools (`# keybind:` lines in their packages), and keys that exist only inside popup scripts
 (`# keybind:` lines). `keybind-search.py --check` fails if any binding is
 undescribed. Every description reads **action + object**, so search the same
 way: `kill window`, `open lazygit`, `raise volume`, `take screenshot` (the search
@@ -32,8 +32,9 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notifications ([suchana](https://github.com/Theyashsawarkar/suchana)): what's on screen with its actions, the history, do not disturb
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>p</kbd> — Power ([vishram](https://github.com/Theyashsawarkar/vishram)): <kbd>L</kbd> lock, <kbd>S</kbd> suspend, <kbd>E</kbd> log out, <kbd>R</kbd> reboot, <kbd>P</kbd> power off (5 s countdown, <kbd>Esc</kbd> cancels)
 - <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([kendra](https://github.com/Theyashsawarkar/kendra); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, caffeine, dark theme, wallpaper, power profile, volume and brightness, lock and power
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — rmpc (music player), toggle open/hidden
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> / <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — YouTube ([raga](https://github.com/Theyashsawarkar/raga)): search, play as video (mpv) / music (MPD via rmpc); <kbd>Shift</kbd>+<kbd>Enter</kbd> the other way
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — [nāda](https://github.com/Theyashsawarkar/nada) (music player), toggle open/hidden
+- <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> / <kbd>.</kbd> / <kbd>,</kbd> — music play/pause, next, previous (without opening nāda)
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> / <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — YouTube ([raga](https://github.com/Theyashsawarkar/raga)): search, play as video (mpv) / music (nāda); <kbd>Shift</kbd>+<kbd>Enter</kbd> the other way
 - <kbd>Super</kbd>+<kbd>n</kbd> — Cycle notification mode (normal → silent → dnd)
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>n</kbd> / <kbd>s</kbd> / <kbd>d</kbd> — Jump directly to normal / silent / dnd
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd> — Keybindings ([mudra](https://github.com/Theyashsawarkar/mudra)): every binding by what it does, real key caps, <kbd>Enter</kbd> runs it

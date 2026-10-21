@@ -28,7 +28,7 @@ failing silently. Known limits go in `docs/TROUBLESHOOTING.md`
 
 ## Plugins: every plugin in its own repository
 
-Every plugin we create for any tool (tmux, Neovim, zsh, waybar, rmpc...)
+Every plugin we create for any tool (tmux, Neovim, zsh, waybar, Vyom...)
 lives in its **own repository** under github.com/Theyashsawarkar, and vayu
 **pulls it in** through that tool's plugin mechanism. Plugin source is never
 copied into this repo. That way each plugin is independent: it is tested,
@@ -112,7 +112,7 @@ same change:
    | Tmux | `tmux/.config/tmux/tmux.conf` | `bind -N "Description" ...` (plugin keys without -N: add to `TMUX_PLUGIN_NOTES` in the script) |
    | Kitty | `kitty/.config/kitty/kitty.conf` | `#: Description` line directly above the `map` |
    | Zed | `zed/.config/zed/keymap.json` | trailing `// Description` (else the action name is shown) |
-   | rmpc | `rmpc/.config/rmpc/config.ron` | nothing -- action names are shown humanized |
+   | nāda (music player, own repo) | `nada/*.py` in github.com/Theyashsawarkar/nada (scanned at `~/.local/share/nada/nada`) | `# keybind: Nada/<scope> \| <keys> \| <description>` |
    | Keys inside a script/popup (fzf `--bind`, pickers) | the script, in `~/.tmux/scripts`, `~/.local/bin`, `~/.config/sway/scripts` or a tmux plugin's `scripts/` or `bin/` (`~/.tmux/plugins/*/{scripts,bin}`) | `# keybind: <Source>/<scope> \| <keys> \| <description>`, e.g. `# keybind: Tmux/session picker \| Ctrl+x \| Kill the highlighted session` |
 | Kernel Magic SysRq | `system/etc/sysctl.d/99-sysrq.conf` (scanned at `/etc/sysctl.d`, so run `system/apply.sh` first) | `# keybind: Kernel \| <keys> \| <description>` |
 | vayu-elevate approval window | `ai/elevate/dialog.py` (scanned at `/usr/local/lib/vayu-elevate`, so run `ai/apply.sh` first) | `# keybind: Vayu/root approval \| <keys> \| <description>` in its docstring |

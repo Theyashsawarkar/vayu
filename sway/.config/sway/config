@@ -99,66 +99,38 @@ bindsym --release Caps_Lock exec ~/.local/bin/waybar-signal 9
 #: Update Num Lock indicator in waybar (on key release)
 bindsym --release Num_Lock exec ~/.local/bin/waybar-signal 10
 
-# rmpc -- terminal music player, replacing termusic entirely (removed:
-# its own search was the only thing ever broken, but the whole tool got
-# swapped out rather than kept around as a half-used shell -- see
-# docs/ARCHITECTURE.md for the full story). rmpc is an MPD client, not
-# standalone -- mpd.service (systemd --user, shipped by the mpd package
-# itself, `mpd/` package in this repo is just its mpd.conf) indexes and
-# actually plays from ~/Music; rmpc is only ever the UI on top of it.
-# Opens in its own floating kitty window rather than tiling -- a music
-# player is something you glance at and dismiss, not something that
-# should permanently claim a slot in the tiling layout the way an
-# editor or browser does. Toggles via sway's scratchpad, not
-# process-kill like the wofi-based popups above -- MPD keeps playing
-# with no client attached at all (it's a real, independent daemon, more
-# decoupled from its UI than termusic's own client/server split even
-# was), so hiding the window should never stop playback. See
-# rmpc-toggle.sh.
-#: Toggle music player popup (rmpc)
-bindsym $mod+Shift+m exec ~/.local/bin/rmpc-toggle.sh
+# nāda (github.com/Theyashsawarkar/nada, its own repo, cloned by
+# install.sh into ~/.local/share/nada): the music player, replacing rmpc.
+# MPD still plays (mpd.service, `mpd/` here is its mpd.conf); nāda is the
+# window on top plus what MPD doesn't do -- YouTube streams, autoplay,
+# synced lyrics, downloads, MPRIS. One resident process (`nada daemon`
+# below); the key only toggles its window, and hiding it never stops the
+# music. Floating and centred: a player you glance at, not a tile.
+#: Toggle music player window (nāda)
+bindsym $mod+Shift+m exec ~/.local/bin/nada
+#: Toggle music play / pause (nāda, without opening it)
+bindsym $mod+Mod1+space exec ~/.local/bin/nada ctl toggle
+#: Play next song (nāda)
+bindsym $mod+Mod1+period exec ~/.local/bin/nada ctl next
+#: Play previous song (nāda)
+bindsym $mod+Mod1+comma exec ~/.local/bin/nada ctl prev
+for_window [app_id="^dev\.vayu\.Nada$"] floating enable, resize set 1180 720, move position center, blur enable, corner_radius 20, shadows enable
+# The mini player (nāda's `z`) is a layer-shell surface in the corner.
+layer_effects "nada" {
+    blur enable
+    corner_radius 18
+    shadows enable
+}
 
-# Matches the app_id kitty is launched with above -- floating, sized to
-# 60% width / 60% height of the output, in ppt so it scales to any
-# screen (1152x648 on a 1920x1080 panel -- widened from an original 50% height so the window feels
-# less cramped, matching the same 60% used for width instead of a
-# smaller, mismatched fraction), centered, and moved into the
-# scratchpad + shown immediately so it's visible the moment it first
-# opens rather than launching hidden.
-#
-# blur enable: real compositor-level background blur (SwayFX,
-# scenefx0.4 -- already in packages/aur.txt), the actual mechanism that
-# makes this read as glass rather than just a tinted, see-through box --
-# same lesson the Vyom panels' layer_effects rule established (see
-# above), just reached via `for_window` instead: wofi is a layer-shell
-# surface so it needed `layer_effects`, but rmpc is a plain toplevel
-# window (kitty), and blur/corner_radius/shadows are all regular
-# for_window-settable properties for those, no layer_effects block
-# needed. corner_radius/shadows are NOT set here since this window
-# already inherits the global corner_radius 12 / shadows on defaults
-# (set above) the same as every other ordinary window -- only wofi
-# needed its own explicit values, since layer-shell surfaces are exempt
-# from those per-window toplevel defaults.
-#
-# Deliberately did NOT set blur_xray here, unlike wofi's rule -- SwayFX's
-# own README says so explicitly for floating toplevel windows ("You
-# probably want to set this to disable :)"), since blur_xray is meant
-# for layer-shell panels that need to blur the true desktop background
-# specifically rather than whatever's immediately behind them; a
-# regular floating window blurring what's actually behind it (the
-# wallpaper, since this one is centered above everything else) is
-# already the right result without it.
 # vayu-elevate's approval window (ai/): float it centred with the glass
 # blur the other popups have, above whatever is on screen.
 for_window [app_id="^io\.github\.theyashsawarkar\.VayuElevate$"] floating enable, move position center, blur enable, sticky enable
-for_window [app_id="^rmpc$"] floating enable, resize set 60 ppt 60 ppt, move position center, move scratchpad, scratchpad show, blur enable
 
 # mpv's video window (music-search.py's play action, audio-only mode
 # never creates a window at all) -- floating and centered rather than
 # tiling into whatever workspace happened to be focused, same
-# "utility popup, not a real workspace citizen" treatment rmpc gets
-# above. No blur/scratchpad here unlike rmpc -- this is meant to be
-# watched immediately, not tucked away and toggled back into view.
+# "utility popup, not a real workspace citizen" treatment nāda gets
+# above. No blur here -- this is meant to be watched immediately.
 # app_id confirmed directly (`swaymsg -t get_tree` while a real video
 # was playing), not assumed from mpv's binary name.
 #
@@ -173,13 +145,13 @@ for_window [app_id="^rmpc$"] floating enable, resize set 60 ppt 60 ppt, move pos
 for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move position center, focus
 
 # YouTube search (raga): two keys, one per way to play; inside, Shift+Enter
-# plays the other way and Ctrl+M switches. Music goes into MPD's queue
-# through rmpc's own `addyt` (needs python-mutagen); video opens in mpv
-# (the for_window rule above focuses it).
+# plays the other way and Ctrl+M switches. Music plays in nāda (with
+# YouTube's mix lined up after it); video opens in mpv (the for_window
+# rule above focuses it).
 #: Search YouTube and play a video (raga, in mpv)
 bindsym $mod+Shift+y exec $vyom raga video
 
-#: Search YouTube and play music (raga, into MPD via rmpc)
+#: Search YouTube and play music (raga, in nāda)
 bindsym $mod+Ctrl+Shift+y exec $vyom raga music
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
@@ -585,6 +557,9 @@ exec waybar
 exec mako
 # Vyom stays resident so its panels open at once (quick settings: $mod+q).
 exec ~/.local/bin/vyom daemon
+# nāda, the music player: resident so its window, MPRIS (media keys) and
+# downloads are always there.
+exec ~/.local/bin/nada daemon
 # Refreshes waybar's capsules (and tmux's docker count) when what they
 # show changes, so they don't poll (scripts/.local/bin/bar-events.py).
 exec systemctl --user restart bar-events.service
