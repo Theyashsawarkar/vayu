@@ -15,13 +15,15 @@
 # Instead the line goes to <outfile>, and the binding sources that file
 # once this script returns, i.e. in the real client's context, exactly
 # like tmux's built-in prompts.
+# Theme colours from varna, when it is installed (fallback: the colours below).
+[ -r "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh" ] && . "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh"
 
 if [ "$1" = --input ]; then
   : | fzf --print-query --no-info --no-separator --no-scrollbar \
       --ghost "$3" --prompt '❯ ' --query "$4" \
       --border none --padding 0 --margin 0 \
       --input-border rounded --input-label " $3 " --input-label-pos 3 \
-      --color 'bg:-1,prompt:#D095A4,query:#D7DDE6,ghost:#6f665c,input-border:#D095A4,input-label:#D095A4' \
+      --color "${VARNA_FZF_COLORS:-bg:-1,prompt:#D095A4,query:#D7DDE6,ghost:#6f665c,input-border:#D095A4,input-label:#D095A4}" \
       --bind 'enter:accept-or-print-query' | head -n1 > "$2"
   exit 0
 fi

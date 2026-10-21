@@ -126,6 +126,14 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Theme: varna (Vayu's theme engine) writes the prompt's and fzf's colours,
+# and a lazygit theme merged over its config. Each only if it's there.
+_varna="${XDG_STATE_HOME:-$HOME/.local/state}/varna"
+[[ -f $_varna/p10k.zsh ]] && source "$_varna/p10k.zsh"
+[[ -f $_varna/fzf.sh ]] && source "$_varna/fzf.sh"
+[[ -f $_varna/lazygit.yml ]] && export LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml,$_varna/lazygit.yml"
+unset _varna
+
 # Automatically start Sway on TTY1
 # if [ -z "$DISPLAY" ] && [ "$(tty)" = "/dev/tty1" ]; then
 #     exec sway

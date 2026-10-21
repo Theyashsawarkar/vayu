@@ -600,7 +600,7 @@ setup_kosha() {
   # Vayu's own tools, each its own repo (CLAUDE.md "Plugins"), installed and
   # updated by kosha (github.com/Theyashsawarkar/kosha), the package manager
   # for them: Vyom and its tools, nāda, anumati (whose installer asks for
-  # sudo: root-owned into /usr/local), sangam, vesha. KOSHA_PACKAGES is in
+  # sudo: root-owned into /usr/local), sangam, vesha, varna, vinyasa. KOSHA_PACKAGES is in
   # packages/manifest.sh. kosha installs released versions and adopts what's
   # already there; re-running updates nothing (that's `kosha update`).
   local base="$HOME/.local/share/vyom"
@@ -615,6 +615,14 @@ setup_kosha() {
   mkdir -p "$HOME/.local/bin"
   ln -sfn "$HOME/.local/share/kosha/bin/kosha" "$HOME/.local/bin/kosha"
   "$HOME/.local/bin/kosha" install kosha "${KOSHA_PACKAGES[@]}" </dev/null
+  # varna (the theme engine): waybar's config is a template (config.varna,
+  # its colours in Pango markup), then every tool's file is written. Reloads
+  # happen when sway starts; vayu-theme-ensure covers a system without varna.
+  if [ -x "$HOME/.local/bin/varna" ]; then
+    "$HOME/.local/bin/varna" template add "$HOME/.config/waybar/config.varna" "$HOME/.config/waybar/config" --tool waybar >/dev/null || true
+    "$HOME/.local/bin/varna" apply --no-reload >/dev/null || true
+  fi
+  "$HOME/.local/bin/vayu-theme-ensure" || true
   # vesha (Claude Code accounts): its `claude` wrapper and the watcher that
   # switches at the usage limit. Both are harmless with one account or none.
   if [ -x "$HOME/.local/bin/vesha" ]; then

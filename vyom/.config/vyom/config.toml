@@ -12,6 +12,8 @@ height = 520
 scale = 1.25
 # Panel background opacity: 1 solid, lower lets more of the blurred desktop through.
 opacity = 0.55
+# The theme's colours (varna, Vayu's theme engine), loaded after every style.
+css = ["~/.local/state/varna/vyom.css"]
 # Tab inside a panel moves through these, in this order.
 cycle = ["dvara", "ganit", "smriti", "bhava", "tarang", "setu", "doot", "patra", "suchana", "raga", "mudra"]
 

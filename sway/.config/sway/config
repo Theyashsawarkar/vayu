@@ -115,6 +115,12 @@ bindsym $mod+Mod1+period exec ~/.local/bin/nada ctl next
 #: Play previous song (nāda)
 bindsym $mod+Mod1+comma exec ~/.local/bin/nada ctl prev
 for_window [app_id="^dev\.vayu\.Nada$"] floating enable, resize set 1180 720, move position center, blur enable, corner_radius 20, shadows enable
+# Settings: vinyasa (github.com/Theyashsawarkar/vinyasa, installed by kosha):
+# themes for every tool (through varna), fonts, wallpaper, windows. Floating
+# glass, like nāda.
+#: Open settings (vinyasa: theme, fonts, wallpaper, windows, tools)
+bindsym $mod+comma exec ~/.local/bin/vinyasa
+for_window [app_id="^dev\.vayu\.Vinyasa$"] floating enable, resize set 1180 760, move position center, blur enable, corner_radius 20, shadows enable
 # The mini player (nāda's `z`) is a layer-shell surface in the corner.
 layer_effects "nada" {
     blur enable
@@ -536,7 +542,7 @@ bindsym Mod1+space exec ~/.config/sway/scripts/screenshot.sh
 
 # Manual lock trigger
 #: Lock the screen
-bindsym Mod1+Shift+semicolon exec swaylock -C ~/.config/sway/lockconfig
+bindsym Mod1+Shift+semicolon exec ~/.local/bin/vayu-lock
 
 ### User Executions & Environment Settings
 # Import WAYLAND_DISPLAY/SWAYSOCK into the systemd --user manager's own
@@ -554,8 +560,10 @@ bindsym Mod1+Shift+semicolon exec swaylock -C ~/.config/sway/lockconfig
 # (xdg-desktop-portal-luminous hit its start limit after a logout).
 exec ~/.local/bin/sway-session.sh
 
-exec waybar 
-exec mako
+# Both refuse to start without their theme file: vayu-theme-ensure writes
+# any that's missing (varna, or Vayu's defaults) first.
+exec sh -c '~/.local/bin/vayu-theme-ensure; waybar'
+exec sh -c '~/.local/bin/vayu-theme-ensure; mako'
 # Vyom stays resident so its panels open at once (quick settings: $mod+q).
 exec ~/.local/bin/vyom daemon
 # nāda, the music player: resident so its window, MPRIS (media keys) and
@@ -620,5 +628,10 @@ exec --no-startup-id wl-paste --type text --watch cliphist store
 exec --no-startup-id wl-paste --type image --watch cliphist store
 
 include /etc/sway/config.d/*
+
+# Theme: varna (Vayu's theme engine) writes the window colours, border width,
+# gaps and corner radius here; the values above are the fallback without it.
+# A glob, so a missing file is never an error.
+include ~/.local/state/varna/sway*.conf
 
 

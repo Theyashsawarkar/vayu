@@ -12,7 +12,7 @@
 # window is the one real gap neither layer covers -- inherent to how
 # both mechanisms detect activity, not something this timeout value
 # changes either way.
-timeout 900 'swaylock -C ~/.config/sway/lockconfig'
+timeout 900 '~/.local/bin/vayu-lock'
 
 # Turn off the screen after 20 minutes (Power saving) -- kept the same
 # +5min gap after the lock timeout above had, just shifted to match its

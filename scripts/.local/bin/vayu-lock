@@ -1,0 +1,7 @@
+#!/bin/sh
+# Locks the screen: swaylock with Vayu's lockconfig, coloured by the current
+# theme (varna writes the colours as options, which override the config's).
+args=""
+[ -r "$HOME/.local/state/varna/swaylock.args" ] && args=$(cat "$HOME/.local/state/varna/swaylock.args")
+# shellcheck disable=SC2086
+exec swaylock -C "$HOME/.config/sway/lockconfig" $args "$@"

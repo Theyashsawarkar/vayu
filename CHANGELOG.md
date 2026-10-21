@@ -5,6 +5,28 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (varna and vinyasa: one theme for every tool, and a settings app)
+
+- [varna](https://github.com/Theyashsawarkar/varna), the theme engine (its
+  own repo, a kosha package): one theme for sway, waybar, tmux, kitty, mako,
+  Vyom and its tools, Neovim, the prompt, fzf, lazygit and the lock screen.
+  `varna apply <theme>` switches all of them live; ten themes to start, your
+  own with `varna new`, any tool can keep its own theme. Today's look is the
+  "Vayu" theme, so nothing changes until you pick another (kitty now uses
+  the theme's colours instead of its built-in black).
+- [vinyasa](https://github.com/Theyashsawarkar/vinyasa), the settings app:
+  `Super+,`. Theme (cards drawn in each theme's colours, accent, dark/light,
+  transparency), theme editor, fonts, wallpaper, windows and gaps, and a
+  per-tool page. Vim keys; they're in the keybinding search.
+- Every config now takes its colours from the theme: waybar's style.css uses
+  names (`@accent`...) and its config is generated from `config.varna`;
+  tmux's bar uses `#{@accent}`-style variables; mako, kitty, sway, Vyom, the
+  prompt, fzf (also the tmux pickers), lazygit and swaylock (through
+  `vayu-lock`) include varna's files. The old values stay as the fallback.
+- kendra's theme tile switches the theme's light/dark twin.
+- `vayu-theme-ensure` runs before waybar and mako at login, so a missing
+  theme file never keeps them from starting.
+
 ## 2026-10-21 (vesha: every Claude Code account, one key away)
 
 - [vesha](https://github.com/Theyashsawarkar/vesha), a new tool in its own

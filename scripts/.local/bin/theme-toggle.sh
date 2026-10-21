@@ -46,11 +46,9 @@
 # the first thing to look at -- outside what any desktop-side config can
 # reach into.
 #
-# Deliberately does NOT touch this desktop's own bar/launcher/
-# notification styling (waybar/wofi/mako's style.css, sway's window
-# border colors) -- those are hand-built throughout this whole repo to
-# one specific Catppuccin Mocha palette, a deliberate aesthetic choice,
-# not something meant to flip with a generic light/dark toggle.
+# The desktop's own bar, panels, notifications and window borders follow
+# varna's theme (see the varna block below); this script then sets GTK's
+# theme to match the new mode.
 set -uo pipefail
 
 DCONF_IFACE=/org/gnome/desktop/interface
@@ -85,6 +83,20 @@ apply_icon_theme() {
 
 scheme=$(dconf read "$DCONF_IFACE/color-scheme" 2>/dev/null | tr -d "'")
 missing=""
+
+# With varna (Vayu's theme engine), the whole desktop switches: the theme
+# goes to its light/dark twin (Catppuccin Mocha <-> Latte, Rose Pine <->
+# Dawn) and every tool reloads; varna also sends the color-scheme signal.
+# A theme without a twin (Vayu itself) says so and leaves things as they are.
+if command -v varna >/dev/null 2>&1; then
+    if ! out=$(varna mode toggle 2>&1); then
+        notify-send -u normal -i preferences-desktop-theme "Theme" \
+            "$(printf '%s' "$out" | sed 's/\x1b\[[0-9;]*m//g; s/^[^a-zA-Z]*//' | head -1). Pick a light or dark theme in Settings (Super+,)."
+        exit 0
+    fi
+    # dark now means it was light before: the branches below set GTK's theme to match
+    [ "$(varna mode)" = "dark" ] && scheme="prefer-light" || scheme="prefer-dark"
+fi
 
 if [ "$scheme" = "prefer-light" ]; then
     dconf write "$DCONF_IFACE/color-scheme" "'prefer-dark'"

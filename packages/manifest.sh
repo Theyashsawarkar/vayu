@@ -79,7 +79,7 @@ STOW_REAL_DIRS=(
 # root approvals for AI agents, and pull requests.
 KOSHA_PACKAGES=(
   vyom dvara ganit smriti bhava tarang setu doot patra suchana raga mudra urja vishram kendra
-  nada anumati sangam vesha
+  nada anumati sangam vesha varna vinyasa
 )
 
 # Supplementary groups for the installing user.

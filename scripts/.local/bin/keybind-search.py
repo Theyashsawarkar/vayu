@@ -71,6 +71,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/nada/nada",
     # vesha, the Claude Code account switcher (its own repo): its switcher keys.
     HOME / ".local/share/vesha/vesha",
+    # vinyasa, the settings app (its own repo): its window's keys.
+    HOME / ".local/share/vinyasa/vinyasa",
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # anumati's approval window (own repo; installed root-owned).
@@ -89,6 +91,7 @@ SOURCE_COLORS = {
     "Nada": "#F5C2E7",   # Pink
     "Anumati": "#A6E3A1",  # Green
     "Vesha": "#FAB387",  # Peach
+    "Vinyasa": "#94E2D5",  # Teal
 }
 SCOPE_COLOR = "#FAB387"   # Peach
 DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults

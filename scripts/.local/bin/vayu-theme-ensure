@@ -1,0 +1,12 @@
+#!/bin/sh
+# Makes sure every themed tool finds its colours before it starts (sway runs
+# this at login, before waybar; install.sh runs it too). waybar and mako
+# refuse to start when an included file is missing, so: varna writes any
+# missing file, and without varna, Vayu's tracked defaults are copied in.
+command -v varna >/dev/null 2>&1 && varna ensure >/dev/null 2>&1
+w="$HOME/.config/waybar"
+[ -f "$w/varna.css" ] || cp "$w/varna.default.css" "$w/varna.css"
+[ -f "$w/config" ] || sed -e 's/{{accent}}/#CBA6F7/g' -e 's/{{red}}/#F38BA8/g' "$w/config.varna" > "$w/config"
+m="${XDG_STATE_HOME:-$HOME/.local/state}/varna/mako.conf"
+[ -f "$m" ] || { mkdir -p "${m%/*}" && cp "$HOME/.config/mako/varna.default.conf" "$m"; }
+exit 0

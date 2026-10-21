@@ -84,6 +84,9 @@ they want without the rest of vayu.
   accounts (kosha package; tmux `prefix C` popup; its `claude` wrapper in
   `~/.local/bin` and `vesha.service` watcher come from `vesha install-shim`
   and `vesha service install`).
+  [`varna`](https://github.com/Theyashsawarkar/varna), the theme engine,
+  and [`vinyasa`](https://github.com/Theyashsawarkar/vinyasa), the settings
+  app on top of it (`Super+,`); both kosha packages. See "Colours" below.
   [`vyom`](https://github.com/Theyashsawarkar/vyom), the launcher/panels
   runtime that replaced wofi and nwg-bar, and its tools, each its own
   repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),
@@ -94,6 +97,32 @@ they want without the rest of vayu.
   (`VYOM_TOOLS`, packages/manifest.sh) to `.../plugins/`; Vayu's settings
   for them are the `vyom/` stow package. A script that needs a picker uses
   `vyom dmenu -p PROMPT` (stdin choices, stdout pick), never a new wofi.
+
+## Colours: everything follows the theme (varna)
+
+The desktop's colours come from one theme, applied by
+[varna](https://github.com/Theyashsawarkar/varna) (`varna apply <theme>`,
+or vinyasa's Theme page). Each tool's config includes one file varna writes
+(`~/.local/state/varna/<tool>`, waybar's `varna.css` next to its style),
+listed by `varna tools`; `varna doctor` must pass.
+
+- **Never hardcode a colour** in a config here. Use the tool's theme names:
+  waybar `@accent`, `@base`, `alpha(@red, 0.4)` (style.css) and `{{accent}}`
+  in `config.varna` (the real `config` is generated, gitignored); tmux
+  `#{@accent}`, `#{@accent2}`, `#{@ink}`, `#{@fg}`... in formats; fzf
+  `$VARNA_FZF_COLORS` in scripts; Vyom `@accent`, `@base`... A fixed value is
+  allowed only as the fallback *before* the include (it's what shows without
+  varna).
+- **A colour a theme doesn't have** (a new role, a tool-specific shade) goes
+  into varna: a role or a `[tools.<tool>]` extra in the theme, read with a
+  fallback (`{{name|overlay1}}`). Change varna in its repo, release, `kosha update`.
+- **A new tool** that has colours gets a template in varna (README "Adding a
+  tool") and its include line here.
+- waybar and mako won't start without their included file:
+  `vayu-theme-ensure` (sway runs it before them, install.sh too) writes it.
+- Test theme changes with a throwaway HOME (`HOME=$(mktemp -d) varna apply
+  nord`); varna never reloads the live desktop from there. Don't switch the
+  user's theme unless asked.
 
 ## Keybindings: one registry, always in sync
 
@@ -128,6 +157,7 @@ same change:
    | Zed | `zed/.config/zed/keymap.json` | trailing `// Description` (else the action name is shown) |
    | nāda (music player, own repo) | `nada/*.py` in github.com/Theyashsawarkar/nada (scanned at `~/.local/share/nada/nada`) | `# keybind: Nada/<scope> \| <keys> \| <description>` |
    | vesha (Claude Code accounts, own repo) | `vesha/tui.py` in github.com/Theyashsawarkar/vesha (scanned at `~/.local/share/vesha/vesha`) | `# keybind: Vesha/switcher \| <keys> \| <description>` |
+   | vinyasa (settings app, own repo) | `vinyasa/app.py` in github.com/Theyashsawarkar/vinyasa (scanned at `~/.local/share/vinyasa/vinyasa`) | `# keybind: Vinyasa/settings \| <keys> \| <description>` |
    | Keys inside a script/popup (fzf `--bind`, pickers) | the script, in `~/.tmux/scripts`, `~/.local/bin`, `~/.config/sway/scripts` or a tmux plugin's `scripts/` or `bin/` (`~/.tmux/plugins/*/{scripts,bin}`) | `# keybind: <Source>/<scope> \| <keys> \| <description>`, e.g. `# keybind: Tmux/session picker \| Ctrl+x \| Kill the highlighted session` |
 | Kernel Magic SysRq | `system/etc/sysctl.d/99-sysrq.conf` (scanned at `/etc/sysctl.d`, so run `system/apply.sh` first) | `# keybind: Kernel \| <keys> \| <description>` |
 | anumati approval window (own repo) | `lib/dialog.py` in github.com/Theyashsawarkar/anumati (scanned at `/usr/local/lib/anumati`, installed by its `install.sh`) | `# keybind: Anumati/root approval \| <keys> \| <description>` in its docstring |

@@ -1,3 +1,7 @@
+/* Colours come from varna (Vayu's theme engine): varna.css defines them
+   by name (@accent, @base, @red...), written on every `varna apply`. */
+@import "varna.css";
+
 * {
     font-family: "JetBrainsMono Nerd Font", "Noto Color Emoji", "sans-serif";
     font-size: 12px;
@@ -36,8 +40,8 @@ window#waybar {
 #pulseaudio,
 #battery,
 #custom-power {
-    background-color: rgba(17, 17, 27, 0.92); /* Deep Midnight */
-    color: #CDD6F4; /* Clean Silver — one consistent base text color everywhere */
+    background-color: alpha(@crust, 0.92); /* Deep Midnight */
+    color: @text; /* Clean Silver — one consistent base text color everywhere */
     border-radius: 16px;
     padding: 2px 12px;
     margin-top: 4px;
@@ -49,7 +53,7 @@ window#waybar {
     margin-left: 0;
     margin-right: 0;
     /* Thin, visible on any wallpaper; brightens on hover (end of file). */
-    border: 1px solid rgba(203, 166, 247, 0.6); /* Royal Mauve hairline */
+    border: 1px solid alpha(@accent, 0.6); /* Royal Mauve hairline */
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -80,12 +84,12 @@ window#waybar {
    caffeine's off/on colors elsewhere in this file, just flipped since
    here *dark* is the expected default rather than the exception. */
 #custom-theme.dark {
-    color: #74C7EC; /* Sapphire */
+    color: @sapphire; /* Sapphire */
 }
 
 #custom-theme.light {
-    color: #F9E2AF; /* Yellow */
-    text-shadow: 0 0 8px rgba(249, 226, 175, 0.5);
+    color: @yellow; /* Yellow */
+    text-shadow: 0 0 8px alpha(@yellow, 0.5);
 }
 
 /* Wallpaper refresh button: Rosewater -- genuinely unused anywhere else in
@@ -93,7 +97,7 @@ window#waybar {
    than any of the harder-working status colors already spoken for
    elsewhere. */
 #custom-wallpaper {
-    color: #F5E0DC; /* Rosewater */
+    color: @rosewater; /* Rosewater */
     /* fa-image's own glyph has more built-in left-side bearing than
        right -- same class of issue the caffeine icon has (see its own
        padding comment above). Measured directly: at the shared 12px/12px
@@ -112,13 +116,13 @@ window#waybar {
    full accent color, so it doesn't look like an active warning at rest). */
 #custom-power {
     margin-right: 4px; /* the bar's right end, same as the top margin */
-    color: #F38BA8;
+    color: @red;
 }
 
 #custom-power:hover {
-    color: #F38BA8;
-    border-color: rgba(243, 139, 168, 0.5);
-    box-shadow: 0 0 8px rgba(243, 139, 168, 0.4);
+    color: @red;
+    border-color: alpha(@red, 0.5);
+    box-shadow: 0 0 8px alpha(@red, 0.4);
 }
 
 /* --- Three parts, one gap ---
@@ -196,7 +200,7 @@ window#waybar {
    blue" that doesn't have that problem, and reads clearly next to
    Maroon as a genuine two-tone pair instead of two blues. */
 #clock {
-    color: #EBA0AC; /* Maroon */
+    color: @maroon; /* Maroon */
     /* Was margin-left: -8px, pulling this pill left of its own allocated
        box to sit flush against the time text -- caused a real,
        intermittent bug: the date pill's left edge (its rounded corner
@@ -240,22 +244,22 @@ window#waybar {
    (confirmed by screenshot: none of the three below share a pixel-exact
    color with either clock color anywhere in the bar). */
 #custom-notifications.normal {
-    color: #B4BEFE; /* Lavender */
+    color: @lavender; /* Lavender */
 }
 
 #custom-notifications.silent {
-    color: #6C7086; /* Dim gray -- matches every other "quieted, not off" state elsewhere in this bar */
+    color: @overlay0; /* Dim gray -- matches every other "quieted, not off" state elsewhere in this bar */
 }
 
 #custom-notifications.dnd {
-    color: #F38BA8; /* Red */
+    color: @red; /* Red */
 }
 
 /* Covers both the documented naming convention (.time as an added class)
    and the alternate hyphenated id some waybar versions use -- same
    uncertainty already noted for #network.speed/#network-speed. */
 #clock.time, #clock-time {
-    color: #89B4FA; /* Blue */
+    color: @blue; /* Blue */
 }
 
 /* Backlight: Yellow is the single strongest, most universal color
@@ -268,7 +272,7 @@ window#waybar {
    glance -- exactly the kind of neighbor clash this pass was supposed
    to avoid. */
 #backlight {
-    color: #F9E2AF; /* Yellow */
+    color: @yellow; /* Yellow */
 }
 
 /* Pulseaudio: Maroon -- deep, warm, grounded, reads as "dark/dominant"
@@ -289,7 +293,7 @@ window#waybar {
    the source in volume_osd.sh/waybar/config instead, so this module
    just needs its resting color like everything else in the bar. */
 #pulseaudio {
-    color: #EBA0AC; /* Maroon */
+    color: @maroon; /* Maroon */
 }
 
 /* Docker: Blue when containers are actually running (matches Docker's
@@ -301,40 +305,40 @@ window#waybar {
    class here drives a border-color tint on the pill instead of
    duplicating that signal in a flat text color. */
 #custom-docker.running {
-    border-color: rgba(166, 227, 161, 0.4);
+    border-color: alpha(@green, 0.4);
 }
 
 #custom-docker.idle {
-    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
+    border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
 }
 
 /* Bluetooth: "on" is the powered-on-but-nothing-connected state -- was
    falling through to plain silver before, same as everything else in
    this pass. Distinct from .disabled (gray) and .connected (green). */
 #bluetooth.on {
-    color: #EBA0AC; /* Maroon */
+    color: @maroon; /* Maroon */
 }
 
 /* --- Color is reserved for actual status, not module branding --- */
 
 #network.disconnected {
-    color: #DC2626; /* Danger red, as everywhere */
-    border-color: rgba(220, 38, 38, 0.35);
+    color: @urgent; /* Danger red, as everywhere */
+    border-color: alpha(@urgent, 0.35);
 }
 
 #network.disabled {
-    color: #6C7086; /* Dim gray — matches every other "off" state (bluetooth.disabled, caffeine.inactive) */
-    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
+    color: @overlay0; /* Dim gray — matches every other "off" state (bluetooth.disabled, caffeine.inactive) */
+    border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
 }
 
 #network.wifi {
-    color: #89DCEB; /* Sky */
-    border-color: rgba(137, 220, 235, 0.35);
+    color: @sky; /* Sky */
+    border-color: alpha(@sky, 0.35);
 }
 
 #network.ethernet {
-    color: #74C7EC; /* Sapphire — close enough to Sky to read as "same family" (both connectivity), distinct enough to tell wifi/wired apart at a glance */
-    border-color: rgba(116, 199, 236, 0.35);
+    color: @sapphire; /* Sapphire — close enough to Sky to read as "same family" (both connectivity), distinct enough to tell wifi/wired apart at a glance */
+    border-color: alpha(@sapphire, 0.35);
 }
 
 /* KEYBOARD STATE INDICATORS -- custom/capslock and custom/numlock now,
@@ -395,15 +399,15 @@ window#waybar {
    still the loud, "damn noticeable" treatment asked for, just without
    the size change that broke the bar's height. */
 #custom-capslock.locked {
-    color: #FAB387;
-    text-shadow: 0 0 8px rgba(250, 179, 135, 0.9), 0 0 14px rgba(250, 179, 135, 0.5);
+    color: @peach;
+    text-shadow: 0 0 8px alpha(@peach, 0.9), 0 0 14px alpha(@peach, 0.5);
 }
 
 /* Num Lock: Teal — neutral, since it's usually on intentionally. Same
    treatment and same reasoning as Caps Lock above. */
 #custom-numlock.locked {
-    color: #94E2D5;
-    text-shadow: 0 0 8px rgba(148, 226, 213, 0.9), 0 0 14px rgba(148, 226, 213, 0.5);
+    color: @teal;
+    text-shadow: 0 0 8px alpha(@teal, 0.9), 0 0 14px alpha(@teal, 0.5);
 }
 
 /* WORKSPACES — same Mauve accent + neutral-gray language as the rest of
@@ -426,7 +430,7 @@ window#waybar {
        so the number is centred in the button instead of 1px high. */
     border-top: 2px solid transparent;
     padding: 0 5px;
-    color: #6C7086; /* Dim inactive — matches capslock/numlock's unlocked gray */
+    color: @overlay0; /* Dim inactive — matches capslock/numlock's unlocked gray */
     margin: 1px;
     /* Transparent border reserves the same 2px of vertical space idle,
        hover, and focused all share -- without this, the chip's height
@@ -463,7 +467,7 @@ window#waybar {
    outright on the workspace that's both -- solid Red + underline, not a
    fight between two rules over the same element. */
 #workspaces button:not(.empty):not(.focused) {
-    color: #F38BA8; /* Red, same as .focused -- see note above */
+    color: @red; /* Red, same as .focused -- see note above */
     font-weight: 600;
 }
 
@@ -476,9 +480,9 @@ window#waybar {
    selector specificity, so hovering an occupied workspace still shows
    hover's Lavender, not a fight over which color wins. */
 #workspaces button:hover {
-    background-color: rgba(180, 190, 254, 0.18);
-    color: #B4BEFE;
-    border-bottom: 2px solid rgba(180, 190, 254, 0.7);
+    background-color: alpha(@lavender, 0.18);
+    color: @lavender;
+    border-bottom: 2px solid alpha(@lavender, 0.7);
 }
 
 #workspaces button.focused {
@@ -495,26 +499,26 @@ window#waybar {
        active" signals in different parts of the setup using different
        hues. Was Sapphire, then Mauve, before this; Mauve remains the
        bar's one hover/interactive accent elsewhere, untouched. */
-    color: #F38BA8; /* Red */
+    color: @red; /* Red */
     font-weight: 800;
-    border-bottom: 2px solid #F38BA8;
+    border-bottom: 2px solid @red;
 }
 /* A window asking for attention: danger red, same as sway's client.urgent. */
 #workspaces button.urgent {
-    color: #DC2626;
+    color: @urgent;
     font-weight: 800;
-    border-bottom: 2px solid #DC2626;
+    border-bottom: 2px solid @urgent;
 }
 
 /* BLUETOOTH STATES */
 #bluetooth.disabled, #bluetooth.off {
-    color: #6C7086;
-    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
+    color: @overlay0;
+    border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
 }
 
 #bluetooth.connected {
-    color: #A6E3A1; /* Pastel green when paired */
-    border-color: rgba(166, 227, 161, 0.4);
+    color: @green; /* Pastel green when paired */
+    border-color: alpha(@green, 0.4);
 }
 
 /* Phone (KDE Connect), between docker and caffeine in the device-controls
@@ -522,37 +526,37 @@ window#waybar {
    while the paired phone is reachable, no border when it isn't (the glyph
    itself is already dimmed by phone-status.sh). */
 #custom-phone.connected {
-    border-color: rgba(166, 227, 161, 0.4);
+    border-color: alpha(@green, 0.4);
 }
 
 #custom-phone.disconnected {
-    border-color: rgba(147, 153, 178, 0.6); /* dim gray: off, but still a capsule */
+    border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
 }
 
 /* Hotspot (vayu-hotspot), right after the network capsule and only while
    it's on: Teal, so "this laptop is sharing" reads apart from the green
    "connected" borders. */
 #custom-hotspot.on {
-    color: #94E2D5;
-    border-color: rgba(148, 226, 213, 0.55);
+    color: @teal;
+    border-color: alpha(@teal, 0.55);
 }
 
 /* A phone is asking to pair: Yellow, like a pending decision */
 #custom-phone.request {
-    border-color: rgba(249, 226, 175, 0.6);
+    border-color: alpha(@yellow, 0.6);
 }
 
 /* CAFFEINE — dim gray when off (matches every other "off" state above),
    warm peach "brewing" glow when on so it's impossible to miss that the
    screen won't sleep right now */
 #custom-caffeine.inactive {
-    color: #6C7086;
+    color: @overlay0;
 }
 
 #custom-caffeine.active {
-    color: #FAB387;
-    border-color: rgba(250, 179, 135, 0.45);
-    box-shadow: 0 0 8px rgba(250, 179, 135, 0.35);
+    color: @peach;
+    border-color: alpha(@peach, 0.45);
+    box-shadow: 0 0 8px alpha(@peach, 0.35);
 }
 
 /* BATTERY STATES -- colored by actual charge status now, not just the
@@ -565,11 +569,11 @@ window#waybar {
    .discharging and .warning apply at once -- the low-battery colors
    need to win, so they stay later in the file. */
 #battery.discharging {
-    color: #A6E3A1; /* Green -- healthy, running on battery normally */
+    color: @green; /* Green -- healthy, running on battery normally */
 }
 
 #battery.full {
-    color: #94E2D5; /* Teal -- topped off and plugged in, nothing left to do */
+    color: @teal; /* Teal -- topped off and plugged in, nothing left to do */
 }
 
 /* A real percentage gradient now, not just the two emergency thresholds
@@ -579,32 +583,32 @@ window#waybar {
    sits between .full and .warning so a genuinely low battery still
    overrides it. */
 #battery.moderate {
-    color: #F9E2AF; /* Yellow -- getting into the range worth noticing, not yet urgent */
+    color: @yellow; /* Yellow -- getting into the range worth noticing, not yet urgent */
 }
 
 #battery.warning {
-    color: #FAB387; /* Peach */
-    border-color: rgba(250, 179, 135, 0.4);
+    color: @peach; /* Peach */
+    border-color: alpha(@peach, 0.4);
 }
 
 #battery.critical {
-    color: #DC2626; /* Danger red, as everywhere */
-    border-color: rgba(220, 38, 38, 0.4);
+    color: @urgent; /* Danger red, as everywhere */
+    border-color: alpha(@urgent, 0.4);
 }
 
 #battery.charging {
-    color: #F9E2AF; /* Yellow while topping up */
+    color: @yellow; /* Yellow while topping up */
 }
 
 /* TOOLTIPS — match the pill theme instead of the OS default */
 tooltip {
-    background-color: rgba(17, 17, 27, 0.97);
-    border: 1px solid rgba(203, 166, 247, 0.25);
+    background-color: alpha(@crust, 0.97);
+    border: 1px solid alpha(@accent, 0.25);
     border-radius: 10px;
 }
 
 tooltip label {
-    color: #CDD6F4;
+    color: @text;
     padding: 4px 6px;
 }
 
@@ -634,13 +638,13 @@ tooltip label {
 #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover,
 #custom-wallpaper:hover, #network:hover, #custom-hotspot:hover, #bluetooth:hover, #custom-phone:hover,
 #custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
-    border-color: #CBA6F7;
-    box-shadow: 0 0 6px rgba(203, 166, 247, 0.35);
+    border-color: @accent;
+    box-shadow: 0 0 6px alpha(@accent, 0.35);
 }
 
 #custom-power:hover {
-    border-color: #F38BA8;
-    box-shadow: 0 0 8px rgba(243, 139, 168, 0.4);
+    border-color: @red;
+    box-shadow: 0 0 8px alpha(@red, 0.4);
 }
 
 /* ===================================================================
@@ -658,22 +662,22 @@ tooltip label {
 #system,
 #custom-nada,
 #custom-quick {
-    background-color: rgba(17, 17, 27, 0.92);
-    color: #CDD6F4;
+    background-color: alpha(@crust, 0.92);
+    color: @text;
     border-radius: 16px;
     margin-top: 4px;
     margin-bottom: 4px;
-    border: 1px solid rgba(203, 166, 247, 0.6);
+    border: 1px solid alpha(@accent, 0.6);
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 #clockbox, #connectivity, #system { padding: 0 4px; }
 #custom-nada { padding: 0 14px; font-family: "JetBrainsMono Nerd Font", "Inter", sans-serif; }
 #custom-nada.stopped { padding: 0; margin: 0; border: none; background: none; }
-#custom-quick { padding: 0 14px; color: #CBA6F7; }
+#custom-quick { padding: 0 14px; color: @accent; }
 #clockbox:hover, #connectivity:hover, #system:hover,
 #custom-nada:hover, #custom-quick:hover {
-    background-color: rgba(30, 30, 46, 0.95);
-    border-color: rgba(203, 166, 247, 0.9);
+    background-color: alpha(@base, 0.95);
+    border-color: alpha(@accent, 0.9);
 }
 
 /* Segments inside a group: no pill of their own. */
@@ -694,16 +698,16 @@ tooltip label {
     border: none;
 }
 #clockbox #clock.time { font-weight: bold; }
-#clockbox #clock:not(.time) { color: #A6ADC8; }
-#connectivity #network { color: #CDD6F4; padding: 0 4px 0 12px; }
+#clockbox #clock:not(.time) { color: @subtext0; }
+#connectivity #network { color: @text; padding: 0 4px 0 12px; }
 /* Bluetooth shows only a connected device; otherwise it takes no space. */
 #connectivity #bluetooth { padding: 0; }
 #connectivity #bluetooth.connected { padding: 0 9px; }
-#connectivity #network.disconnected, #connectivity #network.disabled { color: #F38BA8; }
-#connectivity #network.speed { color: #A6ADC8; font-size: 11px; padding-left: 8px; padding-right: 6px; min-width: 0; }
+#connectivity #network.disconnected, #connectivity #network.disabled { color: @red; }
+#connectivity #network.speed { color: @subtext0; font-size: 11px; padding-left: 8px; padding-right: 6px; min-width: 0; }
 /* (the old 177px min-width against jitter is replaced by fixed-width
    values in the config's format, so no centred gap) */
-#custom-nada.pause { color: #A6ADC8; }
+#custom-nada.pause { color: @subtext0; }
 
 /* ===================================================================
    WORKSPACES (2026-10-19): chips instead of underlined numbers.
@@ -722,21 +726,21 @@ tooltip label {
     border: none;
     border-radius: 12px;
     background: transparent;
-    color: #585B70;
+    color: @surface2;
     font-weight: 600;
     box-shadow: none;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
-#workspaces button:not(.empty):not(.focused) { color: #BAC2DE; font-weight: 600; }
-#workspaces button:hover { background: rgba(203, 166, 247, 0.14); color: #CDD6F4; box-shadow: none; border: none; }
+#workspaces button:not(.empty):not(.focused) { color: @subtext1; font-weight: 600; }
+#workspaces button:hover { background: alpha(@accent, 0.14); color: @text; box-shadow: none; border: none; }
 #workspaces button.focused {
-    background: #CBA6F7;
-    color: #11111B;
+    background: @accent;
+    color: @crust;
     font-weight: 800;
     border: none;
     box-shadow: none;
 }
-#workspaces button.urgent { background: #F38BA8; color: #11111B; }
+#workspaces button.urgent { background: @red; color: @crust; }
 
 /* ===================================================================
    ONE ACCENT (2026-10-19): Vayu's primary, Mauve #CBA6F7, is the icon
@@ -747,11 +751,11 @@ tooltip label {
    =================================================================== */
 #pulseaudio, #backlight, #battery, #custom-docker, #custom-phone,
 #system #pulseaudio, #system #backlight, #system #battery,
-#clockbox #clock.time { color: #CDD6F4; }
+#clockbox #clock.time { color: @text; }
 #custom-caffeine.active, #custom-hotspot.on, #custom-quick,
-#clockbox #custom-notifications, #custom-notifications.normal { color: #CBA6F7; }
-#custom-hotspot.on { border-color: rgba(203, 166, 247, 0.6); }
-#custom-notifications.dnd, #clockbox #custom-notifications.dnd { color: #F38BA8; }
-#system #pulseaudio.muted { color: #F38BA8; }
-#system #battery.warning:not(.charging) { color: #FAB387; }
-#system #battery.critical:not(.charging) { color: #F38BA8; }
+#clockbox #custom-notifications, #custom-notifications.normal { color: @accent; }
+#custom-hotspot.on { border-color: alpha(@accent, 0.6); }
+#custom-notifications.dnd, #clockbox #custom-notifications.dnd { color: @red; }
+#system #pulseaudio.muted { color: @red; }
+#system #battery.warning:not(.charging) { color: @peach; }
+#system #battery.critical:not(.charging) { color: @red; }

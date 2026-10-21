@@ -1,3 +1,8 @@
 ?*.local
 .DS_Store
 __pycache__/
+
+# Written by varna (the theme engine) on every apply; their sources are
+# config.varna and the theme. See vayu-theme-ensure.
+waybar/.config/waybar/config
+waybar/.config/waybar/varna.css

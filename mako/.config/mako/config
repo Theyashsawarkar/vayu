@@ -115,15 +115,11 @@ icon-path=/usr/share/icons/candy-icons:/usr/share/icons/AdwaitaLegacy:/usr/share
 # dominate the fill across the whole body, not just its edge, confirmed
 # live over both the raw wallpaper and the dark terminal with text still
 # legible in both.
-background-color=#11111B59
 # Clean silver text for easy readability
-text-color=#CDD6F4
 # Royal Mauve border, also matching wofi's own alpha (0.55) rather than
 # fully solid -- a glass pane's edge reads as part of the glass, not a
 # hard opaque frame around it.
-border-color=#CBA6F78C
 # Subtle tracking background for progress bars (like volume adjustments)
-progress-color=over #313244
 
 # --- Behavior ---
 # How long each notification stays up (2026-09-29, asked for "a second
@@ -192,8 +188,15 @@ on-notify=exec paplay /usr/share/sounds/freedesktop/stereo/message.oga
 # notification there is) has been rendering with the default border and
 # the default 5000ms timeout this whole time, not the peach border +
 # "never auto-dismiss" this section was clearly meant to give it.
+
+# --- Colours ---
+# From varna (Vayu's theme engine): background, text, border and progress
+# colours, and the critical/low borders, written on every `varna apply`.
+# mako won't start if this file is missing; vayu-theme-ensure makes sure
+# it isn't (varna.default.conf has Vayu's colours for a system without varna).
+include=~/.local/state/varna/mako.conf
+
 [urgency=critical]
-border-color=#DC2626
 # Was 0 (never fade): every error, and KDE Connect's "Pairing failed:
 # Cancelled by user" after a reject, sat on screen until clicked. 6 s
 # reads a one-line error comfortably.
@@ -207,7 +210,6 @@ default-timeout=6000
 # for "off"/inactive states (caffeine.inactive, bluetooth.disabled) rather
 # than reusing an accent color there too.
 [urgency=low]
-border-color=#585B70
 default-timeout=2000
 
 # A notification with a button (Undo a phone clipboard, Open a received

@@ -383,10 +383,10 @@
       # for every real git repo (the VCS_CLEAN/MODIFIED/UNTRACKED_FOREGROUND
       # options above only cover the vcs_info fallback, not gitstatus).
       local       meta='%f'          # default foreground
-      local      clean='%F{#93A683}' # sage
-      local   modified='%F{#D4A857}' # ochre
-      local  untracked='%F{#A79885}' # sand
-      local conflicted='%F{#B8503F}' # brick red -- same alert as prompt_char error
+      local      clean="%F{${VARNA_GIT_CLEAN:-#93A683}}" # sage
+      local   modified="%F{${VARNA_GIT_MODIFIED:-#D4A857}}" # ochre
+      local  untracked="%F{${VARNA_GIT_UNTRACKED:-#A79885}}" # sand
+      local conflicted="%F{${VARNA_GIT_CONFLICTED:-#B8503F}}" # brick red -- same alert as prompt_char error
     else
       # Styling for incomplete and stale Git status.
       local       meta='%f'  # default foreground

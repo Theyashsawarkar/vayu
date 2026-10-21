@@ -84,6 +84,11 @@ return {
         native_lsp = { enabled = true },
       },
     },
+    -- The theme's colours come from varna (lua/varna.lua): its palette is
+    -- merged into these opts, and `varna apply` re-runs this live.
+    config = function(_, opts)
+      require("varna").setup(opts)
+    end,
   },
   { "LazyVim/LazyVim", opts = { colorscheme = "catppuccin" } },
 }
