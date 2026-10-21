@@ -120,6 +120,8 @@ for_window [app_id="^dev\.vayu\.Nada$"] floating enable, resize set 1180 720, mo
 # glass, like nāda.
 #: Open settings (vinyasa: theme, fonts, wallpaper, windows, tools)
 bindsym $mod+comma exec ~/.local/bin/vinyasa
+#: Open settings (vinyasa, second key)
+bindsym $mod+Shift+equal exec ~/.local/bin/vinyasa
 for_window [app_id="^dev\.vayu\.Vinyasa$"] floating enable, resize set 1180 760, move position center, blur enable, corner_radius 20, shadows enable
 # The mini player (nāda's `z`) is a layer-shell surface in the corner.
 layer_effects "nada" {
