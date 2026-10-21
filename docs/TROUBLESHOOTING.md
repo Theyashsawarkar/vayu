@@ -398,3 +398,20 @@ journalctl -b -1 -p 0..4 --no-pager          # previous boot; -b for this one
 
 Open an issue at
 [github.com/Theyashsawarkar/vayu/issues](https://github.com/Theyashsawarkar/vayu/issues).
+
+## Tools: updating or reinstalling Vayu's tools (kosha)
+
+Vayu's own tools (the Vyom panels and their tools, nāda, anumati, sangam)
+are installed by [kosha](https://theyashsawarkar.github.io/kosha/). At login
+a notification offers "Update now" when any has a new release.
+
+```sh
+kosha list --installed     # versions, and what has an update
+kosha update               # update everything (prints what changed)
+kosha doctor               # missing programs, broken links, local changes
+kosha install nada@0.1.0   # go back to (and pin) an older release; kosha unpin nada later
+```
+
+"has local changes" means a tool's folder was edited: commit or stash the
+change there, or `kosha update --force` (stashes it). anumati's update runs
+its installer, which asks for your password: run it in a terminal.

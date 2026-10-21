@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (kosha: a package manager for Vayu's tools)
+
+- New tool, its own repo: [kosha](https://github.com/Theyashsawarkar/kosha)
+  (कोश, "treasury"), the package manager for Vayu's tools. `kosha list`,
+  `install`, `update` (released versions, with each tool's changelog),
+  `outdated`, `remove`, `pin`, `link` (develop in place), `doctor`.
+- install.sh installs every tool through it: `setup_vyom`, `setup_apps` and
+  `setup_anumati` are now one `setup_kosha`; the list is `KOSHA_PACKAGES` in
+  packages/manifest.sh (was `VYOM_TOOLS` and `VAYU_APPS`). Existing installs
+  were adopted as they are.
+- At login, update-check.sh also asks kosha for tool updates and shows a
+  notification with "Update now" (opens kitty running `kosha update`).
+- vayu-verify runs `kosha doctor`.
+
 ## 2026-10-21 (vayu-elevate is now anumati, in its own repo)
 
 - The root-approval tool for AI agents is now

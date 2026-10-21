@@ -116,6 +116,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 | Component     | Software                                          |
 | -------------- | -------------------------------------------------- |
 | Music Daemon   | MPD (real filesystem watcher, zero third-party API) |
+| Tool Manager   | [kosha](https://github.com/Theyashsawarkar/kosha) (own package manager: `kosha list`, `kosha update`) |
 | Music Player   | [nāda](https://github.com/Theyashsawarkar/nada) (own app: MPD + YouTube, synced lyrics, autoplay, downloads, vim keys) |
 | Search/Download | [raga](https://github.com/Theyashsawarkar/raga) (a Vyom tool: YouTube into MPD or mpv, thumbnails, yt-dlp) |
 

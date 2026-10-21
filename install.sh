@@ -172,7 +172,7 @@ remedy() {
     apply_splash)
       echo "~/dotfiles/splash/apply.sh --check lists what differs; run it without --check for the error."
       echo "Booting is unaffected until mkinitcpio -P succeeds; a failed run leaves the old text boot" ;;
-    setup_anumati) echo "~/.local/share/anumati/install.sh --check lists what differs; run it without --check for the error" ;;
+    setup_kosha) echo "kosha doctor shows what's wrong with each tool; kosha install <name> retries one" ;;
     setup_shell|setup_tmux) echo "a git clone failed (network/GitHub); re-run" ;;
     setup_nvim) echo "open nvim and run :Lazy restore to see which plugin failed" ;;
     setup_node) echo "sudo corepack enable (needs the corepack package)" ;;
@@ -548,15 +548,6 @@ apply_greeter() {
 
 apply_splash() { "$DOTFILES_DIR/splash/apply.sh"; }
 
-setup_anumati() {
-  # anumati (github.com/Theyashsawarkar/anumati, its own repo; was
-  # vayu-elevate in ai/): root commands for AI agents, approved in a window.
-  # Its install.sh installs it root-owned into /usr/local and keeps
-  # vayu-elevate working as a link.
-  clone_or_pull https://github.com/Theyashsawarkar/anumati "$HOME/.local/share/anumati" || return 1
-  "$HOME/.local/share/anumati/install.sh"
-}
-
 clone_if_missing() {  # url dest: also replaces a clone an interrupted run left broken
   if [ -d "$2" ] && git -C "$2" rev-parse --verify -q HEAD >/dev/null 2>&1; then
     info "already present: $2"
@@ -601,54 +592,29 @@ setup_tmux() {
   while read -r spec; do
     clone_if_missing "https://github.com/$spec" "$HOME/.tmux/plugins/${spec##*/}"
   done < <(sed -nE "s/^set -g @plugin '([^']+)'.*/\1/p" "$DOTFILES_DIR/tmux/.config/tmux/tmux.conf")
-  # sangam is a command too (like lazygit), not only tmux's prefix G popup:
-  # put TPM's copy on PATH, so `prefix U` updates both.
-  if [ -x "$HOME/.tmux/plugins/sangam/bin/sangam" ]; then
-    mkdir -p "$HOME/.local/bin"
-    ln -sfn "$HOME/.tmux/plugins/sangam/bin/sangam" "$HOME/.local/bin/sangam"
-  fi
+  # sangam (also a command, like lazygit) is installed and linked onto PATH
+  # by kosha (setup_kosha), which adopts TPM's clone.
 }
 
-setup_vyom() {
-  # Vyom (github.com/Theyashsawarkar/vyom), the launcher/panels runtime that
-  # replaces wofi and nwg-bar, and its tools, each its own repo (CLAUDE.md
-  # "Plugins"): Vyom in ~/.local/share/vyom/core, tools in .../plugins.
-  # The stowed vyom/.config/vyom/config.toml points them at Vayu's scripts.
-  # Re-running pulls updates.
-  local base="$HOME/.local/share/vyom" tool
+setup_kosha() {
+  # Vayu's own tools, each its own repo (CLAUDE.md "Plugins"), installed and
+  # updated by kosha (github.com/Theyashsawarkar/kosha), the package manager
+  # for them: Vyom and its tools, nāda, anumati (whose installer asks for
+  # sudo: root-owned into /usr/local), sangam. KOSHA_PACKAGES is in
+  # packages/manifest.sh. kosha installs released versions and adopts what's
+  # already there; re-running updates nothing (that's `kosha update`).
+  local base="$HOME/.local/share/vyom"
   # Before 2026-10-19 Vyom itself was cloned straight into $base.
   if [ -d "$base/.git" ]; then
     local tmp="$base.old.$$"
     mv "$base" "$tmp" && mkdir -p "$base" && mv "$tmp" "$base/core"
   fi
-  clone_or_pull https://github.com/Theyashsawarkar/vyom "$base/core" || return 1
-  mkdir -p "$base/plugins" "$HOME/.local/bin"
-  for tool in "${VYOM_TOOLS[@]}"; do
-    clone_or_pull "https://github.com/Theyashsawarkar/$tool" "$base/plugins/$tool" ||
-      warn "Vyom tool $tool: clone failed (the rest still work)"
-  done
-  ln -sfn "$base/core/bin/vyom" "$HOME/.local/bin/vyom"
-}
-
-setup_apps() {
-  # Vayu's own apps (VAYU_APPS, manifest.sh), each its own repo (CLAUDE.md
-  # "Plugins"): nāda, the music player. Cloned into ~/.local/share/<app>,
-  # bin/<app> linked into ~/.local/bin. Re-running pulls updates.
-  local app
-  mkdir -p "$HOME/.local/bin"
-  for app in "${VAYU_APPS[@]}"; do
-    clone_or_pull "https://github.com/Theyashsawarkar/$app" "$HOME/.local/share/$app" ||
-      { warn "$app: clone failed"; continue; }
-    ln -sfn "$HOME/.local/share/$app/bin/$app" "$HOME/.local/bin/$app"
-  done
-}
-
-clone_or_pull() {  # url dest: clone, or fast-forward an existing clone
-  if [ -d "$2/.git" ]; then
-    git -C "$2" pull -q --ff-only || warn "couldn't update $2 (local changes?)"
-  else
-    clone_if_missing "$1" "$2"
+  if [ ! -x "$HOME/.local/share/kosha/bin/kosha" ]; then
+    git clone -q https://github.com/Theyashsawarkar/kosha "$HOME/.local/share/kosha" || return 1
   fi
+  mkdir -p "$HOME/.local/bin"
+  ln -sfn "$HOME/.local/share/kosha/bin/kosha" "$HOME/.local/bin/kosha"
+  "$HOME/.local/bin/kosha" install kosha "${KOSHA_PACKAGES[@]}" </dev/null
 }
 
 setup_nvim() {
@@ -828,11 +794,9 @@ run_step "Installing AUR packages (packages/aur.txt)" install_aur
 run_step --critical "Stowing configs into ~ (conflicts backed up to $BACKUP_DIR)" stow_all
 run_step "Installing the login screen (greetd + tuigreet, greeter/)" apply_greeter
 run_step "Installing the boot splash (Plymouth, splash/)" apply_splash
-run_step "Installing anumati (root commands for AI agents)" setup_anumati
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
-run_step "Setting up Vyom (launcher and panels)" setup_vyom
-run_step "Setting up Vayu apps (${VAYU_APPS[*]})" setup_apps
+run_step "Installing Vayu's tools with kosha (${#KOSHA_PACKAGES[@]} packages)" setup_kosha
 run_step "Installing Neovim plugins (lazy.nvim)" setup_nvim
 run_step "Enabling corepack (pnpm, yarn)" setup_node
 run_step "Installing Homebrew + formulae (${BREW_FORMULAE[*]})" setup_brew

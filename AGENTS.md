@@ -70,6 +70,13 @@ they want without the rest of vayu.
   added or removed, options changed). To test a local plugin change inside
   vayu, temporarily symlink `~/.tmux/plugins/<name>` to `~/personal/<name>`
   and put the real clone back after pushing (`prefix U` updates).
+- **Installed by kosha:** every tool repo is a package of
+  [`kosha`](https://github.com/Theyashsawarkar/kosha), Vayu's package manager:
+  a new tool gets a table in kosha's `registry.toml` (repo, kind, requires,
+  commands) and a line in `KOSHA_PACKAGES` (packages/manifest.sh), and needs
+  release tags and a CHANGELOG with `## vX.Y.Z` sections. `kosha update`
+  moves installs between releases; to test a local change, `kosha link
+  <name> ~/personal/<name>` and `kosha unlink <name>` afterwards.
 - **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
   (pull requests: a command, and the prefix G popup; `install.sh` links
   TPM's copy to `~/.local/bin/sangam`).

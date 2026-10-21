@@ -44,6 +44,24 @@ cd "$DOTFILES_DIR" || { log "ERROR: $DOTFILES_DIR not found"; exit 1; }
 # Runs as sway starts, often before Wi-Fi is up: wait for NetworkManager
 # to report a connection, then allow a few tries for DNS to catch up.
 nm-online -q -t 60 || log "no network after 60 s -- trying the fetch anyway"
+# Vayu's tools (kosha): a notification with an "Update now" action when
+# any has a newer release. In the background: the desktop check below
+# doesn't wait for it, and an unanswered notification doesn't block it.
+tools_check() {
+    local kosha="$HOME/.local/bin/kosha" out n names action
+    [ -x "$kosha" ] || return 0
+    out=$(timeout 60 "$kosha" outdated --json 2>>"$LOG_FILE") || { log "kosha outdated failed"; return 0; }
+    n=$(jq 'map(select(.pinned | not)) | length' <<<"$out" 2>/dev/null) || return 0
+    [ "${n:-0}" -gt 0 ] || { log "tools up to date"; return 0; }
+    names=$(jq -r 'map(select(.pinned | not) | "\(.name) \(.latest)") | join(", ")' <<<"$out")
+    log "tool updates: $names"
+    action=$(notify-send -a kosha -i system-software-update -A update="Update now" -A later="Later" \
+        "Tool updates: $n" "$names") || return 0
+    [ "$action" = update ] && setsid kitty --class kosha --title "kosha update" \
+        sh -c 'kosha update; printf "\nDone. Press Enter to close."; read -r _' >/dev/null 2>&1 &
+}
+tools_check &
+
 fetched=false
 for attempt in 1 2 3; do
     if timeout 20 git -c core.sshCommand="ssh -o BatchMode=yes -o ConnectTimeout=8" fetch origin --quiet 2>>"$LOG_FILE"; then

@@ -65,8 +65,13 @@ else while read -r l; do bad "$l"; done <<<"$splash_out"; fi
 
 section "anumati (root commands for AI agents)"
 if [ -x "$HOME/.local/share/anumati/install.sh" ] && ai_out=$("$HOME/.local/share/anumati/install.sh" --check 2>&1); then ok "$ai_out"
-elif [ ! -x "$HOME/.local/share/anumati/install.sh" ]; then bad "not cloned: run install.sh (setup_anumati)"
+elif [ ! -x "$HOME/.local/share/anumati/install.sh" ]; then bad "not installed: kosha install anumati"
 else while read -r l; do bad "$l"; done <<<"$ai_out"; fi
+
+section "Vayu's tools (kosha)"
+if command -v kosha >/dev/null && kosha_out=$(kosha doctor 2>&1); then ok "every tool installed by kosha is healthy"
+elif ! command -v kosha >/dev/null; then bad "kosha isn't installed: run install.sh"
+else while read -r l; do [ -n "$l" ] && bad "$l"; done < <(grep -v '^✓' <<<"$kosha_out"); fi
 
 section "System files (system/ -> /)"
 if sys_out=$("$DOTFILES_DIR/system/apply.sh" --check 2>&1); then ok "$sys_out"
