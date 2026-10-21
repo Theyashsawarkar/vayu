@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (vesha: every Claude Code account, one key away)
+
+- [vesha](https://github.com/Theyashsawarkar/vesha), a new tool in its own
+  repo (replaces claude-swap): every Claude Code account signed in at once,
+  each its own profile; `vesha switch` (or `Enter` in its switcher) changes
+  the account every new `claude` uses, in any folder; a watcher warns near
+  the usage limit and switches to the account with the most room at it.
+- tmux: `prefix C` opens the switcher in a popup (sangam-style panes, vim
+  keys, `?` lists them; they're in the keybinding search too).
+- `install.sh` installs it with kosha (`KOSHA_PACKAGES`) and sets up its
+  `claude` wrapper and `vesha.service`. Sign accounts in with `a` in the
+  switcher, or `vesha import cswap` to bring claude-swap's across.
+- The tools' websites list vesha in their footer.
+
 ## 2026-10-21 (kosha 0.2: a nala-like interface, help, tab completion)
 
 - kosha 0.2.0: boxed tables, a plan and `[Y/n]` before changing anything,

@@ -600,7 +600,7 @@ setup_kosha() {
   # Vayu's own tools, each its own repo (CLAUDE.md "Plugins"), installed and
   # updated by kosha (github.com/Theyashsawarkar/kosha), the package manager
   # for them: Vyom and its tools, nāda, anumati (whose installer asks for
-  # sudo: root-owned into /usr/local), sangam. KOSHA_PACKAGES is in
+  # sudo: root-owned into /usr/local), sangam, vesha. KOSHA_PACKAGES is in
   # packages/manifest.sh. kosha installs released versions and adopts what's
   # already there; re-running updates nothing (that's `kosha update`).
   local base="$HOME/.local/share/vyom"
@@ -615,6 +615,12 @@ setup_kosha() {
   mkdir -p "$HOME/.local/bin"
   ln -sfn "$HOME/.local/share/kosha/bin/kosha" "$HOME/.local/bin/kosha"
   "$HOME/.local/bin/kosha" install kosha "${KOSHA_PACKAGES[@]}" </dev/null
+  # vesha (Claude Code accounts): its `claude` wrapper and the watcher that
+  # switches at the usage limit. Both are harmless with one account or none.
+  if [ -x "$HOME/.local/bin/vesha" ]; then
+    "$HOME/.local/bin/vesha" install-shim >/dev/null || true
+    "$HOME/.local/bin/vesha" service install >/dev/null || true
+  fi
 }
 
 setup_nvim() {
