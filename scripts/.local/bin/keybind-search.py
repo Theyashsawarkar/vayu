@@ -85,7 +85,7 @@ def _palette():
     import json
     defaults = {"sky": "#89DCEB", "teal": "#94E2D5", "pink": "#F5C2E7", "blue": "#89B4FA", "mauve": "#CBA6F7",
                 "red": "#F38BA8", "lavender": "#B4BEFE", "green": "#A6E3A1", "peach": "#FAB387", "overlay1": "#7F849C",
-                "overlay0": "#6C7086", "accent2": "#F5C2E7", "fg": "#D7DDE6", "text": "#CDD6F4", "surface0": "#313244"}
+                "overlay0": "#6C7086", "accent2": "#F5C2E7", "fg": "#D7DDE6", "text": "#CDD6F4", "surface0": "#313244", "subtext0": "#A6ADC8"}
     path = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "varna", "palette.json")
     try:
         with open(path) as f:
@@ -566,7 +566,7 @@ def run_tmux_fzf():
          "--color", f"bg:-1,bg+:{P['surface0']},fg:{P['fg']},fg+:{P['text']},"
                     f"hl:{P['accent2']},hl+:{P['accent2']}",
          "--color", f"border:{P['accent2']},label:{P['accent2']},prompt:{P['accent2']},pointer:{P['accent2']},"
-                    f"header:{P['overlay0']},info:{P['overlay0']},query:{P['fg']}"],
+                    f"header:{P['subtext0']},info:{P['overlay1']},query:{P['fg']}"],
         input="\n".join(rows), capture_output=True, text=True,
     )
     pick = r.stdout.strip()

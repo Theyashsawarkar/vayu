@@ -7,6 +7,15 @@ full branch/release process.
 
 ## 2026-10-21 (popups follow the theme)
 
+- Popup frames are visible in every theme: fzf's inner boxes (the session
+  switcher's list, preview and keys), lazygit's panels, btop's boxes and
+  vesha's panels use the theme's new `frame` colour (varna 0.1.7) instead
+  of `line`, which vanished on glass in Rosé Pine. Faint hints (the keys
+  popup's header) are brighter.
+- lazygit's popup takes the theme (tmux sets `LG_CONFIG_FILE`: popups don't
+  get zsh's environment); btop's popup runs with varna's config, so it
+  follows the theme too.
+
 - The session switcher (`prefix s`) and the keys popup (`prefix ?`) take
   their colours from the theme (varna's `VARNA_RGB_*` and palette.json):
   the current session in the accent, keys in the second accent. They were
