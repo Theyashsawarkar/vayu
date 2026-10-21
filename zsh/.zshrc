@@ -191,3 +191,6 @@ if [ -n "$TMUX_PANE" ]; then
   autoload -Uz add-zsh-hook
   add-zsh-hook precmd _tmux_git_status
 fi
+
+# kosha (Vayu's package manager): tab completion for its commands and packages.
+(( $+commands[kosha] )) && source <(kosha completions zsh)

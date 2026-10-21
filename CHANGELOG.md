@@ -5,6 +5,14 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (kosha 0.2: a nala-like interface, help, tab completion)
+
+- kosha 0.2.0: boxed tables, a plan and `[Y/n]` before changing anything,
+  live parallel downloads, "What's new" after updates, `kosha help` /
+  `kosha <command> --help`, and suggestions for typos. `kosha list` takes
+  about 0.2 s.
+- zsh: tab completion for kosha's commands and package names (`.zshrc`).
+
 ## 2026-10-21 (kosha: a package manager for Vayu's tools)
 
 - New tool, its own repo: [kosha](https://github.com/Theyashsawarkar/kosha)
