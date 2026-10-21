@@ -24,7 +24,7 @@ tool's own annotation mechanism:
           the popup/picker scripts, for keys that only exist inside them
           (fzf --bind etc.), e.g. the tmux session picker's Ctrl+x.
           Same annotation in /etc/sysctl.d (source Kernel): the Magic
-          SysRq combos; and in /usr/local/lib/vayu-elevate (source Vayu):
+          SysRq combos; and in /usr/local/lib/anumati (source Anumati):
           the root approval window.
 
 Front-ends:
@@ -71,8 +71,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/nada/nada",
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
-    # vayu-elevate's approval window (ai/elevate/dialog.py, root-owned).
-    Path("/usr/local/lib/vayu-elevate"),
+    # anumati's approval window (own repo; installed root-owned).
+    Path("/usr/local/lib/anumati"),
 ]
 
 # Same Catppuccin Mocha hues the wifi/bluetooth pickers use, one per source.
@@ -85,6 +85,7 @@ SOURCE_COLORS = {
     "Kernel": "#F38BA8", # Red
     "Vyom": "#B4BEFE",   # Lavender
     "Nada": "#F5C2E7",   # Pink
+    "Anumati": "#A6E3A1",  # Green
 }
 SCOPE_COLOR = "#FAB387"   # Peach
 DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults

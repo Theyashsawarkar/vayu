@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (vayu-elevate is now anumati, in its own repo)
+
+- The root-approval tool for AI agents is now
+  [anumati](https://github.com/Theyashsawarkar/anumati) (अनुमति,
+  "permission"), its own repository, like every Vayu plugin. `install.sh`
+  clones it into `~/.local/share/anumati` and runs its `install.sh`
+  (root-owned into `/usr/local`); `ai/` is gone from this repo.
+- `vayu-elevate` keeps working: `/usr/local/bin/vayu-elevate` is a link to
+  `anumati`. New paths: `/var/log/anumati.log`,
+  `~/.local/state/anumati/requests.jsonl`; the old logs stay where they were.
+- sway's floating rule follows the window's new app id; the keybinding
+  search lists its keys as "Anumati"; `vayu-verify` checks the install;
+  Claude Code's global notes say `anumati`.
+
 ## 2026-10-21 (nāda: our own music player, replacing rmpc)
 
 - New app, its own repo: [nāda](https://github.com/Theyashsawarkar/nada),

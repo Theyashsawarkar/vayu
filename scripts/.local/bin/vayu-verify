@@ -63,8 +63,9 @@ section "Boot splash (splash/)"
 if splash_out=$("$DOTFILES_DIR/splash/apply.sh" --check 2>&1); then ok "$splash_out"
 else while read -r l; do bad "$l"; done <<<"$splash_out"; fi
 
-section "AI tools (ai/)"
-if ai_out=$("$DOTFILES_DIR/ai/apply.sh" --check 2>&1); then ok "$ai_out"
+section "anumati (root commands for AI agents)"
+if [ -x "$HOME/.local/share/anumati/install.sh" ] && ai_out=$("$HOME/.local/share/anumati/install.sh" --check 2>&1); then ok "$ai_out"
+elif [ ! -x "$HOME/.local/share/anumati/install.sh" ]; then bad "not cloned: run install.sh (setup_anumati)"
 else while read -r l; do bad "$l"; done <<<"$ai_out"; fi
 
 section "System files (system/ -> /)"

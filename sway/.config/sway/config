@@ -122,9 +122,10 @@ layer_effects "nada" {
     shadows enable
 }
 
-# vayu-elevate's approval window (ai/): float it centred with the glass
-# blur the other popups have, above whatever is on screen.
-for_window [app_id="^io\.github\.theyashsawarkar\.VayuElevate$"] floating enable, move position center, blur enable, sticky enable
+# anumati's approval window (github.com/Theyashsawarkar/anumati, root
+# commands for AI agents): float it centred with the glass blur the other
+# popups have, above whatever is on screen.
+for_window [app_id="^io\.github\.theyashsawarkar\.Anumati$"] floating enable, move position center, blur enable, sticky enable
 
 # mpv's video window (music-search.py's play action, audio-only mode
 # never creates a window at all) -- floating and centered rather than

@@ -84,7 +84,7 @@
   }
 
   // Table rows with exactly one link to a section on this page (the Tools
-  // overview: "vayu-elevate" -> its section) become clickable as a whole:
+  // overview: "anumati" -> its section) become clickable as a whole:
   // click or Enter scrolls there (smoothly, html has scroll-behavior) and
   // the target heading glows briefly so the eye lands on it.
   function go(hash) {

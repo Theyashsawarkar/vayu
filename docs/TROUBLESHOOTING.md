@@ -346,8 +346,8 @@ won't. The full list of what install needs first is in the
 The agent got `"status": "error"` back, or it's waiting and nothing shows.
 
 ```sh
-~/dotfiles/ai/apply.sh --check                    # installed? (run it without --check to install)
-journalctl --user -u 'vayu-elevate-*' -n 30 --no-pager   # the window's own errors
+~/.local/share/anumati/install.sh --check         # installed? (run it without --check to install)
+journalctl --user -u 'anumati-*' -n 30 --no-pager   # the window's own errors
 echo "$WAYLAND_DISPLAY"                           # the agent must run inside your desktop session
 ```
 
@@ -357,7 +357,7 @@ Wayland session found"). If notifications are in Do Not Disturb you won't
 get the "Root access requested" popup, but the window still opens on the
 current workspace.
 
-## AI tools: a command hung or failed only under vayu-elevate
+## AI tools: a command hung or failed only under anumati
 
 Commands run as root with no input and no terminal, from `/`, with root's
 environment. So:
@@ -368,15 +368,16 @@ environment. So:
 - relative paths are relative to `/`.
 
 The full output is in the result the agent got, and every run is logged:
-`sudo tail /var/log/vayu-elevate.log | jq .`.
+`sudo tail /var/log/anumati.log | jq .`.
 
 ## AI tools: I approved by mistake, or want to see what ran
 
-Everything that ran as root is in `/var/log/vayu-elevate.log` (one JSON line
+Everything that ran as root is in `/var/log/anumati.log` (one JSON line
 per command, with its exit code), and every request, including denied ones,
-in `~/.local/state/vayu-elevate/requests.jsonl`. There's no undo: reverse it
+in `~/.local/state/anumati/requests.jsonl`. There's no undo: reverse it
 by hand (e.g. `pacman -R`, `systemctl disable`). To stop agents using the
-tool: `sudo rm -rf /usr/local/bin/vayu-elevate /usr/local/lib/vayu-elevate`.
+tool: `~/.local/share/anumati/install.sh --uninstall`. (anumati was called
+vayu-elevate before 2026-10-21; that name is now a link to it.)
 
 ## Keys: I don't know (or forgot) a keybinding
 
