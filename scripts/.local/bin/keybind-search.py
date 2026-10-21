@@ -79,22 +79,30 @@ ANNOTATED_SCRIPT_DIRS = [
     Path("/usr/local/lib/anumati"),
 ]
 
-# Same Catppuccin Mocha hues the wifi/bluetooth pickers use, one per source.
-SOURCE_COLORS = {
-    "Sway": "#89DCEB",   # Sky
-    "Tmux": "#94E2D5",   # Teal
-    "Kitty": "#F5C2E7",  # Pink
-    "Zed": "#89B4FA",    # Blue
-    "rmpc": "#CBA6F7",   # Mauve
-    "Kernel": "#F38BA8", # Red
-    "Vyom": "#B4BEFE",   # Lavender
-    "Nada": "#F5C2E7",   # Pink
-    "Anumati": "#A6E3A1",  # Green
-    "Vesha": "#FAB387",  # Peach
-    "Vinyasa": "#94E2D5",  # Teal
-}
-SCOPE_COLOR = "#FAB387"   # Peach
-DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults
+# Colours come from the theme (varna's palette.json, written on every
+# `varna apply`); without varna, Vayu's own. One palette name per source.
+def _palette():
+    import json
+    defaults = {"sky": "#89DCEB", "teal": "#94E2D5", "pink": "#F5C2E7", "blue": "#89B4FA", "mauve": "#CBA6F7",
+                "red": "#F38BA8", "lavender": "#B4BEFE", "green": "#A6E3A1", "peach": "#FAB387", "overlay1": "#7F849C",
+                "overlay0": "#6C7086", "accent2": "#F5C2E7", "fg": "#D7DDE6", "text": "#CDD6F4", "surface0": "#313244"}
+    path = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "varna", "palette.json")
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        theme = (data.get("tools") or {}).get("tmux") or data   # tmux's own theme, if it has one
+        return {**defaults, **{k: v for k, v in theme["colors"].items() if isinstance(v, str)}}
+    except (OSError, ValueError, KeyError, TypeError):
+        return defaults
+
+
+PALETTE = _palette()
+SOURCE_COLORS = {src: PALETTE[name] for src, name in {
+    "Sway": "sky", "Tmux": "teal", "Kitty": "pink", "Zed": "blue", "rmpc": "mauve", "Kernel": "red", "Vyom": "lavender",
+    "Nada": "pink", "Anumati": "green", "Vesha": "peach", "Vinyasa": "teal"}.items()}
+SCOPE_COLOR = PALETTE["peach"]
+DIM_COLOR = PALETTE["overlay1"]   # stock tmux defaults
+KEY_COLOR = PALETTE["accent2"]
 
 
 # Every description reads "<Verb> <object> (details)": "Kill window",
@@ -538,9 +546,10 @@ def run_tmux_fzf():
     """Lines for the prefix ? popup: tmux keys plus tmux-scoped script keys.
     Hidden fields 1-2 (table, raw key) tell tmux_keys.sh what to replay."""
     reset = "\033[0m"
+    P = PALETTE
     rows = []
     for e in parse_tmux() + [e for e in parse_script_annotations() if e["source"] == "Tmux"]:
-        keycol = ansi(DIM_COLOR if e["origin"] == "default" else "#D095A4") + f"{e['keys']:20s}" + reset
+        keycol = ansi(DIM_COLOR if e["origin"] == "default" else KEY_COLOR) + f"{e['keys']:20s}" + reset
         tags = [t for t in (e["scope"], "default" if e["origin"] == "default" else None) if t]
         tag = f"  {ansi(SCOPE_COLOR)}[{', '.join(tags)}]{reset}" if tags else ""
         rows.append(f"{e.get('table', '-')}\t{e.get('tmux_key', '-')}\t{keycol} {e['desc']}{tag}")
@@ -554,8 +563,10 @@ def run_tmux_fzf():
          # The tmux popup draws the border and the " keys" title.
          "--padding", "1,2",
          "--header", "⏎ run it · esc close · everything else: Super+Shift+/\n",
-         "--color", "bg:-1,bg+:#2A2D35,fg:#D7DDE6,fg+:#FFFFFF,hl:#D095A4,hl+:#D095A4",
-         "--color", "border:#D095A4,label:#D095A4,prompt:#D095A4,pointer:#D095A4,header:#6C7086,info:#6C7086,query:#D7DDE6"],
+         "--color", f"bg:-1,bg+:{P['surface0']},fg:{P['fg']},fg+:{P['text']},"
+                    f"hl:{P['accent2']},hl+:{P['accent2']}",
+         "--color", f"border:{P['accent2']},label:{P['accent2']},prompt:{P['accent2']},pointer:{P['accent2']},"
+                    f"header:{P['overlay0']},info:{P['overlay0']},query:{P['fg']}"],
         input="\n".join(rows), capture_output=True, text=True,
     )
     pick = r.stdout.strip()

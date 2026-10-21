@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-21 (popups follow the theme)
+
+- The session switcher (`prefix s`) and the keys popup (`prefix ?`) take
+  their colours from the theme (varna's `VARNA_RGB_*` and palette.json):
+  the current session in the accent, keys in the second accent. They were
+  fixed to the old rose and gold.
+- Also following the theme now, in their own repos: sangam 2.0.2 (the PR
+  popup), vesha 0.3.1 (`prefix C`), nāda 0.1.2 (restyles live) and kosha 0.3.1.
+
 ## 2026-10-21 (tmux: Claude waiting, Claude limit and dev servers capsules)
 
 - **󰚩 N waiting**: Claude sessions in other panes that finished their turn

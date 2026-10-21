@@ -12,9 +12,12 @@
 # Theme colours from varna, when it is installed (fallback: the colours below).
 [ -r "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh" ] && . "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh"
 
-rose=$'\e[38;2;208;149;164m' gold=$'\e[38;2;212;178;92m' dim=$'\e[38;2;108;112;134m'
-fg=$'\e[38;2;215;221;230m' sub=$'\e[38;2;154;159;170m' b=$'\e[1m' r=$'\e[0m'
-key=$'\e[1;38;2;208;149;164m'
+# The current session takes the accent (like its capsule on the bar), keys
+# the second accent; without varna, Vayu's own colours.
+c() { printf '\e[%s38;2;%sm' "$2" "$1"; }
+accent=$(c "${VARNA_RGB_ACCENT:-203;166;247}") dim=$(c "${VARNA_RGB_MUTED:-108;112;134}")
+fg=$(c "${VARNA_RGB_FG:-215;221;230}") sub=$(c "${VARNA_RGB_SUBTEXT0:-154;159;170}") b=$'\e[1m' r=$'\e[0m'
+key=$(c "${VARNA_RGB_ACCENT2:-245;194;231}" '1;')
 
 client=$1
 [ "$client" = --list ] && client=$2
@@ -29,7 +32,7 @@ list() {
   while IFS=$'\t' read -r name wins att path; do
     local dot="${dim}○" col=$fg tag=""
     [ "$att" -gt 0 ] && tag="  ${dim}attached elsewhere"
-    [ "$name" = "$cur" ] && { dot="${gold}●"; col=$gold; tag="  ${gold}current"; }
+    [ "$name" = "$cur" ] && { dot="${accent}●"; col=$accent; tag="  ${accent}current"; }
     local names; names=$(tmux list-windows -t "=$name" -F '#W' | paste -sd, | sed 's/,/ · /g')
     printf '%s\t %s %s%s%s%s\t\n   %s󰖯 %s window%s%s  %s%s\n   %s %s%s\0' \
       "$name" "$dot" "$col$b" "$name" "$r" "$tag$r" \
