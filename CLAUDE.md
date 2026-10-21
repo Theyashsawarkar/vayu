@@ -80,6 +80,10 @@ they want without the rest of vayu.
   [`nada`](https://github.com/Theyashsawarkar/nada), the music player, and
   [`anumati`](https://github.com/Theyashsawarkar/anumati), root commands for
   AI agents (both cloned into `~/.local/share/<name>` by `install.sh`).
+  [`vesha`](https://github.com/Theyashsawarkar/vesha), Claude Code
+  accounts (kosha package; tmux `prefix C` popup; its `claude` wrapper in
+  `~/.local/bin` and `vesha.service` watcher come from `vesha install-shim`
+  and `vesha service install`).
   [`vyom`](https://github.com/Theyashsawarkar/vyom), the launcher/panels
   runtime that replaced wofi and nwg-bar, and its tools, each its own
   repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),
@@ -123,6 +127,7 @@ same change:
    | Kitty | `kitty/.config/kitty/kitty.conf` | `#: Description` line directly above the `map` |
    | Zed | `zed/.config/zed/keymap.json` | trailing `// Description` (else the action name is shown) |
    | nāda (music player, own repo) | `nada/*.py` in github.com/Theyashsawarkar/nada (scanned at `~/.local/share/nada/nada`) | `# keybind: Nada/<scope> \| <keys> \| <description>` |
+   | vesha (Claude Code accounts, own repo) | `vesha/tui.py` in github.com/Theyashsawarkar/vesha (scanned at `~/.local/share/vesha/vesha`) | `# keybind: Vesha/switcher \| <keys> \| <description>` |
    | Keys inside a script/popup (fzf `--bind`, pickers) | the script, in `~/.tmux/scripts`, `~/.local/bin`, `~/.config/sway/scripts` or a tmux plugin's `scripts/` or `bin/` (`~/.tmux/plugins/*/{scripts,bin}`) | `# keybind: <Source>/<scope> \| <keys> \| <description>`, e.g. `# keybind: Tmux/session picker \| Ctrl+x \| Kill the highlighted session` |
 | Kernel Magic SysRq | `system/etc/sysctl.d/99-sysrq.conf` (scanned at `/etc/sysctl.d`, so run `system/apply.sh` first) | `# keybind: Kernel \| <keys> \| <description>` |
 | anumati approval window (own repo) | `lib/dialog.py` in github.com/Theyashsawarkar/anumati (scanned at `/usr/local/lib/anumati`, installed by its `install.sh`) | `# keybind: Anumati/root approval \| <keys> \| <description>` in its docstring |

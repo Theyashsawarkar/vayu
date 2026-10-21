@@ -69,6 +69,8 @@ ANNOTATED_SCRIPT_DIRS = [
             if (p / "__init__.py").exists()),
     # nāda, the music player (its own repo): keys annotated in its package.
     HOME / ".local/share/nada/nada",
+    # vesha, the Claude Code account switcher (its own repo): its switcher keys.
+    HOME / ".local/share/vesha/vesha",
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # anumati's approval window (own repo; installed root-owned).
@@ -86,6 +88,7 @@ SOURCE_COLORS = {
     "Vyom": "#B4BEFE",   # Lavender
     "Nada": "#F5C2E7",   # Pink
     "Anumati": "#A6E3A1",  # Green
+    "Vesha": "#FAB387",  # Peach
 }
 SCOPE_COLOR = "#FAB387"   # Peach
 DIM_COLOR = "#7F849C"     # Overlay1: stock tmux defaults
