@@ -11,7 +11,7 @@ full branch/release process.
   or ask for permission (Claude Code's hooks call `claude-tmux`; looking at
   the pane clears it). Click it, or `prefix a`, to jump to the one that has
   waited longest. The pane you're looking at never counts.
-- **󰊚 account N%**: the active Claude account (vesha) and its 5-hour usage,
+- ** account N%**: the active Claude account (vesha) and its 5-hour usage,
   green / yellow / red; it follows `vesha waybar`, so a switch shows at once.
   Shown with two accounts or more.
 - **󰒋 :3000 :5173**: dev servers you're running (ports opened by your
