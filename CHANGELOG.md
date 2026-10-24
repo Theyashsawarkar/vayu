@@ -5,6 +5,13 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (Do Not Disturb lets critical notifications through)
+
+- DND hid everything, the "battery at 3%" warning included. Critical
+  notifications now show in DND (still without a sound); everything else
+  stays hidden and goes to the history as before. Tested headless: a
+  normal notification left the screen unchanged, a critical one showed.
+
 ## 2026-10-24 (pramana: a polkit agent)
 
 - Apps that ask for admin rights the standard way (mounting a USB drive

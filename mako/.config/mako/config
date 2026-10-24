@@ -285,3 +285,9 @@ on-notify=none
 # the same explicit on-notify=none as [mode=silent] above.
 invisible=1
 on-notify=none
+
+# Except a critical one (the battery about to run out, a failed backup):
+# that's exactly what DND must not hide. It shows, still without a sound;
+# mako applies the last matching section, so this comes after [mode=dnd].
+[mode=dnd urgency=critical]
+invisible=0
