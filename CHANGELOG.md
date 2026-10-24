@@ -5,6 +5,17 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (default apps: no more PDFs and images in a browser)
+
+- PDFs and images opened in Brave, web links in Chrome, some HTML in Zen.
+  Now: PDFs and EPUBs in **zathura** (new, `zathura/` package: vim keys,
+  fitted to the width, selections to the clipboard, and the theme's
+  colours through varna 0.1.10, pages recoloured to match; Ctrl+r shows
+  the original), images in **swayimg**, video and audio in **mpv**,
+  folders in kitty, and every link and HTML page in **Chrome**.
+- Gotcha: zathura's `include` expands no `~` and is relative to the
+  zathurarc, so it's `include ../../.local/state/varna/zathurarc`.
+
 ## 2026-10-24 (mpd: this machine only)
 
 - MPD listened on every network interface (`*:6600`): anyone on the same
@@ -28,7 +39,7 @@ full branch/release process.
   (github.com/Theyashsawarkar/pramana, its own repo) is one: a window in
   the same look as anumati's that shows what's asking and takes the
   password for polkit. Installed root-owned in `/usr/local`, running as the
-  `pramana` user service with the graphical session
+  `pramana` user service, started from sway-session.sh's `UNITS`
   (`vayu-logs pramana`). It began inside anumati and became its own tool:
   anumati stays for AI agents' root commands.
 - sway floats and blurs its window like anumati's; the keybinding search

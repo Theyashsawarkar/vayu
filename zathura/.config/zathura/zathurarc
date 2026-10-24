@@ -1,0 +1,23 @@
+# zathura, the PDF/EPUB viewer (the default for PDFs, mimeapps.list).
+# Its keys are vim's out of the box: j/k scroll, h/l pan, J/K page,
+# gg/G first/last page, / search, n/N next/previous match, Tab the
+# outline, r rotate, a/s fit page/width, d two pages, Ctrl+r original
+# colours, q quit.
+
+# Open fitted to the width, one page per screen, no wasted gaps.
+set adjust-open        "width"
+set pages-per-row      1
+set scroll-page-aware  "true"
+set page-v-padding     2
+set statusbar-h-padding 8
+set statusbar-v-padding 4
+# A selection goes to the clipboard (Ctrl+V anywhere), not only to the
+# middle-click primary selection.
+set selection-clipboard "clipboard"
+set window-title-basename "true"
+set guioptions         "s"
+set database           "sqlite"
+
+# The theme's colours (varna's zathura tool); pages are recoloured to match.
+# zathura reads an include relative to this file and expands no ~.
+include ../../.local/state/varna/zathurarc

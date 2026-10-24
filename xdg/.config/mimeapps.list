@@ -1,22 +1,46 @@
 [Default Applications]
+# Web: one browser, Chrome, for every link and HTML page (it was split
+# between Chrome, Zen and Brave depending on the type).
 text/html=google-chrome.desktop
+application/xhtml+xml=google-chrome.desktop
+application/x-extension-htm=google-chrome.desktop
+application/x-extension-html=google-chrome.desktop
+application/x-extension-shtml=google-chrome.desktop
+application/x-extension-xhtml=google-chrome.desktop
+application/x-extension-xht=google-chrome.desktop
 x-scheme-handler/http=google-chrome.desktop
 x-scheme-handler/https=google-chrome.desktop
 x-scheme-handler/about=google-chrome.desktop
 x-scheme-handler/unknown=google-chrome.desktop
+x-scheme-handler/chrome=google-chrome.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
-x-scheme-handler/chrome=zen.desktop
-application/x-extension-htm=zen.desktop
-application/x-extension-html=zen.desktop
-application/x-extension-shtml=zen.desktop
-application/xhtml+xml=zen.desktop
-application/x-extension-xhtml=zen.desktop
-application/x-extension-xht=zen.desktop
 x-scheme-handler/bruno=bruno.desktop
-
-[Added Associations]
-image/jpeg=swayimg.desktop;
-x-scheme-handler/http=zen.desktop;
-x-scheme-handler/https=zen.desktop;
-text/html=zen.desktop;
-x-scheme-handler/chrome=zen.desktop;
+# Documents: zathura (vim keys, themed by varna), not a browser.
+application/pdf=org.pwmt.zathura.desktop
+application/epub+zip=org.pwmt.zathura.desktop
+application/oxps=org.pwmt.zathura.desktop
+application/vnd.ms-xpsdocument=org.pwmt.zathura.desktop
+# Images: swayimg (light, Wayland-native, vim-ish keys), not a browser.
+image/jpeg=swayimg.desktop
+image/png=swayimg.desktop
+image/gif=swayimg.desktop
+image/webp=swayimg.desktop
+image/bmp=swayimg.desktop
+image/tiff=swayimg.desktop
+image/avif=swayimg.desktop
+image/heic=swayimg.desktop
+image/svg+xml=swayimg.desktop
+image/x-icon=swayimg.desktop
+# Video and audio files: mpv.
+video/mp4=mpv.desktop
+video/x-matroska=mpv.desktop
+video/webm=mpv.desktop
+video/quicktime=mpv.desktop
+video/x-msvideo=mpv.desktop
+audio/mpeg=mpv.desktop
+audio/flac=mpv.desktop
+audio/ogg=mpv.desktop
+audio/x-opus+ogg=mpv.desktop
+audio/x-wav=mpv.desktop
+# Folders: a kitty window there (kitty-open).
+inode/directory=kitty-open.desktop

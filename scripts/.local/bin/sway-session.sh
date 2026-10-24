@@ -27,7 +27,8 @@ systemctl --user start sway-session.target || log "couldn't start sway-session.t
 # output lands in the journal under its own name (vayu-logs <name>).
 UNITS="mako.service waybar.service vyom.service nada.service bar-events.service
   kdeconnect.service phone-events.service sway-audio-idle-inhibit.service
-  swaylock-on-sleep.service batsignal.service cliphist@text.service cliphist@image.service"
+  swaylock-on-sleep.service batsignal.service cliphist@text.service cliphist@image.service
+  pramana.service"
 # shellcheck disable=SC2086 # a list of unit names
 for u in $UNITS; do
   systemctl --user restart "$u" || log "couldn't start $u (journalctl --user -u $u)"

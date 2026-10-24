@@ -111,6 +111,8 @@ xorg-xwayland
 yazi
 ydotool
 yt-dlp
+zathura
+zathura-pdf-mupdf
 zed
 zenity
 zoxide
