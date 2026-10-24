@@ -7,6 +7,10 @@
 # D-Bus state only -- never starts anything (the systemd unit
 # kdeconnect.service owns the daemon).
 
+# Colours from the current varna theme (palette.json), Vayu's own without it.
+PALETTE=${XDG_STATE_HOME:-$HOME/.local/state}/varna/palette.json
+col() { local v; v=$(jq -r ".colors.$1 // empty" "$PALETTE" 2>/dev/null); echo "${v:-$2}"; }
+
 ICON=$'\U000F011C'   # nf-md-cellphone
 BOLT=$'\U000F140B'   # nf-md-lightning_bolt
 BUS=org.kde.kdeconnect
@@ -49,7 +53,7 @@ fi
 if [ ${#requests[@]} -gt 0 ]; then
   props "/modules/kdeconnect/devices/${requests[0]}" org.kde.kdeconnect.device name
   printf '{"text":"%s","class":"request","tooltip":"%s"}\n' \
-    "<span color='#F9E2AF'>$ICON</span>  <span color='#F9E2AF'>pair?</span>" \
+    "<span color='$(col warn '#F9E2AF')'>$ICON</span>  <span color='$(col warn '#F9E2AF')'>pair?</span>" \
     "${PROPS[0]} wants to pair\nClick: phone picker (Accept / Reject)"
   exit 0
 fi
@@ -66,9 +70,9 @@ done
 
 if [ -n "$name" ]; then
   bat=""
-  [ -n "$charge" ] && [ "$charge" -ge 0 ] 2>/dev/null && bat="  <span color='#CDD6F4'>${charge}%</span>"
-  [ "$charging" = true ] && bat="$bat <span color='#F9E2AF'>$BOLT</span>"
-  text="<span color='#89DCEB'>$ICON</span>$bat"
+  [ -n "$charge" ] && [ "$charge" -ge 0 ] 2>/dev/null && bat="  <span color='$(col fg '#CDD6F4')'>${charge}%</span>"
+  [ "$charging" = true ] && bat="$bat <span color='$(col warn '#F9E2AF')'>$BOLT</span>"
+  text="<span color='$(col sky '#89DCEB')'>$ICON</span>$bat"
   tooltip="$name connected${charge:+, battery ${charge}%}$([ "$charging" = true ] && echo ', charging')\nClick: phone picker"
   class=connected
 else

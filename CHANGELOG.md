@@ -5,6 +5,23 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (tmux bar: solid means "look here")
+
+- The tmux bar filled every capsule with its own colour, about 12 at once,
+  and themes have 6 to 8, so capsules collided: in Rosé Pine the current
+  window and the Claude usage capsule were the same teal. Now, like
+  waybar's pills, only "look here" capsules are solid (the session and its
+  prefix / copy-mode states, the current window, Claude waiting, usage at
+  its limit) and the rest are soft pills: a dark fill with the icon in its
+  colour (other windows, usage, PRs, dev servers, docker). Usage high is a
+  warm-tinted pill. Colours come from varna 0.1.8, which keeps the solid
+  ones apart in every theme (and tests it).
+- waybar's docker and phone capsules used fixed Catppuccin colours whatever
+  the theme; they read the theme's palette now.
+- Why the docker capsule was gone: no container was running. The laptop
+  rebooted on 2026-10-23 and the four compose containers have
+  `restart: no`, so they stayed stopped; both bars hide the capsule at 0.
+
 ## 2026-10-24 (every command in tmux was 35 ms slower)
 
 - Every process started inside tmux loaded GTK 4 first: `/bin/true` took
