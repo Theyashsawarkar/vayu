@@ -65,8 +65,10 @@ ANNOTATED_SCRIPT_DIRS = [
     # Vyom (the launcher/panels runtime) and its tools, each a separate
     # repo: their keys are annotated in their Python packages.
     HOME / ".local/share/vyom/core/vyom",
+    # (not kosha's `<name>.kosha-release` copy, kept while a tool is
+    # `kosha link`ed: its old keys would show up beside the new ones)
     *sorted(p for p in (HOME / ".local/share/vyom/plugins").glob("*/*")
-            if (p / "__init__.py").exists()),
+            if (p / "__init__.py").exists() and "." not in p.parent.name),
     # nāda, the music player (its own repo): keys annotated in its package.
     HOME / ".local/share/nada/nada",
     # vesha, the Claude Code account switcher (its own repo): its switcher keys.

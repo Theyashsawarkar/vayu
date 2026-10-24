@@ -5,6 +5,24 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (Vyom tabs: one set of keys)
+
+- Every Vyom panel with tabs switches them the same way, from the keyboard:
+  `Ctrl+H` / `Ctrl+L` for the previous / next tab (vim's left/right, beside
+  `Ctrl+K` / `Ctrl+J` for up/down) and `Ctrl+1..9` by number. Before, each
+  tool had its own: bhava `Ctrl+0..9`, mudra `Ctrl+1..9`, smriti `Ctrl+1..5`,
+  raga `Ctrl+M`, tarang `Ctrl+H` (a toggle). Vyom 0.3.0 draws the tabs; bhava,
+  mudra, raga, smriti and tarang 0.2.0 use them. `docs/KEYBINDINGS.md` says so.
+- ganit 0.2.0, the calculator, redesigned: one big answer that says how qalc
+  read the input, the other forms on `Alt+1..4`, and a Convert tab (an
+  amount in every pinned currency or unit at once, rate age always shown,
+  `Ctrl+R` updates rates). Fixes `18% of 3897` (was `rem(18, 1 B)`),
+  half-typed input showing a wrong answer, `₹9492.5546` money, and rates
+  that were 3 days old without saying so.
+- The keybinding search skipped nothing in `~/.local/share/vyom/plugins`, so
+  while a tool was `kosha link`ed its `<name>.kosha-release` copy listed the
+  old keys beside the new ones; it skips those now (Vyom 0.3.0 does too).
+
 ## 2026-10-24 (no more repeated locks after waking)
 
 - After a night of lid-shut wake/sleep cycles, the screen kept locking again

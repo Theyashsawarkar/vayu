@@ -18,13 +18,13 @@ hand-written overview of the main ones.
 
 ### Popups & pickers (Vyom)
 
-Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in its own repo. The same key again closes it. Inside any panel: type to search, <kbd>Up</kbd>/<kbd>Down</kbd> move, <kbd>Enter</kbd> runs, <kbd>Tab</kbd> jumps to the next tool, <kbd>Esc</kbd> closes; each tool's own keys are in its footer (and in <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd>).
+Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in its own repo. The same key again closes it. Inside any panel: type to search, <kbd>Up</kbd>/<kbd>Down</kbd> move, <kbd>Enter</kbd> runs, <kbd>Ctrl</kbd>+<kbd>K</kbd>/<kbd>J</kbd> move too, <kbd>Tab</kbd> jumps to the next tool, <kbd>Esc</kbd> closes. A tool with tabs (Calculate/Convert, clipboard kinds, emoji categories...) switches them the same way everywhere: <kbd>Ctrl</kbd>+<kbd>H</kbd>/<kbd>L</kbd> previous/next, <kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>9</kbd> by number; each tool's own keys are in its footer (and in <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd>).
 
 - <kbd>Super</kbd>+<kbd>d</kbd> — Apps ([dvara](https://github.com/Theyashsawarkar/dvara)): your frequent apps first, app actions on <kbd>Ctrl</kbd>+<kbd>1</kbd>…, <kbd>Shift</kbd>+<kbd>Enter</kbd> runs what you typed
-- <kbd>Super</kbd>+<kbd>c</kbd> — Calculator ([ganit](https://github.com/Theyashsawarkar/ganit)): answers as you type (units, currency, %), <kbd>Enter</kbd> copies
+- <kbd>Super</kbd>+<kbd>c</kbd> — Calculator ([ganit](https://github.com/Theyashsawarkar/ganit)): answers as you type (units, currency, %) with how it read them, <kbd>Enter</kbd> copies, <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>4</kbd> other forms; its Convert tab (<kbd>Ctrl</kbd>+<kbd>L</kbd>) shows an amount in every pinned currency or unit
 - <kbd>Super</kbd>+<kbd>m</kbd> — Clipboard ([smriti](https://github.com/Theyashsawarkar/smriti)): links, images, code told apart; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> pastes, <kbd>Ctrl</kbd>+<kbd>P</kbd> pins, <kbd>Delete</kbd> deletes
 - <kbd>Super</kbd>+<kbd>.</kbd> — Emoji ([bhava](https://github.com/Theyashsawarkar/bhava)): <kbd>Enter</kbd> types it into the window you were in, <kbd>Ctrl</kbd>+<kbd>T</kbd> skin tone
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi‑Fi ([tarang](https://github.com/Theyashsawarkar/tarang)): connect (password typed inline), <kbd>Ctrl</kbd>+<kbd>D</kbd> disconnect, <kbd>Ctrl</kbd>+<kbd>H</kbd> hotspot tab with a QR code
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi‑Fi ([tarang](https://github.com/Theyashsawarkar/tarang)): connect (password typed inline), <kbd>Ctrl</kbd>+<kbd>D</kbd> disconnect, the Hotspot tab (<kbd>Ctrl</kbd>+<kbd>L</kbd>) with a QR code
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> — Bluetooth ([setu](https://github.com/Theyashsawarkar/setu)): devices with battery, <kbd>Enter</kbd> connects / pairs
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>o</kbd> — Phone ([doot](https://github.com/Theyashsawarkar/doot), KDE Connect): send clipboard or a file, ring, browse
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>a</kbd> — Stop the laptop ringing (phone's Find my device), otherwise pick an action on the current notification (Accept/Reject pairing, Undo phone clipboard, Show received file in folder)
