@@ -157,11 +157,12 @@ for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move posi
 # plays the other way and Ctrl+M switches. Music plays in nāda (with
 # YouTube's mix lined up after it); video opens in mpv (the for_window
 # rule above focuses it).
+# Two keys, not three: raga's own Music / Video tabs (Ctrl+Tab) switch
+# between them once it's open. (Music was Super+Ctrl+Shift+y.)
+#: Search YouTube and play music (raga, in nāda)
+bindsym $mod+y exec $vyom raga music
 #: Search YouTube and play a video (raga, in mpv)
 bindsym $mod+Shift+y exec $vyom raga video
-
-#: Search YouTube and play music (raga, in nāda)
-bindsym $mod+Ctrl+Shift+y exec $vyom raga music
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
 # script and same three-state cycle the waybar bell's scroll wheel uses
@@ -498,8 +499,6 @@ bindsym $mod+Ctrl+r mode "resize"
 bindsym $mod+r       exec ~/.local/bin/wf-recorder-toggle.sh full
 #: Record screen: select a region (press again to stop)
 bindsym $mod+Shift+r exec ~/.local/bin/wf-recorder-toggle.sh region
-#: Record screen: full screen (Alt shortcut, press again to stop)
-bindsym Mod1+Shift+space exec ~/.local/bin/wf-recorder-toggle.sh full
 
 #
 # Utilities:
@@ -537,14 +536,18 @@ bindsym --locked XF86MonBrightnessUp exec ~/.config/sway/scripts/brightness_osd.
 bindsym Print exec ~/.config/sway/scripts/screenshot.sh
 
 # Region select
-#: Take screenshot: select a region
+#: Take screenshot: select a region (with the Print key)
 bindsym $mod+Print exec ~/.config/sway/scripts/screenshot.sh region
-#: Take screenshot: full screen (Alt shortcut)
-bindsym Mod1+space exec ~/.config/sway/scripts/screenshot.sh
+# Super+Shift+s: the region shot most people already know (and a laptop's
+# Print key is often behind Fn). No Alt+... shortcuts here: a global Alt
+# binding takes that key away from every app (Alt+Space, Alt+Shift+Space
+# and Alt+Shift+; were).
+#: Take screenshot: select a region
+bindsym $mod+Shift+s exec ~/.config/sway/scripts/screenshot.sh region
 
-# Manual lock trigger
+# Manual lock trigger (was Alt+Shift+;)
 #: Lock the screen
-bindsym Mod1+Shift+semicolon exec ~/.local/bin/vayu-lock
+bindsym $mod+Escape exec ~/.local/bin/vayu-lock
 
 ### User Executions & Environment Settings
 # Import WAYLAND_DISPLAY/SWAYSOCK into the systemd --user manager's own

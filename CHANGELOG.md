@@ -5,6 +5,36 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (keybindings: quick, numbered, no conflicts)
+
+Every keybinding on the system (608: sway, tmux, kitty, Zed, every Vyom
+panel, nāda, vesha, vinyasa, anumati, the tmux popups) checked for keys
+bound twice in one place, layers taking keys from the apps below them, and
+long combos; then pressed for real in a headless sway.
+
+- **Tabs**: every Vyom panel's tabs show their number (Vyom 0.4.0) and
+  cycle with `Ctrl+Tab` / `Ctrl+Shift+Tab` (also `Ctrl+H`/`L`, `Ctrl+1..9`);
+  `Shift+Tab` opens the previous tool. nāda's tabs take `Ctrl+Tab` and
+  `Ctrl+0..5` too (nāda 0.1.5).
+- **The keybinding search** (`Super+Shift+/`, mudra 0.3.0): type keys
+  (`ctrl+h`, `super q`, `prefix s`) to see what they do; every word counts
+  in any order ("tmux kill" found nothing); results ranked with the app on
+  each row; app tabs numbered, most bindings first, none left out; key caps
+  in the theme's colours (also Vyom's footers, which were Catppuccin).
+- **sway takes no Alt combos from apps any more**: `Alt+Space` (screenshot)
+  and `Alt+Shift+Space` (record) are gone (`Print` / `Super+Print`,
+  `Super+r` / `Super+Shift+r` stay), the lock is `Super+Escape` (was
+  `Alt+Shift+;`), and `Super+Shift+s` takes a region screenshot (no Print
+  key needed). YouTube is two keys: `Super+y` music, `Super+Shift+y` video
+  (music was `Super+Ctrl+Shift+y`).
+- **tmux**: `Ctrl+Shift+1..6` removed: kitty keeps `Ctrl+Shift+<n>` for its
+  own windows, so tmux never got them; `Alt+1..9` select windows.
+- nāda's Downloads view: `R` retries (its `r` shadowed "cycle repeat").
+- Tested: all 104 sway bindings fire exactly their own command (a logging
+  copy of the config in a headless sway, every key pressed); every
+  documented tmux binding is still live after the plugins load; every Vyom
+  tab key in all six tabbed panels; no key bound twice in one context.
+
 ## 2026-10-24 (one look for every popup)
 
 - Every floating surface now follows Vyom's panels (docs/ARCHITECTURE.md,

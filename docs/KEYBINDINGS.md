@@ -18,10 +18,10 @@ hand-written overview of the main ones.
 
 ### Popups & pickers (Vyom)
 
-Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in its own repo. The same key again closes it. Inside any panel: type to search, <kbd>Up</kbd>/<kbd>Down</kbd> move, <kbd>Enter</kbd> runs, <kbd>Ctrl</kbd>+<kbd>K</kbd>/<kbd>J</kbd> move too, <kbd>Tab</kbd> jumps to the next tool, <kbd>Esc</kbd> closes. A tool with tabs (Calculate/Convert, clipboard kinds, emoji categories...) switches them the same way everywhere: <kbd>Ctrl</kbd>+<kbd>H</kbd>/<kbd>L</kbd> previous/next, <kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>9</kbd> by number; each tool's own keys are in its footer (and in <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd>).
+Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in its own repo. The same key again closes it. Inside any panel: type to search, <kbd>Up</kbd>/<kbd>Down</kbd> move, <kbd>Enter</kbd> runs, <kbd>Ctrl</kbd>+<kbd>K</kbd>/<kbd>J</kbd> move too, <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> jump to the next / previous tool, <kbd>Esc</kbd> closes. A tool with tabs (Calculate/Convert, clipboard kinds, emoji categories, keybinding apps...) shows each tab's number and switches them the same way everywhere: <kbd>Ctrl</kbd>+<kbd>Tab</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd> (or <kbd>Ctrl</kbd>+<kbd>H</kbd>/<kbd>L</kbd>) next/previous, <kbd>Ctrl</kbd>+<kbd>1</kbd>…<kbd>9</kbd> the numbered one (nāda's tabs too); each tool's own keys are in its footer (and in <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd>).
 
 - <kbd>Super</kbd>+<kbd>d</kbd> — Apps ([dvara](https://github.com/Theyashsawarkar/dvara)): your frequent apps first, app actions on <kbd>Ctrl</kbd>+<kbd>1</kbd>…, <kbd>Shift</kbd>+<kbd>Enter</kbd> runs what you typed
-- <kbd>Super</kbd>+<kbd>c</kbd> — Calculator ([ganit](https://github.com/Theyashsawarkar/ganit)): answers as you type (units, currency, %) with how it read them, <kbd>Enter</kbd> copies, <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>4</kbd> other forms; its Convert tab (<kbd>Ctrl</kbd>+<kbd>L</kbd>) shows an amount in every pinned currency or unit
+- <kbd>Super</kbd>+<kbd>c</kbd> — Calculator ([ganit](https://github.com/Theyashsawarkar/ganit)): answers as you type (units, currency, %) with how it read them, <kbd>Enter</kbd> copies, <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>4</kbd> other forms; its Convert tab (<kbd>Ctrl</kbd>+<kbd>Tab</kbd>) shows an amount in every pinned currency or unit
 - <kbd>Super</kbd>+<kbd>m</kbd> — Clipboard ([smriti](https://github.com/Theyashsawarkar/smriti)): links, images, code told apart; <kbd>Ctrl</kbd>+<kbd>Enter</kbd> pastes, <kbd>Ctrl</kbd>+<kbd>P</kbd> pins, <kbd>Delete</kbd> deletes
 - <kbd>Super</kbd>+<kbd>.</kbd> — Emoji ([bhava](https://github.com/Theyashsawarkar/bhava)): <kbd>Enter</kbd> types it into the window you were in, <kbd>Ctrl</kbd>+<kbd>T</kbd> skin tone
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi‑Fi ([tarang](https://github.com/Theyashsawarkar/tarang)): connect (password typed inline), <kbd>Ctrl</kbd>+<kbd>D</kbd> disconnect, the Hotspot tab (<kbd>Ctrl</kbd>+<kbd>L</kbd>) with a QR code
@@ -34,7 +34,7 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 - <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([kendra](https://github.com/Theyashsawarkar/kendra); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, caffeine, dark theme, wallpaper, power profile, volume and brightness, lock and power
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — [nāda](https://github.com/Theyashsawarkar/nada) (music player), toggle open/hidden
 - <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> / <kbd>.</kbd> / <kbd>,</kbd> — music play/pause, next, previous (without opening nāda)
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> / <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — YouTube ([raga](https://github.com/Theyashsawarkar/raga)): search, play as video (mpv) / music (nāda); <kbd>Shift</kbd>+<kbd>Enter</kbd> the other way
+- <kbd>Super</kbd>+<kbd>y</kbd> / <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — YouTube ([raga](https://github.com/Theyashsawarkar/raga)): search, play as music (nāda) / video (mpv); <kbd>Ctrl</kbd>+<kbd>Tab</kbd> switches, <kbd>Shift</kbd>+<kbd>Enter</kbd> plays it the other way
 - <kbd>Super</kbd>+<kbd>n</kbd> — Cycle notification mode (normal → silent → dnd)
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>n</kbd> / <kbd>s</kbd> / <kbd>d</kbd> — Jump directly to normal / silent / dnd
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd> — Keybindings ([mudra](https://github.com/Theyashsawarkar/mudra)): every binding by what it does, real key caps, <kbd>Enter</kbd> runs it
@@ -83,7 +83,6 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 
 - <kbd>Super</kbd>+<kbd>r</kbd> — Record full screen
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>r</kbd> — Record a selected region
-- <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Space</kbd> — Record full screen (press again to stop)
 
 ### Media & hardware keys
 
@@ -96,8 +95,8 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 
 - <kbd>Print</kbd> — Screenshot, full screen
 - <kbd>Super</kbd>+<kbd>Print</kbd> — Screenshot, select a region
-- <kbd>Alt</kbd>+<kbd>Space</kbd> — Screenshot, full screen
-- <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>;</kbd> — Lock screen
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>s</kbd> — Screenshot, select a region (no Print key needed)
+- <kbd>Super</kbd>+<kbd>Escape</kbd> — Lock screen
 
 ## Tmux
 
@@ -140,7 +139,6 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd> — Resize pane left/right by 5
 - <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>/<kbd>Down</kbd> — Resize pane up/down by 2
 - <kbd>Alt</kbd>+<kbd>1</kbd>..<kbd>9</kbd> — Select window 1–9 (no prefix needed; a missing window is a silent no-op)
-- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd>..<kbd>6</kbd> — Select window 1–6 (no prefix needed, kitty extended keys)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Enter</kbd> — Enter copy mode (the session capsule turns green)
 - <kbd>v</kbd> (in copy mode) — Begin visual selection
 - <kbd>Esc</kbd> / <kbd>q</kbd> (in copy mode) — Leave copy mode
