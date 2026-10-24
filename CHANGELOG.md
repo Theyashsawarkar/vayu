@@ -5,6 +5,14 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (mpd: this machine only)
+
+- MPD listened on every network interface (`*:6600`): anyone on the same
+  Wi-Fi could control it, browse the library and make it fetch URLs. It
+  now listens on its socket (what rmpc and nada use) and localhost only.
+- `restore_paused`: a song playing at shutdown comes back paused, rather
+  than starting by itself at the next login.
+
 ## 2026-10-24 (Do Not Disturb lets critical notifications through)
 
 - DND hid everything, the "battery at 3%" warning included. Critical
