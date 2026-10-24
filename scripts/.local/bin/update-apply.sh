@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Applies the update update-check.sh found -- pull, restow, reload live
-# state. Only ever invoked by the "Update Now" button in
-# nwg-bar/.config/nwg-bar/update-bar.json, never run standalone as part
+# state. Only ever invoked by "Update now" in update-check.sh's Vyom
+# panel prompt, never run standalone as part
 # of the check itself, so a user who clicks "Later" (or ignores the
 # prompt) never has this touch anything.
 #
@@ -81,11 +81,6 @@ if ! git diff --quiet "$OLD_HEAD" HEAD -- splash/; then
     log "splash/ changed: run splash/apply.sh"
     notify-send -u normal -i "$ICON_OK" "Boot splash changed" \
         "Run ~/dotfiles/splash/apply.sh in a terminal (needs sudo) to install it."
-fi
-if ! git diff --quiet "$OLD_HEAD" HEAD -- ai/; then
-    log "ai/ changed: run ai/apply.sh"
-    notify-send -u normal -i "$ICON_OK" "AI tools changed" \
-        "Run ~/dotfiles/ai/apply.sh in a terminal (needs sudo) to install them."
 fi
 # Same for new packages, services (packages/) and files under / (system/):
 # install.sh is the one place that applies those, and it's safe to re-run.

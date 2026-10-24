@@ -10,7 +10,7 @@
 # overdrive risk the way pactl's relative volume is), but without the lock
 # concurrent calls can still stack out of order and overshoot the expected
 # per-tick step before settling.
-LOCK="/tmp/brightness_osd.lock"
+LOCK="${XDG_RUNTIME_DIR:-/tmp}/brightness_osd.lock"
 
 (
     flock -x 9

@@ -52,7 +52,7 @@ ARCHIVE_DIR="$BASE_DIR/Archive"
 CURRENT="$BASE_DIR/current.jpg"
 LAST_GOOD="$BASE_DIR/.last_good.jpg"
 SEEN_FILE="$BASE_DIR/.seen"  # TSV: bing-id, md5, date applied, filename
-LOCK_FILE="/tmp/fetch_wallpaper.lock"
+LOCK_FILE="${XDG_RUNTIME_DIR:-/tmp}/fetch_wallpaper.lock"
 LOG_DIR="$HOME/.local/state/fetch-wallpaper"
 LOG_FILE="$LOG_DIR/fetch-wallpaper.log"
 LOG_MAX_BYTES=1048576
@@ -143,7 +143,15 @@ apply_background() {
   # this returns on the very first check.
   local mode="$1" value="$2" swaysock=""
   for _ in $(seq 1 20); do
-    swaysock=$(ls /run/user/"$(id -u)"/sway-ipc.*.sock 2>/dev/null | head -n1)
+    # $SWAYSOCK when we have it; else the newest socket that answers (a
+    # crashed sway leaves its socket behind, and `head -n1` could pick it).
+    if [ -n "${SWAYSOCK:-}" ] && swaymsg -s "$SWAYSOCK" -t get_version >/dev/null 2>&1; then
+      swaysock=$SWAYSOCK
+    else
+      for s in $(ls -t /run/user/"$(id -u)"/sway-ipc.*.sock 2>/dev/null); do
+        swaymsg -s "$s" -t get_version >/dev/null 2>&1 && { swaysock=$s; break; }
+      done
+    fi
     [ -n "$swaysock" ] && break
     sleep 1
   done

@@ -12,7 +12,7 @@
 #   2. The target is clamped to 0-100 ourselves -- pactl's relative "+N%"
 #      does NOT clamp on its own, so without this a burst can genuinely
 #      overdrive well past 100%.
-LOCK="/tmp/volume_osd.lock"
+LOCK="${XDG_RUNTIME_DIR:-/tmp}/volume_osd.lock"
 
 # Same tiering convention as waybar's own battery icons elsewhere in this
 # desktop (different icon per range, not one static speaker glyph).
