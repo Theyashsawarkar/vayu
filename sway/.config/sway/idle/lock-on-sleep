@@ -3,4 +3,8 @@
 # (run by swaylock-on-sleep.service) so caffeine mode stopping the main
 # idle-timeout instance (see ~/.config/sway/idle/config) never disables
 # this too. Lid-close should lock every time, caffeine or not.
-before-sleep '~/.local/bin/vayu-lock'
+# -f: swaylock forks once the screen is locked. Without it, swayidle -w
+# blocked until unlock, so it missed logind's 5s sleep delay and queued
+# the next PrepareForSleep: a night of lid wake/re-suspend cycles came
+# back as one lock per cycle, each appearing after the previous unlock.
+before-sleep '~/.local/bin/vayu-lock -f'

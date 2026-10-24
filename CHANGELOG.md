@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (no more repeated locks after waking)
+
+- After a night of lid-shut wake/sleep cycles, the screen kept locking again
+  about a minute after each unlock (five locks in a row this morning). The
+  lock hooks ran swaylock without `-f`, and swayidle `-w` waited for it to
+  exit, i.e. until unlock. logind's 5 s sleep delay ran out (every suspend
+  started exactly 5 s after "Suspending..."), and swayidle queued the next
+  sleep's hook, so each sleep cycle came back as one more lock. Both
+  `idle/config` (15-minute lock) and `idle/lock-on-sleep` now use
+  `vayu-lock -f`: swaylock forks once the screen is locked. The same wait
+  also kept the main swayidle from turning the screen off or suspending
+  while locked; that works again now.
+
 ## 2026-10-21 (popups follow the theme)
 
 - Popup frames are visible in every theme: fzf's inner boxes (the session

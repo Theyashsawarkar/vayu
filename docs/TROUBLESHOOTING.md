@@ -273,6 +273,20 @@ tail -20 ~/.local/state/vyom/daemon.log    # errors from the panels
 - **The panel shows but looks like a flat box:** SwayFX's blur behind it
   comes from `layer_effects "vyom"` in sway's config; reload sway.
 
+## Lock: the screen locks again a minute after unlocking
+
+Fixed on 2026-10-24 (see `CHANGELOG.md`). It happened after the laptop woke
+and went back to sleep several times with the lid shut: the lock-on-sleep
+hook waited for each lock to be unlocked, so the locks queued up and came
+back one after another, one per sleep. Both idle configs now start swaylock
+with `-f`, so it can't queue. If an old machine still does it, pull, then
+restart the two services (clears any queued locks):
+
+```sh
+grep -n 'vayu-lock' ~/.config/sway/idle/config ~/.config/sway/idle/lock-on-sleep   # both should end in -f
+systemctl --user restart swayidle.service swaylock-on-sleep.service
+```
+
 ## Login: the desktop doesn't start after logging in
 
 The screen returns to the login prompt or goes black. Sway's own log goes to
