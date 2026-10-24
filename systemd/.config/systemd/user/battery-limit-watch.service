@@ -1,11 +1,16 @@
 [Unit]
-Description=Nudge to unplug once charging crosses the battery-limit-picker.py threshold
+StartLimitIntervalSec=0
+Description=Nudge to unplug once charging crosses the battery limit (set in urja, the battery panel)
 
 [Service]
 Type=simple
 ExecStart=%h/.local/bin/battery-limit-watch.sh
 Restart=on-failure
 RestartSec=2
+# Back off (2 s up to 60 s) instead of hitting the start limit and staying
+# dead: a quick repeated failure at login killed a unit for the session.
+RestartSteps=5
+RestartMaxDelaySec=60
 
 [Install]
 WantedBy=default.target

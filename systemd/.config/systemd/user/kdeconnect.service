@@ -1,4 +1,5 @@
 [Unit]
+StartLimitIntervalSec=0
 Description=KDE Connect daemon (phone <-> laptop: files, clipboard, notifications)
 Documentation=https://kdeconnect.kde.org
 # Needs the sway session's WAYLAND_DISPLAY for clipboard sync; sway's
@@ -14,6 +15,10 @@ BusName=org.kde.kdeconnect
 ExecStart=/usr/bin/kdeconnectd
 Restart=always
 RestartSec=2
+# Back off (2 s up to 60 s) instead of hitting the start limit and staying
+# dead: a quick repeated failure at login killed a unit for the session.
+RestartSteps=5
+RestartMaxDelaySec=60
 
 # No [Install] on purpose: enabled at login it would start before sway
 # exports WAYLAND_DISPLAY, and clipboard sync would silently not work.

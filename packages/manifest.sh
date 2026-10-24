@@ -67,6 +67,10 @@ USER_UNITS_ENABLE=(
 STOW_REAL_DIRS=(
   .claude
   .config .config/gtk-3.0 .config/gtk-4.0 .config/systemd .config/systemd/user
+  # Drop-in dirs must be real: systemd ignores a *.service.d that is a symlink
+  # (stow folds it into one), so mpd's prepare-dirs.conf never applied.
+  .config/systemd/user/mpd.service.d .config/systemd/user/mako.service.d
+  .config/systemd/user/waybar.service.d
   .local .local/bin .local/share .local/share/applications .local/state
   .tmux .tmux/scripts
 )

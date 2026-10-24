@@ -13,6 +13,9 @@
 # A pane's state is its @claude_wait option (the time it started waiting);
 # @claude_waiting is how many there are, which the capsule shows. A pane you
 # are looking at when Claude stops never counts.
+# Errors to the journal when nothing would show them (tmux `run -b` drops
+# stderr): read them with `vayu-logs claude-tmux`.
+[ -t 2 ] || [ "${JOURNAL_STREAM:-}" = "$(stat -Lc %d:%i /proc/self/fd/2 2>/dev/null)" ] || exec 2> >(logger -t claude-tmux)
 set -u
 
 recount() {

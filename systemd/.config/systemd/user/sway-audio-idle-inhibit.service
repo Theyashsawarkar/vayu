@@ -1,4 +1,5 @@
 [Unit]
+StartLimitIntervalSec=0
 Description=Inhibit idle/lock while audio is playing
 PartOf=graphical-session.target
 # Crashed once connecting to PulseAudio/pipewire-pulse too early at login
@@ -10,8 +11,17 @@ After=pipewire-pulse.socket pipewire-pulse.service
 [Service]
 Type=simple
 ExecStart=/usr/bin/sway-audio-idle-inhibit
+# It prints "IDLE INHIBITED" / "NOT IDLE INHIBITED" on stdout at every
+# audio start and stop (174 lines in an afternoon), burying everything else
+# in `vayu-logs`. Drop stdout; stderr (its errors) still goes to the journal.
+StandardOutput=null
+StandardError=journal
 Restart=on-failure
 RestartSec=2
+# Back off (2 s up to 60 s) instead of hitting the start limit and staying
+# dead: a quick repeated failure at login killed a unit for the session.
+RestartSteps=5
+RestartMaxDelaySec=60
 
 # No [Install]: a Wayland client, started by sway's config -- see
 # swayidle.service for why default.target was wrong.

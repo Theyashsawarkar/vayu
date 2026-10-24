@@ -1,0 +1,16 @@
+[Unit]
+Description=Clipboard history: record copied %i (cliphist)
+Documentation=https://github.com/sentriz/cliphist
+# Was a bare sway `exec`: if wl-paste died, the clipboard history quietly
+# stopped recording until the next login. sway-session.sh starts
+# cliphist@text and cliphist@image.
+PartOf=graphical-session.target
+After=graphical-session.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/usr/bin/wl-paste --type %i --watch cliphist store
+Restart=always
+RestartSec=2
+RestartSteps=5
+RestartMaxDelaySec=60

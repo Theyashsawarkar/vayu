@@ -1,4 +1,5 @@
 [Unit]
+StartLimitIntervalSec=0
 Description=Battery warning/critical/danger notifications, force-suspend at danger level
 
 [Service]
@@ -28,6 +29,10 @@ Type=simple
 ExecStart=/usr/bin/batsignal -w 20 -c 10 -d 5 -D "systemctl suspend" -I battery-caution-symbolic
 Restart=on-failure
 RestartSec=2
+# Back off (2 s up to 60 s) instead of hitting the start limit and staying
+# dead: a quick repeated failure at login killed a unit for the session.
+RestartSteps=5
+RestartMaxDelaySec=60
 
 [Install]
 WantedBy=default.target

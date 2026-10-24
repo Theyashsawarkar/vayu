@@ -29,6 +29,23 @@ the hardware can't support says so and how to get around it, instead of
 failing silently. Known limits go in `docs/TROUBLESHOOTING.md`
 ("Hardware: a different laptop...").
 
+## Logs and services: the journal, one unit per long-running piece
+
+- Diagnostics go to stderr, never a tool's own log file; the launcher routes
+  it: a user unit's stderr is the journal; a script run by tmux (`run -b`
+  drops stderr) or waybar starts with the `logger -t` line the others have
+  (see `claude-tmux`). Python: `logging`, `log.exception` where you catch.
+  Read it all with `vayu-logs [tool]`.
+- Anything that runs for the whole session is a systemd user unit
+  (`PartOf=graphical-session.target`, `Restart=` with `RestartSteps=5`,
+  `RestartMaxDelaySec=60`, `StartLimitIntervalSec=0`), started from the
+  `UNITS` list in `sway-session.sh`, never an `exec` in sway's config (that
+  races the environment import). A `*.service.d` drop-in folder goes in
+  `STOW_REAL_DIRS` (systemd ignores a symlinked one).
+- Test GUI changes in a headless sway with its own D-Bus session
+  (`dbus-run-session`, `WLR_BACKENDS=headless`, grim, `wtype -s 250`),
+  never by restarting or driving the user's running desktop.
+
 ## Plugins: every plugin in its own repository
 
 Every plugin we create for any tool (tmux, Neovim, zsh, waybar, Vyom...)

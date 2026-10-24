@@ -11,6 +11,9 @@
 # (tmux.conf); the 15-minute auto-save (tmux-autosave.timer) runs save.sh
 # quietly without this.
 
+# Errors to the journal when nothing would show them (tmux `run -b` drops
+# stderr): read them with `vayu-logs resurrect.sh`.
+[ -t 2 ] || [ "${JOURNAL_STREAM:-}" = "$(stat -Lc %d:%i /proc/self/fd/2 2>/dev/null)" ] || exec 2> >(logger -t resurrect.sh)
 dir=~/.tmux/plugins/tmux-resurrect/scripts
 last=$(tmux show -gqv @resurrect-dir); last=${last:-$HOME/.tmux/resurrect}/last
 notify() { notify-send -a tmux -i utilities-terminal 'tmux' "$1"; }

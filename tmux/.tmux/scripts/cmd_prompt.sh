@@ -16,6 +16,9 @@
 # once this script returns, i.e. in the real client's context, exactly
 # like tmux's built-in prompts.
 # Theme colours from varna, when it is installed (fallback: the colours below).
+# Errors to the journal when nothing would show them (tmux `run -b` drops
+# stderr): read them with `vayu-logs cmd_prompt.sh`.
+[ -t 2 ] || [ "${JOURNAL_STREAM:-}" = "$(stat -Lc %d:%i /proc/self/fd/2 2>/dev/null)" ] || exec 2> >(logger -t cmd_prompt.sh)
 [ -r "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh" ] && . "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh"
 
 if [ "$1" = --input ]; then

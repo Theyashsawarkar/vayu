@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# vayu-logs: one place to read what any part of the desktop logged.
+#
+#   vayu-logs                 warnings and errors from everything, this boot
+#   vayu-logs <name>...       everything one tool logged this boot
+#                             (vyom, nada, waybar, mako, bar-events, sway,
+#                             claude-tmux, wf-recorder, a unit name...)
+#   vayu-logs --list          which tools logged this boot, and how much
+#   options: -f follow   -b N  that boot (0 this one, -1 the last)
+#            -p LEVEL     err, warning, info, debug   -n N  last N lines
+#            --all-boots
+#
+# Every tool writes its diagnostics to stderr and whatever starts it sends
+# that to the journal under the tool's name: a systemd user unit (vyom,
+# nada, waybar, mako, bar-events...), `logger -t` (scripts tmux and waybar
+# run), or sway's own stream (tag `sway`, for what sway starts directly).
+# So this is journalctl, matched on the tool's tag or its unit.
+set -uo pipefail
+
+boot=(-b 0) follow=() prio=() lines=() names=()
+while [ $# -gt 0 ]; do
+  case $1 in
+    -f|--follow) follow=(-f) ;;
+    -b|--boot) boot=(-b "${2:?-b needs a boot number}"); shift ;;
+    --all-boots) boot=() ;;
+    -p|--priority) prio=(-p "${2:?-p needs a level}"); shift ;;
+    -n|--lines) lines=(-n "${2:?-n needs a number}"); shift ;;
+    --list)
+      journalctl --user "${boot[@]}" -o json --output-fields=SYSLOG_IDENTIFIER,_SYSTEMD_USER_UNIT,USER_UNIT,PRIORITY 2>/dev/null |
+        jq -r '[(.USER_UNIT // ._SYSTEMD_USER_UNIT // .SYSLOG_IDENTIFIER // "?"), ((.PRIORITY // "6") | tonumber <= 4)] | @tsv' |
+        awk -F'\t' '{n[$1]++; if ($2 == "true") w[$1]++} END {for (k in n) printf "%6d %6d  %s\n", n[k], w[k], k}' |
+        sort -k2,2nr -k1,1nr | { printf '%6s %6s  %s\n' lines warn+ tool; cat; }
+      exit ;;
+    -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*) echo "vayu-logs: unknown option $1 (see --help)" >&2; exit 2 ;;
+    *) names+=("$1") ;;
+  esac
+  shift
+done
+
+if [ ${#names[@]} -eq 0 ]; then
+  # Everything, warnings and up (unless -p says otherwise).
+  [ ${#prio[@]} -eq 0 ] && prio=(-p warning)
+  exec journalctl --user "${boot[@]}" "${prio[@]}" "${lines[@]}" "${follow[@]}" --no-hostname -o short-iso
+fi
+
+# Per tool: its tag OR its unit (a template's instances too), each OR'd.
+match=()
+for n in "${names[@]}"; do
+  unit=$n; [[ $unit == *.* ]] || unit=$n.service
+  [ ${#match[@]} -gt 0 ] && match+=(+)
+  match+=("SYSLOG_IDENTIFIER=$n" + "_SYSTEMD_USER_UNIT=$unit" + "USER_UNIT=$unit")
+  # A template's instances (cliphist -> cliphist@text, cliphist@image).
+  if [[ $n != *[@.]* ]]; then
+    while read -r inst _; do
+      [ -n "$inst" ] && match+=(+ "_SYSTEMD_USER_UNIT=$inst")
+    done < <(systemctl --user list-units --all --plain --no-legend "$n@*" 2>/dev/null)
+  fi
+done
+exec journalctl --user "${boot[@]}" "${prio[@]}" "${lines[@]}" "${follow[@]}" --no-hostname -o short-iso "${match[@]}"

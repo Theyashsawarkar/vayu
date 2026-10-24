@@ -8,9 +8,16 @@ of how each one was found, follow the link to its `CHANGELOG.md` entry.
 
 ```sh
 vayu-verify                        # does this machine still match the repo? lists anything that differs
+vayu-logs                          # warnings and errors from every part of the desktop, this boot
+vayu-logs --list                   # which tools logged, how much, how many warnings
+vayu-logs vyom                     # one tool (vyom, nada, waybar, mako, bar-events, claude-tmux...)
 journalctl -b -1 -p 0..3 --no-pager  # errors from the previous boot (the one that went wrong)
-journalctl -b -p 0..3 --no-pager     # errors from this boot
 ```
+
+Every tool logs to the journal under its own name, tracebacks included (see
+`docs/ARCHITECTURE.md`, "Every long-running piece is a user unit"). A part
+that's gone (no bar, no clipboard history): `systemctl --user status <name>`;
+each restarts itself on a crash, with backoff.
 
 Most "it stopped working after an update" cases are a `differs:` line in
 `vayu-verify`: the repo changed but the root-owned part wasn't re-applied.

@@ -562,49 +562,15 @@ bindsym Mod1+Shift+semicolon exec ~/.local/bin/vayu-lock
 # (xdg-desktop-portal-luminous hit its start limit after a logout).
 exec ~/.local/bin/sway-session.sh
 
-# Both refuse to start without their theme file: vayu-theme-ensure writes
-# any that's missing (varna, or Vayu's defaults) first.
-exec sh -c '~/.local/bin/vayu-theme-ensure; waybar'
-exec sh -c '~/.local/bin/vayu-theme-ensure; mako'
-# Vyom stays resident so its panels open at once (quick settings: $mod+q).
-exec ~/.local/bin/vyom daemon
-# nāda, the music player: resident so its window, MPRIS (media keys) and
-# downloads are always there.
-exec ~/.local/bin/nada daemon
-# Refreshes waybar's capsules (and tmux's docker count) when what they
-# show changes, so they don't poll (scripts/.local/bin/bar-events.py).
-exec systemctl --user restart bar-events.service
-# Reapplies whatever notification mode was last chosen -- mako's own
-# mode selection resets to its built-in default on every restart/login,
-# so without this, DND/silent would silently drop back to normal on
-# every reboot. Bounded retry inside the script itself for the same
-# mako-not-up-yet race dbus-update-activation-environment above exists
-# to guard against elsewhere in this file.
-exec ~/.local/bin/notification-mode-restore.sh
-
-# Start the idle manager automatically
-# Managed as a systemd user service (systemd/.config/systemd/user/swayidle.service)
-# rather than a raw exec, so caffeine-toggle.sh can stop/start it cleanly via
-# systemctl instead of juggling raw processes. The unit isn't enabled (a
-# Wayland client can't start before sway); swayidle-startup.sh starts it
-# unless caffeine mode was left on.
-exec ~/.local/bin/swayidle-startup.sh
-# Also a systemd user service now (systemd/.config/systemd/user/sway-audio-idle-inhibit.service)
-# instead of a raw exec -- it crashed once connecting to the audio stack too
-# early at login and never came back (plain exec doesn't restart on crash).
-exec systemctl --user restart sway-audio-idle-inhibit.service
-
-# Lock-before-sleep, split out from swayidle.service above so caffeine mode
-# never disables it (systemd/.config/systemd/user/swaylock-on-sleep.service).
-exec systemctl --user restart swaylock-on-sleep.service
-
-# KDE Connect daemon (phone <-> laptop) as a supervised user unit, started
-# after dbus-update-activation-environment above so it gets WAYLAND_DISPLAY
-# (clipboard sync). See systemd/.config/systemd/user/kdeconnect.service.
-exec systemctl --user restart kdeconnect.service
-# ...and the watcher that turns its silent events (files received, phone
-# clipboard) into notifications (scripts/.local/bin/phone-events.py).
-exec systemctl --user restart phone-events.service
+# Everything that runs for the whole session is a systemd user unit that
+# sway-session.sh starts right after importing WAYLAND_DISPLAY (so none can
+# race that import), restarts on a crash, and logs to the journal under its
+# own name (`vayu-logs <name>`): waybar, mako, vyom (panels), nada (music),
+# bar-events (capsule refreshes), kdeconnect + phone-events, the audio idle
+# inhibitor, lock-before-sleep, batsignal, and the clipboard history
+# (cliphist@text, cliphist@image). It then restores the notification mode
+# and starts swayidle (swayidle-startup.sh: unless caffeine mode is on).
+# Unit files: systemd/.config/systemd/user/.
 
 # Prevent idle timeouts when watching fullscreen videos
 for_window [class=".*"] inhibit_idle fullscreen
@@ -623,11 +589,9 @@ for_window [app_id=".*"] inhibit_idle fullscreen
 # launch. The real flag for "run a command at a level" is '-D COMMAND'.
 # Restart=on-failure now too, so a future crash doesn't silently remove your
 # only protection against an uncontrolled shutdown from battery depletion.
-exec systemctl --user restart batsignal.service
+# (started by sway-session.sh, like the other session units)
 
-# Clipboard history management
-exec --no-startup-id wl-paste --type text --watch cliphist store
-exec --no-startup-id wl-paste --type image --watch cliphist store
+# Clipboard history: cliphist@text / cliphist@image units (sway-session.sh).
 
 include /etc/sway/config.d/*
 

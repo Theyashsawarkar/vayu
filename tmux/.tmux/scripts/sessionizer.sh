@@ -10,6 +10,9 @@
 # Every tmux call is pinned to <client>: with more than one kitty window
 # attached, a bare switch-client would move whichever client tmux guesses.
 # Theme colours from varna, when it is installed (fallback: the colours below).
+# Errors to the journal when nothing would show them (tmux `run -b` drops
+# stderr): read them with `vayu-logs sessionizer.sh`.
+[ -t 2 ] || [ "${JOURNAL_STREAM:-}" = "$(stat -Lc %d:%i /proc/self/fd/2 2>/dev/null)" ] || exec 2> >(logger -t sessionizer.sh)
 [ -r "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh" ] && . "${XDG_STATE_HOME:-$HOME/.local/state}/varna/fzf.sh"
 
 # The current session takes the accent (like its capsule on the bar), keys

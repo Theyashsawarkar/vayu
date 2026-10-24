@@ -31,6 +31,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -315,8 +316,12 @@ KDECONNECT_TYPES = {"text/plain", "text/plain;charset=utf-8"}
 
 
 def clipboard_types():
-    out = subprocess.run(["wl-paste", "--list-types"], capture_output=True, text=True,
-                         check=False).stdout
+    try:
+        out = subprocess.run(["wl-paste", "--list-types"], capture_output=True, text=True,
+                             check=False, timeout=3).stdout
+    except subprocess.TimeoutExpired:
+        log("wl-paste --list-types timed out")
+        return set()
     return {t.strip() for t in out.splitlines() if t.strip()}
 
 
@@ -349,7 +354,8 @@ def on_phone_clipboard(text, previous):
                                  f"“{preview}”\nalready on your clipboard · Undo restores the previous one",
                                  [("default", "Keep"), ("undo", "Undo")])
     if choice == "undo" and previous is not None:
-        subprocess.run(["wl-copy", "--", previous], check=False)
+        # On stdin, not argv: any user could read it in `ps` (a password, say).
+        subprocess.run(["wl-copy"], input=previous, text=True, check=False, timeout=5)
         subprocess.run(["notify-send", "-a", "KDE Connect", "-u", "low", "-i", ICON,
                         "Clipboard restored", "Phone clipboard discarded"], check=False)
 
@@ -575,6 +581,20 @@ def enforce_device_policy():
     return changed
 
 
+def supervised(fn):
+    """A watcher thread that dies takes the service down with it (and its
+    traceback into the journal), so systemd restarts all of it: before, the
+    service stayed "active" with that kind of event silently unhandled."""
+    def run():
+        try:
+            fn()
+        except BaseException:
+            traceback.print_exc()
+            sys.stderr.flush()
+            os._exit(1)
+    return run
+
+
 def main():
     DEVICE_POLICY["kdeconnect_findthisdevice"]["ringtone"] = "file://" + make_ringtone()
     if len(sys.argv) > 1 and sys.argv[1] == "--enforce-device-policy":
@@ -582,8 +602,8 @@ def main():
         return
     enforce_device_policy()
     load_initial_states()
-    threading.Thread(target=watch_signals, daemon=True).start()
-    threading.Thread(target=watch_ring, daemon=True).start()
+    threading.Thread(target=supervised(watch_signals), daemon=True).start()
+    threading.Thread(target=supervised(watch_ring), daemon=True).start()
     watch_clipboard()
 
 

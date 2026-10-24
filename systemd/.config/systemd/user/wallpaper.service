@@ -1,6 +1,7 @@
 [Unit]
 Description=Fetch and set daily wallpaper
-After=network-online.target
+# (No After=network-online.target: it does nothing in a user unit;
+# fetch_wallpaper.sh waits for NetworkManager itself.)
 
 [Service]
 Type=oneshot

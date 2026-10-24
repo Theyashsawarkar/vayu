@@ -318,9 +318,9 @@ has to run before *anything* that starts a systemd `--user` service (`swayidle.s
 manager, a separate process from sway with its own environment, and it has no idea
 `WAYLAND_DISPLAY`/`SWAYSOCK` exist until this command imports them. Get the order
 wrong and those services crash-loop with "Unable to connect to the compositor" —
-happened for real once, see the changelog. If you add another systemd `--user`
-service that needs to talk to sway, its `exec systemctl --user start ...` line needs
-to come after this one.
+happened for real once, see the changelog. So sway's config doesn't start any
+service itself any more: `sway-session.sh` starts every session unit right after
+the import (below). A new one goes in its `UNITS` list, not in sway's config.
 
 Note this only matters at sway's actual startup: plain `exec` lines (unlike
 `exec_always`) don't re-run on `swaymsg reload`, so testing an exec-order fix via
@@ -342,6 +342,40 @@ the portals kept running after sway exited. They crash-looped against the dead
 compositor (kdeconnect dumped core every 2 s, and xdg-desktop-portal-luminous hit
 its start limit and stayed failed into the next login). A new Wayland-client user
 unit should get `PartOf=graphical-session.target` for the same reason.
+
+On sway's shutdown it unsets the display variables *first* (so nothing
+D-Bus-activated from then on reaches for the dead compositor), then stops the
+target and checks `graphical-session.target` really stopped, retrying: systemd
+refuses that stop ("transaction is destructive") while a portal's start job is
+queued, which is how the portals outlived a logout in 2026-10.
+
+### Every long-running piece is a user unit, logging to the journal
+
+`sway-session.sh` starts, after the import: mako, waybar, vyom (panels), nada
+(music), bar-events, kdeconnect + phone-events, sway-audio-idle-inhibit,
+swaylock-on-sleep, batsignal, cliphist@text and cliphist@image; then restores
+the notification mode and starts swayidle unless caffeine mode is on. Each:
+
+- **restarts on a crash** with backoff (`Restart=`, `RestartSteps=5`,
+  `RestartMaxDelaySec=60`, `StartLimitIntervalSec=0`): a quick repeated failure
+  used to hit the start limit and stay dead for the session. waybar and mako
+  are their packages' units with a drop-in (`*.service.d/vayu.conf`: run
+  `vayu-theme-ensure` first). A drop-in folder must be a real directory
+  (`STOW_REAL_DIRS`): systemd ignores a `*.service.d` that is a symlink, which
+  is what stow makes, and mpd's drop-in silently never applied.
+- **logs to the journal under its own name**: stderr of a unit is the journal.
+
+**The logging convention**, for every tool and script: diagnostics go to
+stderr, never to a log file of the tool's own; whatever starts it routes
+stderr. A unit: the journal. A script tmux runs (`run -b` drops stderr) or
+waybar runs: the first line of the script sends it on with `logger -t` when
+stderr isn't a terminal and isn't already the journal (comparing
+`JOURNAL_STREAM` with stderr's device:inode, since it's inherited by children
+whose stderr went elsewhere). Python tools (vyom, nada) log through
+`logging` with tracebacks, and catch what nobody caught (`sys.excepthook`,
+`threading.excepthook`). One reader for all of it: `vayu-logs` (everything at
+warning and up, `vayu-logs <tool>` one tool, `--list` who logged what,
+`-f` follow).
 
 ## Idle management: swayidle as a systemd user service, plus caffeine mode
 

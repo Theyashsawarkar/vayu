@@ -11,6 +11,9 @@
 # Sizes here are a % of the pane area, and -y (the popup's bottom edge)
 # is computed so the margin above and below is equal.
 
+# Errors to the journal when nothing would show them (tmux `run -b` drops
+# stderr): read them with `vayu-logs popup.sh`.
+[ -t 2 ] || [ "${JOURNAL_STREAM:-}" = "$(stat -Lc %d:%i /proc/self/fd/2 2>/dev/null)" ] || exec 2> >(logger -t popup.sh)
 c=$1; shift
 read -r ch wh pos w hp < <(tmux display -p -c "$c" '#{client_height} #{window_height} #{status-position} #{?@popup_width,#{@popup_width},90} #{?@popup_height,#{@popup_height},88}')
 

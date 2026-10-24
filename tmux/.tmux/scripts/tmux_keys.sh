@@ -10,6 +10,9 @@
 # key tables) only after the popup has closed; while it's open the popup
 # would swallow them. Copy-mode keys enter copy mode first.
 
+# Errors to the journal when nothing would show them (tmux `run -b` drops
+# stderr): read them with `vayu-logs tmux_keys.sh`.
+[ -t 2 ] || [ "${JOURNAL_STREAM:-}" = "$(stat -Lc %d:%i /proc/self/fd/2 2>/dev/null)" ] || exec 2> >(logger -t tmux_keys.sh)
 c=$1
 out=$(mktemp)
 trap 'rm -f "$out"' EXIT

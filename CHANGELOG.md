@@ -5,6 +5,78 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (stability and logging pass)
+
+A full audit of the running system (failed units, journal errors, core
+dumps, every script, every long-running piece). What it found and fixed:
+
+**Could lose work or data**
+- The lid power-off hook powered off after *any* wake with the lid closed,
+  without checking that 30 minutes had passed: a USB keyboard, a dock or AC
+  plugged in waking it a minute after closing the lid meant an immediate
+  power-off. Last night's five lid-shut wakes only survived because the lid
+  read "open" for a moment after resume. Now the close time is kept across
+  wakes (`/run`), each sleep arms the RTC for what's left, and it powers off
+  only once the full timeout has passed. Needs `system/apply.sh`.
+- phone-events' "Undo" put the previous clipboard (maybe a password) in
+  `wl-copy`'s argv, readable by any user in `ps`: it goes on stdin now.
+- update-check's tools notification (and the `kosha update` window it opens)
+  was killed as soon as the check itself finished: systemd ends a unit by
+  killing its whole cgroup. It waits for it now, and the update window runs
+  as its own transient unit.
+
+**Silently broken**
+- mako.service failed every login: sway started its own mako as well, and
+  whichever came second couldn't own the D-Bus name. mako is only its unit
+  now, restarted on a crash.
+- systemd ignored every `*.service.d` drop-in here: stow links the folder,
+  and systemd skips a symlinked drop-in folder. mpd's `prepare-dirs.conf`
+  never applied. They're in `STOW_REAL_DIRS` now.
+- At logout, `graphical-session.target` could refuse to stop (a portal's
+  start job queued), leaving the portals and kdeconnect running with no
+  compositor: luminous crash-looped into its start limit, kdeconnect dumped
+  core. sway-session.sh now unsets the display first and retries the stop,
+  and clears failed units at login.
+- The lock from the power menu and quick settings used plain swaylock with
+  fixed colours, not `vayu-lock` (the theme). And the lock screen's font
+  never applied: swaylock keeps the quotes around `font="..."`.
+- raga's `player_command` pointed at a removed rmpc script.
+- The screen recorder could SIGINT an unrelated process (a stale pid in a
+  fixed /tmp file), said "started" when wf-recorder had failed, and asked
+  on stdin which output to use with two monitors. The screenshot script
+  said "captured" when grim failed.
+
+**Crash resilience**
+- waybar, vyom, nāda and the clipboard history (cliphist) were bare sway
+  `exec`s: a crash left them gone until the next login. Each is a user
+  unit now, and every long-running unit restarts with backoff (2 s up to
+  60 s, no start limit). sway-session.sh starts them all, after the
+  environment import they used to race.
+- bar-events: tmux calls had no timeout on its main loop; `docker events`
+  and `iw event` weren't restarted when they exited; `gh-review-count` could
+  pile up on a hung network (and `gh api` got a timeout).
+- phone-events: a watcher thread that died left the service "active" but
+  deaf; now the service exits and systemd restarts it.
+- battery-warning-dismiss exited 0 when its udevadm monitor ended, so
+  `Restart=on-failure` never brought it back.
+
+**Logging**
+- One convention: diagnostics to stderr, routed to the journal under the
+  tool's name; `vayu-logs` reads it (`vayu-logs`, `vayu-logs <tool>`,
+  `--list`, `-f`). Scripts tmux runs (whose stderr `run -b` dropped) send
+  it to the journal themselves. vyom 0.3.2 and nāda 0.1.3 log tracebacks
+  for anything uncaught and start their daemon as a unit; nāda's background
+  errors were being lost to a `NameError`. The audio idle inhibitor's
+  "IDLE INHIBITED" stdout chatter (174 lines an afternoon) is dropped.
+  See docs/ARCHITECTURE.md and docs/TROUBLESHOOTING.md.
+
+**Hardening and cleanup**
+- The Wi-Fi regulatory country is detected from the timezone (was fixed
+  to IN); phone-status builds its JSON with jq and escapes the tooltip;
+  OSD and wallpaper locks moved from /tmp to the runtime dir;
+  fetch_wallpaper skips a stale sway socket; rmpc-hide.sh and
+  toggle-popup.sh (unused) removed, stale nwg-bar/ai references fixed.
+
 ## 2026-10-24 (tmux bar: solid means "look here")
 
 - The tmux bar filled every capsule with its own colour, about 12 at once,

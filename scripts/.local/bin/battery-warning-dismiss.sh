@@ -47,3 +47,8 @@ for n in json.load(sys.stdin):
 ")
     [ -n "$id" ] && makoctl dismiss -n "$id"
 done
+
+# udevadm monitor ended (it never should): fail, so systemd restarts this
+# (Restart=on-failure does nothing on a clean exit 0).
+echo "battery-warning-dismiss: udevadm monitor ended; exiting so systemd restarts it" >&2
+exit 1

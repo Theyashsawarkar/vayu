@@ -65,6 +65,17 @@ def log(*a):
     print("bar-events:", *a, file=sys.stderr, flush=True)
 
 
+def tmux(*args):
+    """Sets something on the default tmux server. With a timeout: these run
+    on the main loop, and a stuck tmux server froze every capsule refresh."""
+    try:
+        r = subprocess.run(["tmux", *args], capture_output=True, text=True, timeout=3)
+        if r.returncode and "no server running" not in r.stderr:
+            log("tmux", *args, "failed:", r.stderr.strip())
+    except (OSError, subprocess.TimeoutExpired) as e:
+        log("tmux", *args, "failed:", e)
+
+
 def refresh(name):
     if name in pending:
         GLib.source_remove(pending[name])
@@ -107,7 +118,7 @@ def tmux_docker():
             count = len(out.stdout.split())
         except (OSError, subprocess.TimeoutExpired) as e:
             log("docker ps failed:", e)
-    subprocess.run(["tmux", "set", "-g", "@docker_count", str(count)], capture_output=True)
+    tmux("set", "-g", "@docker_count", str(count))
 
 
 def watch_unit(bus, unit, on_state):
@@ -164,6 +175,10 @@ def read_docker_events(stream, proc):
         if line is None:  # `docker events` exited
             if docker_events is proc:
                 docker_events = None
+                if docker_active:   # but docker didn't stop: follow it again
+                    log("docker events exited; restarting it in 5 s")
+                    GLib.timeout_add_seconds(5, lambda: (docker_active and docker_events is None
+                                                         and on_docker_state("active"), False)[1])
             return
         refresh("docker")
         s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
@@ -171,25 +186,44 @@ def read_docker_events(stream, proc):
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
 
 
-def gh_reviews():
-    """Runs gh-review-count in the background; it sets tmux's @gh_reviews.
-    Returns True so GLib keeps the 5-minute timer going."""
+busy = set()   # helpers still running from their last tick
+
+
+def run_once(name, *args):
+    """Starts a helper in the background unless its last run is still going
+    (a hung `gh api` used to pile up a new one every 5 minutes). Its stderr
+    goes to this service's journal. Returns True to keep the GLib timer."""
+    if name in busy:
+        log(f"{name}: last run still going, skipping this one")
+        return True
     try:
-        Gio.Subprocess.new([os.path.expanduser("~/.local/bin/gh-review-count"), "--set-tmux"],
-                           Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE)
+        proc = Gio.Subprocess.new([os.path.expanduser(f"~/.local/bin/{name}"), *args],
+                                  Gio.SubprocessFlags.STDOUT_SILENCE)
     except GLib.Error as e:
-        log("gh-review-count:", e.message)
+        log(f"{name}:", e.message)
+        return True
+    busy.add(name)
+
+    def done(p, result):
+        busy.discard(name)
+        try:
+            p.wait_finish(result)
+            if p.get_if_exited() and p.get_exit_status():
+                log(f"{name} exited with status {p.get_exit_status()}")
+        except GLib.Error as e:
+            log(f"{name}:", e.message)
+    proc.wait_async(None, done)
     return True
+
+
+def gh_reviews():
+    """gh-review-count sets tmux's @gh_reviews."""
+    return run_once("gh-review-count", "--set-tmux")
 
 
 def dev_ports():
-    """Runs dev-ports in the background; it sets tmux's @dev_ports. Keeps the timer going."""
-    try:
-        Gio.Subprocess.new([os.path.expanduser("~/.local/bin/dev-ports"), "--set-tmux"],
-                           Gio.SubprocessFlags.STDOUT_SILENCE | Gio.SubprocessFlags.STDERR_SILENCE)
-    except GLib.Error as e:
-        log("dev-ports:", e.message)
-    return True
+    """dev-ports sets tmux's @dev_ports."""
+    return run_once("dev-ports", "--set-tmux")
 
 
 def claude_limit_line(stream, result, proc):
@@ -200,7 +234,7 @@ def claude_limit_line(stream, result, proc):
     except GLib.Error:
         line = None
     if line is None:   # vesha stopped (or isn't installed): hide the capsule, retry later
-        subprocess.run(["tmux", "set", "-gu", "@claude_limit"], capture_output=True)
+        tmux("set", "-gu", "@claude_limit")
         GLib.timeout_add_seconds(300, watch_claude_limit)
         return
     try:
@@ -209,11 +243,11 @@ def claude_limit_line(stream, result, proc):
     except ValueError:
         text, cls = "", ""
     if text and cls in ("ok", "warn", "full"):
-        subprocess.run(["tmux", "set", "-g", "@claude_limit", text], capture_output=True)
-        subprocess.run(["tmux", "set", "-g", "@claude_limit_class", cls], capture_output=True)
+        tmux("set", "-g", "@claude_limit", text)
+        tmux("set", "-g", "@claude_limit_class", cls)
     else:   # one account, or usage unknown: nothing worth a capsule
-        subprocess.run(["tmux", "set", "-gu", "@claude_limit"], capture_output=True)
-    subprocess.run(["tmux", "refresh-client", "-S"], capture_output=True)
+        tmux("set", "-gu", "@claude_limit")
+    tmux("refresh-client", "-S")
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, claude_limit_line, proc)
 
 
@@ -248,8 +282,10 @@ def watch_stations():
             line, _ = s.read_line_finish_utf8(result)
         except GLib.Error:
             line = None
-        if line is None:
-            return  # iw exited
+        if line is None:   # iw exited: follow again (else only the 30 s poll)
+            log("iw event exited; restarting it in 10 s")
+            GLib.timeout_add_seconds(10, lambda: (watch_stations(), False)[1])
+            return
         if " station " in line:
             refresh("hotspot")
         s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)

@@ -1,0 +1,17 @@
+[Unit]
+Description=Vyom: the resident panels daemon (launcher, calculator, clipboard...)
+Documentation=file://%h/.local/share/vyom/core/README.md
+# A unit, not a bare sway `exec`: crashes restart it, and its output (and
+# every traceback) lands in the journal under its own name:
+# journalctl --user -u vyom (or: vayu-logs vyom). sway-session.sh starts it.
+PartOf=graphical-session.target
+After=graphical-session.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=%h/.local/bin/vyom daemon
+# `vyom quit` exits 0: stay stopped then. A crash restarts it.
+Restart=on-failure
+RestartSec=2
+RestartSteps=5
+RestartMaxDelaySec=60
