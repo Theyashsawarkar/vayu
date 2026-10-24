@@ -5,6 +5,12 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (Super+y and Super+Shift+y removed)
+
+- The YouTube search keys (raga: music into nāda, video into mpv) are gone:
+  nāda searches YouTube itself, and videos get their own player next.
+  Super+y and Super+Shift+y are free.
+
 ## 2026-10-24 (default apps: no more PDFs and images in a browser)
 
 - PDFs and images opened in Brave, web links in Chrome, some HTML in Zen.

@@ -155,16 +155,8 @@ for_window [app_id="^io\.github\.theyashsawarkar\.(Anumati|Pramana)$"] floating 
 # a spacebar press once focus was forced) before trusting it.
 for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move position center, focus
 
-# YouTube search (raga): two keys, one per way to play; inside, Shift+Enter
-# plays the other way and Ctrl+M switches. Music plays in nāda (with
-# YouTube's mix lined up after it); video opens in mpv (the for_window
-# rule above focuses it).
-# Two keys, not three: raga's own Music / Video tabs (Ctrl+Tab) switch
-# between them once it's open. (Music was Super+Ctrl+Shift+y.)
-#: Search YouTube and play music (raga, in nāda)
-bindsym $mod+y exec $vyom raga music
-#: Search YouTube and play a video (raga, in mpv)
-bindsym $mod+Shift+y exec $vyom raga video
+# No YouTube search keys (Super+y / Super+Shift+y, raga): nāda searches
+# YouTube itself (its search tab), so music needs no second way in.
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
 # script and same three-state cycle the waybar bell's scroll wheel uses
