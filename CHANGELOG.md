@@ -5,6 +5,17 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (every command in tmux was 35 ms slower)
+
+- Every process started inside tmux loaded GTK 4 first: `/bin/true` took
+  35 ms instead of 0.75, a new pane's zsh 0.61 s instead of 0.24, and the
+  `claude-tmux seen` hook on every pane switch 240 ms instead of 24. The
+  tmux server had been started from a kitty that dvara launched, and Vyom
+  passed its `LD_PRELOAD=libgtk4-layer-shell.so` (which only Vyom itself
+  needs) on to everything it started. Fixed in Vyom 0.3.1; tmux.conf also
+  drops that preload from its environment on load, for a server started
+  before the fix.
+
 ## 2026-10-24 (Vyom tabs: one set of keys)
 
 - Every Vyom panel with tabs switches them the same way, from the keyboard:
