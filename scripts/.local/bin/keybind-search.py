@@ -24,8 +24,9 @@ tool's own annotation mechanism:
           the popup/picker scripts, for keys that only exist inside them
           (fzf --bind etc.), e.g. the tmux session picker's Ctrl+x.
           Same annotation in /etc/sysctl.d (source Kernel): the Magic
-          SysRq combos; and in /usr/local/lib/anumati (source Anumati):
-          the root approval window.
+          SysRq combos; in /usr/local/lib/anumati (source Anumati): the
+          root approval window; in /usr/local/lib/pramana (source
+          Pramana): the polkit password prompt.
 
 Front-ends:
   (no args)          opens mudra (a Vyom tool, Super+Shift+/), which reads --json.
@@ -79,6 +80,8 @@ ANNOTATED_SCRIPT_DIRS = [
     Path("/etc/sysctl.d"),
     # anumati's approval window (own repo; installed root-owned).
     Path("/usr/local/lib/anumati"),
+    # pramana, the polkit password prompt (own repo; installed root-owned).
+    Path("/usr/local/lib/pramana"),
 ]
 
 # Colours come from the theme (varna's palette.json, written on every
@@ -86,7 +89,7 @@ ANNOTATED_SCRIPT_DIRS = [
 def _palette():
     import json
     defaults = {"sky": "#89DCEB", "teal": "#94E2D5", "pink": "#F5C2E7", "blue": "#89B4FA", "mauve": "#CBA6F7",
-                "red": "#F38BA8", "lavender": "#B4BEFE", "green": "#A6E3A1", "peach": "#FAB387", "overlay1": "#7F849C",
+                "red": "#F38BA8", "yellow": "#F9E2AF", "lavender": "#B4BEFE", "green": "#A6E3A1", "peach": "#FAB387", "overlay1": "#7F849C",
                 "overlay0": "#6C7086", "accent2": "#F5C2E7", "fg": "#D7DDE6", "text": "#CDD6F4", "surface0": "#313244", "subtext0": "#A6ADC8"}
     path = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "varna", "palette.json")
     try:
@@ -101,7 +104,7 @@ def _palette():
 PALETTE = _palette()
 SOURCE_COLORS = {src: PALETTE[name] for src, name in {
     "Sway": "sky", "Tmux": "teal", "Kitty": "pink", "Zed": "blue", "rmpc": "mauve", "Kernel": "red", "Vyom": "lavender",
-    "Nada": "pink", "Anumati": "green", "Vesha": "peach", "Vinyasa": "teal"}.items()}
+    "Nada": "pink", "Anumati": "green", "Pramana": "yellow", "Vesha": "peach", "Vinyasa": "teal"}.items()}
 SCOPE_COLOR = PALETTE["peach"]
 DIM_COLOR = PALETTE["overlay1"]   # stock tmux defaults
 KEY_COLOR = PALETTE["accent2"]

@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (pramana: a polkit agent)
+
+- Apps that ask for admin rights the standard way (mounting a USB drive
+  from a file manager, a settings change, `pkexec`) failed silently: sway
+  brings no polkit agent and none was installed. pramana
+  (github.com/Theyashsawarkar/pramana, its own repo) is one: a window in
+  the same look as anumati's that shows what's asking and takes the
+  password for polkit. Installed root-owned in `/usr/local`, running as the
+  `pramana` user service with the graphical session
+  (`vayu-logs pramana`). It began inside anumati and became its own tool:
+  anumati stays for AI agents' root commands.
+- sway floats and blurs its window like anumati's; the keybinding search
+  lists its keys (source Pramana, with mudra 0.3.1's colour and icon).
+
 ## 2026-10-24 (tmux: vim keys only, no arrows)
 
 - No arrow binding left in tmux, for a 60% keyboard: the prefix-free
