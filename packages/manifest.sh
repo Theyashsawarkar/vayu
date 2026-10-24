@@ -79,11 +79,11 @@ STOW_REAL_DIRS=(
 # installed and updated by kosha (install.sh setup_kosha; `kosha list`).
 # Vyom and its tools replace wofi and nwg-bar: apps, calculator, clipboard,
 # emoji, Wi-Fi + hotspot, Bluetooth, phone, Docker, notifications, YouTube,
-# keybindings, battery, power menu, quick settings. Then the music player,
-# root approvals for AI agents, and pull requests.
+# keybindings, battery, power menu, quick settings. Then the music and video
+# players, root approvals for AI agents, and pull requests.
 KOSHA_PACKAGES=(
   vyom dvara ganit smriti bhava tarang setu doot patra suchana raga mudra urja vishram kendra
-  nada anumati sangam vesha varna vinyasa
+  nada drishya anumati sangam vesha varna vinyasa
 )
 
 # Supplementary groups for the installing user.

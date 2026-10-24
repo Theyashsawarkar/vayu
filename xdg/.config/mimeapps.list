@@ -31,12 +31,17 @@ image/avif=swayimg.desktop
 image/heic=swayimg.desktop
 image/svg+xml=swayimg.desktop
 image/x-icon=swayimg.desktop
-# Video and audio files: mpv.
-video/mp4=mpv.desktop
-video/x-matroska=mpv.desktop
-video/webm=mpv.desktop
-video/quicktime=mpv.desktop
-video/x-msvideo=mpv.desktop
+# Videos and stream playlists (HLS): drishya, the video player.
+video/mp4=dev.vayu.Drishya.desktop
+video/x-matroska=dev.vayu.Drishya.desktop
+video/webm=dev.vayu.Drishya.desktop
+video/quicktime=dev.vayu.Drishya.desktop
+video/x-msvideo=dev.vayu.Drishya.desktop
+video/mpeg=dev.vayu.Drishya.desktop
+video/mp2t=dev.vayu.Drishya.desktop
+application/vnd.apple.mpegurl=dev.vayu.Drishya.desktop
+application/x-mpegurl=dev.vayu.Drishya.desktop
+# Audio files: mpv (quick, no window to manage).
 audio/mpeg=mpv.desktop
 audio/flac=mpv.desktop
 audio/ogg=mpv.desktop

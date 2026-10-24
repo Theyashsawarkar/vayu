@@ -5,6 +5,25 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (drishya: a video player like nāda)
+
+- **drishya** (github.com/Theyashsawarkar/drishya, its own repo, in
+  `~/.local/share/drishya`): nāda's sibling for video. YouTube search with
+  related videos after, your `~/Videos` in columns with episodes in order,
+  and any link (`o`): HLS/DASH from any server, files over HTTP, sites
+  yt-dlp plays; a server that wants a login gets a sign-in panel (kept in
+  memory, or the keyring if you ask). The video plays inside the window
+  (libmpv), with resume, history, downloads with subtitles, a mini player,
+  and nāda's vim keys.
+- `Super+y` opens it (the key raga had). It runs as the `drishya` user
+  service from sway-session.sh's `UNITS` (`vayu-logs drishya`); sway
+  floats it centred at 80% of the screen, and its mini player (`z`) in the
+  bottom-right corner, sticky, sized in ppt so any screen works.
+- Video files and HLS playlists open in drishya (mimeapps.list); audio
+  files stay with mpv. The keybinding search lists its 64 keys (mudra
+  0.3.2 colours them); kosha's registry and the install manifest have it;
+  libsecret joins the package list (for remembered logins).
+
 ## 2026-10-24 (Super+y and Super+Shift+y removed)
 
 - The YouTube search keys (raga: music into nāda, video into mpv) are gone:

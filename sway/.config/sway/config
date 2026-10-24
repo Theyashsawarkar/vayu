@@ -155,8 +155,17 @@ for_window [app_id="^io\.github\.theyashsawarkar\.(Anumati|Pramana)$"] floating 
 # a spacebar press once focus was forced) before trusting it.
 for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move position center, focus
 
-# No YouTube search keys (Super+y / Super+Shift+y, raga): nāda searches
-# YouTube itself (its search tab), so music needs no second way in.
+# drishya (github.com/Theyashsawarkar/drishya, its own repo, in
+# ~/.local/share/drishya): the video player, nāda's sibling. YouTube, your
+# videos and any stream link in one window; one resident process (the
+# drishya service), so the key opens it at once. Floating and centred like
+# nāda (f inside makes it fullscreen); its mini player (z) floats in the
+# bottom-right corner above everything. (Music search is nāda's own tab:
+# raga's Super+Shift+y is gone.)
+#: Toggle video player window (drishya)
+bindsym $mod+y exec ~/.local/bin/drishya
+for_window [app_id="^dev\.vayu\.Drishya$" title="^(?!drishya mini$)"] floating enable, resize set 80 ppt 80 ppt, move position center, blur enable, corner_radius 20, shadows enable
+for_window [app_id="^dev\.vayu\.Drishya$" title="^drishya mini$"] floating enable, sticky enable, resize set 25 ppt 25 ppt, move position 73 ppt 72 ppt, corner_radius 14, shadows enable
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
 # script and same three-state cycle the waybar bell's scroll wheel uses

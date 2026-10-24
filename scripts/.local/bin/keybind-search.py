@@ -76,6 +76,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/vesha/vesha",
     # vinyasa, the settings app (its own repo): its window's keys.
     HOME / ".local/share/vinyasa/vinyasa",
+    # drishya, the video player (its own repo): its window's keys.
+    HOME / ".local/share/drishya/drishya",
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # anumati's approval window (own repo; installed root-owned).
@@ -104,7 +106,7 @@ def _palette():
 PALETTE = _palette()
 SOURCE_COLORS = {src: PALETTE[name] for src, name in {
     "Sway": "sky", "Tmux": "teal", "Kitty": "pink", "Zed": "blue", "rmpc": "mauve", "Kernel": "red", "Vyom": "lavender",
-    "Nada": "pink", "Anumati": "green", "Pramana": "yellow", "Vesha": "peach", "Vinyasa": "teal"}.items()}
+    "Nada": "pink", "Drishya": "sky", "Anumati": "green", "Pramana": "yellow", "Vesha": "peach", "Vinyasa": "teal"}.items()}
 SCOPE_COLOR = PALETTE["peach"]
 DIM_COLOR = PALETTE["overlay1"]   # stock tmux defaults
 KEY_COLOR = PALETTE["accent2"]

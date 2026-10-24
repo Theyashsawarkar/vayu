@@ -48,6 +48,7 @@ libadwaita
 libnotify
 libpulse
 libqalculate
+libsecret
 linux
 linux-firmware
 mako
