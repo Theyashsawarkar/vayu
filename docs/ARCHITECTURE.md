@@ -377,6 +377,32 @@ whose stderr went elsewhere). Python tools (vyom, nada) log through
 warning and up, `vayu-logs <tool>` one tool, `--list` who logged what,
 `-f` follow).
 
+## One look: every popup is a Vyom-style glass panel
+
+Every floating surface (Vyom's panels, nāda, vinyasa, anumati's root
+approval, notifications, tmux popups) follows one visual language, so the
+desktop reads as one thing. Vyom's panels are the reference. A new popup
+follows it:
+
+- **Glass**: the theme's `base` at varna's `ui.glass` (0.55) over the
+  compositor's blur: `layer_effects` for layer surfaces, a `for_window ...
+  blur enable, corner_radius 20, shadows enable` rule for windows (nāda,
+  vinyasa, anumati in sway's config). anumati alone stays at 0.84: what's
+  behind a root prompt must never read as part of it.
+- **Shape**: 20 px corners on the panel, 12 px on rows and cards, 10 px on
+  buttons, inputs and pills; a 1 px border in the accent (soft on panels).
+- **Structure**: a top bar with the mode pill (a glyph and the tool's name
+  on its colour at 15%), the content, then a footer of key caps
+  (`Enter` copy · `Esc` close) and a status on the right.
+- **Colour**: only the theme's, through varna (palette.json or a
+  generated include); the accent frames popups and marks the selection;
+  status colours only for status. Nothing hard-coded except a fallback.
+- **Type**: the interface font for UI text (notifications too), the mono
+  font only for code, commands and key caps.
+
+The settings that tie them together live in varna: `ui.glass`, the
+palette, the fonts. Change them there, never per tool.
+
 ## Idle management: swayidle as a systemd user service, plus caffeine mode
 
 `swayidle` (screen dimming, lock, suspend timeouts — `sway/.config/sway/idle/config`)

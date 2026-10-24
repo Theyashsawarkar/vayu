@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (one look for every popup)
+
+- Every floating surface now follows Vyom's panels (docs/ARCHITECTURE.md,
+  "One look"): anumati's root approval window has Vyom's layout (mode pill,
+  cards, key caps in the footer) in the varna theme, with readability
+  checks a tampered theme can't get past (anumati 1.2.0); vinyasa and nāda
+  use the same glass as the panels, one value in varna (`ui.glass`, varna
+  0.1.9) where there were three (0.55, 0.62, 0.85); notifications use the
+  interface font, not monospace; tmux popups and their fzf pickers are
+  framed in the accent like the rest. sway gives anumati the same rounded
+  corners and shadow as the other popups. Vyom's own `opacity` moved to
+  varna (`ui.glass`).
+
 ## 2026-10-24 (stability and logging pass)
 
 A full audit of the running system (failed units, journal errors, core

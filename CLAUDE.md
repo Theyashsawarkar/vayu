@@ -39,6 +39,9 @@ failing silently. Known limits go in `docs/TROUBLESHOOTING.md`
   `UNITS` list in `sway-session.sh`, never an `exec` in sway's config (that
   races the environment import). A `*.service.d` drop-in folder goes in
   `STOW_REAL_DIRS` (systemd ignores a symlinked one).
+- A new popup or panel looks like Vyom's: glass at varna's `ui.glass`,
+  20 px corners, a mode pill, key caps in the footer, the theme's colours
+  only (docs/ARCHITECTURE.md, "One look").
 - Test GUI changes in a headless sway with its own D-Bus session
   (`dbus-run-session`, `WLR_BACKENDS=headless`, grim, `wtype -s 250`),
   never by restarting or driving the user's running desktop.
