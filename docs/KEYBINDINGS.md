@@ -135,9 +135,7 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> — Move focus to the pane left/below/above/right (vim-style)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>n</kbd> / <kbd>p</kbd> — Switch to the next / previous window (wraps around)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Shift</kbd>+<kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> — Resize pane left/down/up/right (5 columns / 2 rows; repeats without the prefix)
-- <kbd>Alt</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd>/<kbd>Up</kbd>/<kbd>Down</kbd> — Move focus between panes (no prefix needed)
-- <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd> — Resize pane left/right by 5
-- <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>Up</kbd>/<kbd>Down</kbd> — Resize pane up/down by 2
+- No arrow keys anywhere in tmux (made for a 60% keyboard): panes are <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> after the prefix, the popups (session picker, key search) move with <kbd>Ctrl</kbd>+<kbd>j</kbd>/<kbd>k</kbd>, copy mode with <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd>, and a floating pane is placed with <kbd>h</kbd>/<kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> (<kbd>Alt</kbd>+ for half the window)
 - <kbd>Alt</kbd>+<kbd>1</kbd>..<kbd>9</kbd> — Select window 1–9 (no prefix needed; a missing window is a silent no-op)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Enter</kbd> — Enter copy mode (the session capsule turns green)
 - <kbd>v</kbd> (in copy mode) — Begin visual selection

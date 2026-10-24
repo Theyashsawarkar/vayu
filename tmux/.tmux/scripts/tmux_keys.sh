@@ -4,6 +4,7 @@
 # picked one, exactly as if its keys had been typed.
 #   tmux_keys.sh <client>
 # keybind: Tmux/key search | Enter | Run the highlighted binding
+# keybind: Tmux/key search | Ctrl+j / Ctrl+k | Move to the next / previous binding (no arrows needed)
 # keybind: Tmux/key search | Esc | Close without running anything
 #
 # The binding is replayed with `send-keys -K` (keys go through the client's

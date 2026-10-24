@@ -564,7 +564,7 @@ def run_tmux_fzf():
          "--pointer", "▌", "--marker", " ", "--gutter", " ",
          # The tmux popup draws the border and the " keys" title.
          "--padding", "1,2",
-         "--header", "⏎ run it · esc close · everything else: Super+Shift+/\n",
+         "--header", "⏎ run it · ctrl-j/k move · esc close · everything else: Super+Shift+/\n",
          "--color", f"bg:-1,bg+:{P['surface0']},fg:{P['fg']},fg+:{P['text']},"
                     f"hl:{P['accent2']},hl+:{P['accent2']}",
          "--color", f"border:{P['accent2']},label:{P['accent2']},prompt:{P['accent2']},pointer:{P['accent2']},"

@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-24 (tmux: vim keys only, no arrows)
+
+- No arrow binding left in tmux, for a 60% keyboard: the prefix-free
+  `Alt+arrows` (focus) and `Alt+Shift+arrows` (resize) are gone, and so are
+  tmux's own defaults (prefix arrows, `Ctrl`/`Alt`+arrows resizing,
+  `Shift`+arrows scrolling the view). Prefix `h/j/k/l` moves between panes,
+  prefix `H/J/K/L` resizes (repeating), prefix `-` and `\` split, as before.
+  `Alt+arrows` reach the program in the pane again. A floating pane (tmux
+  3.8's move table) is placed with `h/j/k/l`, `Alt+h/j/k/l` for half the
+  window. The unbinds are in tmux.conf, so a reload clears them from a
+  running server too.
+- The session picker and the key search show `ctrl-j/k move` (fzf's own
+  keys; no arrows needed), and both keys are in the keybinding search.
+
 ## 2026-10-24 (keybindings: quick, numbered, no conflicts)
 
 Every keybinding on the system (608: sway, tmux, kitty, Zed, every Vyom

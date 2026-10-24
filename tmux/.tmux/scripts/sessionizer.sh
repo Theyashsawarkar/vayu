@@ -2,6 +2,7 @@
 # Session picker popup (prefix s): sessions only, live preview of each one.
 #   sessionizer.sh <client>
 # keybind: Tmux/session picker | Enter | Switch to the highlighted session
+# keybind: Tmux/session picker | Ctrl+j / Ctrl+k | Move to the next / previous session (no arrows needed)
 # keybind: Tmux/session picker | Ctrl+x | Kill the highlighted session (not the current one)
 # keybind: Tmux/session picker | Ctrl+n | Create a session named after the typed text, even if it matches one
 # keybind: Tmux/session picker | new name + Enter | Create a session with that name in ~ and switch to it (when nothing matches)
@@ -46,7 +47,7 @@ list() {
 
 [ "$1" = --list ] && { list; exit; }
 
-footer="${key}enter${r}   ${fg}switch session${r}     ${key}ctrl-x${r}  ${fg}kill session${r}
+footer="${key}enter${r}   ${fg}switch session${r}     ${key}ctrl-x${r}  ${fg}kill session${r}     ${key}ctrl-j/k${r}  ${fg}move${r}
 ${key}ctrl-n${r}  ${fg}new from name${r}      ${key}esc${r}     ${fg}close${r}"
 
 out=$(list | SHELL=bash fzf --ansi --read0 --gap --delimiter '\t' --with-nth 2.. --nth 1 \
