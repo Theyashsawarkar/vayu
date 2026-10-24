@@ -2,7 +2,7 @@
 # Phone (KDE Connect) segment for waybar, JSON like docker-status.sh.
 #   connected:    phone glyph + battery %, with a bolt while charging
 #   disconnected: hidden (paired phone not reachable, or none paired)
-# Click opens phone-picker.py. Refreshed by bar-events.py on KDE Connect
+# Click opens the phone panel (vyom doot). Refreshed by bar-events.py on KDE Connect
 # signals (waybar signal 13), never on a timer. Reads the daemon's
 # D-Bus state only -- never starts anything (the systemd unit
 # kdeconnect.service owns the daemon).
@@ -10,6 +10,11 @@
 # Colours from the current varna theme (palette.json), Vayu's own without it.
 PALETTE=${XDG_STATE_HOME:-$HOME/.local/state}/varna/palette.json
 col() { local v; v=$(jq -r ".colors.$1 // empty" "$PALETTE" 2>/dev/null); echo "${v:-$2}"; }
+# waybar's JSON, built by jq (a phone name with " or \ broke printf'd JSON),
+# the tooltip escaped for Pango (a name with & or < broke the tooltip).
+# (\& : in bash 5.2 a bare & in the replacement means "the match".)
+esc() { local s=${1//&/\&amp;}; s=${s//</\&lt;}; printf '%s' "${s//>/\&gt;}"; }
+emit() { jq -cn --arg text "$1" --arg class "$2" --arg tooltip "$(esc "$3")" '{text: $text, class: $class, tooltip: $tooltip}'; }
 
 ICON=$'\U000F011C'   # nf-md-cellphone
 BOLT=$'\U000F140B'   # nf-md-lightning_bolt
@@ -52,9 +57,8 @@ if [ "$running" = "b true" ]; then
 fi
 if [ ${#requests[@]} -gt 0 ]; then
   props "/modules/kdeconnect/devices/${requests[0]}" org.kde.kdeconnect.device name
-  printf '{"text":"%s","class":"request","tooltip":"%s"}\n' \
-    "<span color='$(col warn '#F9E2AF')'>$ICON</span>  <span color='$(col warn '#F9E2AF')'>pair?</span>" \
-    "${PROPS[0]} wants to pair\nClick: phone picker (Accept / Reject)"
+  emit "<span color='$(col warn '#F9E2AF')'>$ICON</span>  <span color='$(col warn '#F9E2AF')'>pair?</span>" request \
+    "${PROPS[0]} wants to pair"$'\n'"Click: phone picker (Accept / Reject)"
   exit 0
 fi
 for id in "${paired_ids[@]}"; do
@@ -73,7 +77,7 @@ if [ -n "$name" ]; then
   [ -n "$charge" ] && [ "$charge" -ge 0 ] 2>/dev/null && bat="  <span color='$(col fg '#CDD6F4')'>${charge}%</span>"
   [ "$charging" = true ] && bat="$bat <span color='$(col warn '#F9E2AF')'>$BOLT</span>"
   text="<span color='$(col sky '#89DCEB')'>$ICON</span>$bat"
-  tooltip="$name connected${charge:+, battery ${charge}%}$([ "$charging" = true ] && echo ', charging')\nClick: phone picker"
+  tooltip="$name connected${charge:+, battery ${charge}%}$([ "$charging" = true ] && echo ', charging')"$'\n'"Click: phone picker"
   class=connected
 else
   # Not connected: nothing on the bar (it's an "only while on" indicator;
@@ -82,4 +86,4 @@ else
   tooltip="${paired_name:+$paired_name: }no phone connected"
   class=disconnected
 fi
-printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"
+emit "$text" "$class" "$tooltip"

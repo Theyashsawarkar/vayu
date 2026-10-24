@@ -34,10 +34,6 @@ dnd_on_when = "^dnd$"
 dnd_on = "~/.local/bin/notification-mode.sh dnd"
 dnd_off = "~/.local/bin/notification-mode.sh normal"
 
-[plugin.raga]
-# rmpc's window, opened (or raised) once music starts playing.
-player_command = "~/.local/bin/rmpc-toggle.sh"
-
 [plugin.mudra]
 source_command = "~/.local/bin/keybind-search.py --json"
 
@@ -46,12 +42,13 @@ source_command = "~/.local/bin/keybind-search.py --json"
 limit_file = "~/.local/state/battery-limit/threshold"
 
 [plugin.vishram]
-lock = "swaylock -C ~/.config/sway/lockconfig"
+# vayu-lock: swaylock with the varna theme's colours, like the idle and lid locks.
+lock = "~/.local/bin/vayu-lock"
 logout = "swaymsg exit"
 
 [plugin.kendra]
 tiles = ["wifi", "bluetooth", "hotspot", "dnd", "caffeine", "theme", "wallpaper", "power-profile"]
-lock = "swaylock -C ~/.config/sway/lockconfig"
+lock = "~/.local/bin/vayu-lock"
 power = "~/.local/bin/vyom vishram"
 
 # Right click / Shift+Enter on a tile opens its full panel.

@@ -9,7 +9,9 @@
 
 MODE="${1:-full}"
 RECORDINGS_DIR="$HOME/Videos/recordings"
-PIDFILE="/tmp/wf-recorder.pid"
+# In the user's runtime dir (not a shared, guessable /tmp name).
+PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/wf-recorder.pid"
+log() { logger -t wf-recorder-toggle -- "$*"; }
 
 mkdir -p "$RECORDINGS_DIR"
 
@@ -28,7 +30,9 @@ ICON_CANCELLED=/usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png
 # --- Stop if already recording ---
 if [[ -f "$PIDFILE" ]]; then
   pid=$(cat "$PIDFILE")
-  if kill -0 "$pid" 2>/dev/null; then
+  # Only if that pid is still wf-recorder: if it died on its own, the pid
+  # may belong to something else by now, which got the SIGINT.
+  if [[ "$(cat "/proc/$pid/comm" 2>/dev/null)" == wf-recorder ]]; then
     kill -SIGINT "$pid"
     rm -f "$PIDFILE"
     notify-send -i "$ICON_RECORD" -u low "Recording stopped" "Saved to $RECORDINGS_DIR"
@@ -48,10 +52,21 @@ if [[ "$MODE" == "region" ]]; then
     notify-send -u low -i "$ICON_CANCELLED" "Recording cancelled"
     exit 0
   fi
-  wf-recorder --geometry "$GEOMETRY" -f "$OUTFILE" &
+  wf-recorder --geometry "$GEOMETRY" -f "$OUTFILE" </dev/null 2> >(logger -t wf-recorder) &
 else
-  wf-recorder -f "$OUTFILE" &
+  # -o: the focused output. Without it, with two monitors wf-recorder asks
+  # on stdin which one, and there's no one to answer.
+  output=$(swaymsg -t get_outputs 2>/dev/null | jq -r '.[] | select(.focused) | .name' | head -n1)
+  wf-recorder ${output:+-o "$output"} -f "$OUTFILE" </dev/null 2> >(logger -t wf-recorder) &
 fi
+pid=$!
 
-echo $! >"$PIDFILE"
+# Say "started" only if it is actually recording.
+sleep 0.4
+if ! kill -0 "$pid" 2>/dev/null; then
+  log "wf-recorder exited at once (mode $MODE); see: journalctl --user -t wf-recorder"
+  notify-send -u critical -i "$ICON_CANCELLED" "Recording failed" "wf-recorder didn't start: journalctl --user -t wf-recorder"
+  exit 1
+fi
+echo "$pid" >"$PIDFILE"
 notify-send -i "$ICON_RECORD" -u low "Recording started" "$OUTFILE"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Checks GitHub for new commits on whatever branch is currently checked
 # out in ~/dotfiles, and if there are any, notifies and shows a
-# nwg-bar prompt (Update Now / Later) to apply them. Run once per sway login
+# Vyom panel (Update now / Later) to apply them. Run once per sway login
 # via systemd/.config/systemd/user/update-check.service, not on every
 # sway reload -- this is a startup check, not something that should
 # re-fire every time the config gets edited and reloaded during a
@@ -57,10 +57,16 @@ tools_check() {
     log "tool updates: $names"
     action=$(notify-send -a kosha -i system-software-update -A update="Update now" -A later="Later" \
         "Tool updates: $n" "$names") || return 0
-    [ "$action" = update ] && setsid kitty --class kosha --title "kosha update" \
-        sh -c 'kosha update; printf "\nDone. Press Enter to close."; read -r _' >/dev/null 2>&1 &
+    # Its own transient unit: when this service ends, systemd kills
+    # everything left in its cgroup (setsid doesn't leave it).
+    [ "$action" = update ] && systemd-run --user --collect --quiet -- kitty --class kosha --title "kosha update" \
+        sh -c 'kosha update; printf "\nDone. Press Enter to close."; read -r _' 2>>"$LOG_FILE"
 }
 tools_check &
+# Wait for it whatever path this takes out: the unit's end kills its whole
+# cgroup, which took the tools notification (and its "Update now") with it.
+tools_pid=$!
+trap 'wait "$tools_pid" 2>/dev/null' EXIT
 
 fetched=false
 for attempt in 1 2 3; do
@@ -113,4 +119,6 @@ notify-send -u normal \
 
 # Ask with a Vyom panel (vyom dmenu): Enter on "Update now" applies it.
 choice=$(printf 'Update now\nLater\n' | "$HOME/.local/bin/vyom" dmenu -p "Desktop update: $COUNT new commit$PLURAL_S") || exit 0
-[ "$choice" = "Update now" ] && exec "$HOME/.local/bin/update-apply.sh"
+# Not exec: the EXIT trap still has to wait for the tools check.
+[ "$choice" = "Update now" ] && "$HOME/.local/bin/update-apply.sh"
+exit 0

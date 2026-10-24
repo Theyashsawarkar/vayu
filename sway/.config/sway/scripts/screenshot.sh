@@ -24,9 +24,14 @@ if [[ "$MODE" == "region" ]]; then
     notify-send -u low -i "$ICON_CANCELLED" "Screenshot cancelled"
     exit 0
   fi
-  grim -g "$GEOMETRY" "$FILE"
+  grim -g "$GEOMETRY" "$FILE" 2> >(logger -t screenshot)
 else
-  grim "$FILE"
+  grim "$FILE" 2> >(logger -t screenshot)
+fi
+# grim failed (no file): say so, instead of "captured" and an empty clipboard.
+if [[ ! -s "$FILE" ]]; then
+  notify-send -u critical -i "$ICON_CANCELLED" "Screenshot failed" "grim didn't capture anything: vayu-logs screenshot"
+  exit 1
 fi
 
 wl-copy <"$FILE"

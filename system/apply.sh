@@ -65,8 +65,13 @@ done
 # Wi-Fi regulatory country (wireless-regdb's /etc/conf.d/wireless-regdom,
 # read by its udev rule at boot). Unset, the kernel stays on the "world"
 # domain (00): fewer 5 GHz channels and lower transmit power.
-regdom=IN
-if [ -f /etc/conf.d/wireless-regdom ] && ! grep -qx "WIRELESS_REGDOM=\"$regdom\"" /etc/conf.d/wireless-regdom; then
+# The country is detected, never assumed (CLAUDE.md: this runs on more
+# than one machine, in more than one country): VAYU_REGDOM if set, else
+# the country of the system timezone (zone.tab: Asia/Kolkata -> IN).
+# Nothing found: leave the file alone.
+tz=$(timedatectl show -p Timezone --value 2>/dev/null)
+regdom=${VAYU_REGDOM:-$(awk -v tz="$tz" '$3 == tz {print $1; exit}' /usr/share/zoneinfo/zone.tab 2>/dev/null)}
+if [ -n "$regdom" ] && [ -f /etc/conf.d/wireless-regdom ] && ! grep -qx "WIRELESS_REGDOM=\"$regdom\"" /etc/conf.d/wireless-regdom; then
   changed+=("wireless-regdom $regdom")
   if $check; then
     echo "differs: /etc/conf.d/wireless-regdom (WIRELESS_REGDOM=\"$regdom\" not set)"

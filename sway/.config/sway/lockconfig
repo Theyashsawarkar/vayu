@@ -13,7 +13,9 @@ indicator
 clock
 
 # --- Font ---
-font="JetBrainsMono Nerd Font"
+# No quotes: swaylock passes the value on as-is, quotes included, and no
+# font is called "JetBrainsMono Nerd Font" with the quotes.
+font=JetBrainsMono Nerd Font
 font-size=80
 
 # --- Time & Date ---

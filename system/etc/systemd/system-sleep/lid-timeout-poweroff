@@ -14,15 +14,15 @@
 # fire on its own -- only a real RTC interrupt can wake genuinely-
 # suspended hardware with nobody touching it.
 #
-# Right after resuming ("post") -- for ANY reason: lid reopened, power
-# button, or the RTC alarm itself -- it checks whether the lid is STILL
-# physically closed (/proc/acpi/button/lid/LID0/state, confirmed
-# present and correctly reporting "open"/"closed" on this hardware).
-# If it's still closed, nothing woke it on purpose -- it must have been
-# the RTC alarm -- so it powers off for real. If the lid is open, a
-# person woke it; the pending alarm is simply superseded (rtcwake -s
-# always sets a fresh absolute wake time, it doesn't stack) and normal
-# resume proceeds untouched.
+# The lid has to stay closed for the whole time, across wakes: the
+# moment it was first closed is kept in $ARMED (/run, so a reboot clears
+# it). Each "pre" sets the RTC alarm for whatever is left of the timeout,
+# not a fresh 30 minutes. Each "post" powers off only if the lid is still
+# closed AND the timeout has really passed; anything that wakes it sooner
+# with the lid shut (a USB keyboard, a dock, AC plugged in: last night it
+# woke 5 times in 5 minutes) just lets logind suspend it again. Before,
+# any such wake powered it off on the spot, unsaved work and all; it only
+# didn't because the lid read "open" for a moment after resume.
 #
 # rtcwake -m no specifically: that mode only ARMS the wake alarm and
 # returns immediately -- it does not itself put anything to sleep.
@@ -38,39 +38,57 @@ DRY_RUN=0
 [ -f "$CONF" ] && source "$CONF"
 
 # The ACPI lid device's name varies by firmware (LID0 on the Acer, LID on
-# the HP ProBook): take whichever one exists.
-LID_STATE_FILE=$(ls /proc/acpi/button/lid/*/state 2>/dev/null | head -n1)
+# the HP ProBook): take whichever one exists. Both overridable for tests.
+LID_STATE_FILE=${LID_STATE_FILE:-$(ls /proc/acpi/button/lid/*/state 2>/dev/null | head -n1)}
+ARMED=${LID_TIMEOUT_ARMED:-/run/lid-timeout-poweroff.armed}
+log() { logger -t lid-timeout-poweroff -- "$*"; }
+lid_closed() { [ -n "$LID_STATE_FILE" ] && grep -q closed "$LID_STATE_FILE" 2>/dev/null; }
+now=$(date +%s)
 
-case "$1/$2" in
+case "${1:-}/${2:-}" in
   pre/suspend)
-    rtcwake -m no -s "$TIMEOUT_SECONDS"
+    # Keep the first close time while the lid stays shut across wakes.
+    if ! [ -s "$ARMED" ] || ! lid_closed; then echo "$now" > "$ARMED"; fi
+    since=$(cat "$ARMED")
+    left=$(( TIMEOUT_SECONDS - (now - since) ))
+    [ "$left" -lt 60 ] && left=60
+    rtcwake -m no -s "$left" >/dev/null || log "rtcwake failed: no power-off timer"
     ;;
   post/suspend)
-    if [ -n "$LID_STATE_FILE" ] && grep -q closed "$LID_STATE_FILE" 2>/dev/null; then
-      # logger (journal), not notify-send, is the reliable signal here:
-      # systemd's own docs for this hook mechanism state user.slice is
-      # frozen for the whole time these scripts run, and warn against
-      # talking to user services that expect a reply -- exactly what a
-      # D-Bus notify-send call to mako is. A journal entry has no such
-      # dependency and always lands, dry run or real.
-      logger -t lid-timeout-poweroff "lid closed for ${TIMEOUT_SECONDS}s straight -- $([ "$DRY_RUN" = "1" ] && echo "DRY RUN, not powering off" || echo "powering off")"
+    if ! lid_closed; then
+      rm -f "$ARMED"          # someone opened it: start over next time
+      exit 0
+    fi
+    since=$(cat "$ARMED" 2>/dev/null || echo "$now")
+    closed_for=$(( now - since ))
+    if [ "$closed_for" -lt $(( TIMEOUT_SECONDS - 60 )) ]; then
+      log "woke with the lid closed after ${closed_for}s (<${TIMEOUT_SECONDS}s): not powering off"
+      exit 0
+    fi
+    rm -f "$ARMED"
+    # logger (journal), not notify-send, is the reliable signal here:
+    # systemd's own docs for this hook mechanism state user.slice is
+    # frozen for the whole time these scripts run, and warn against
+    # talking to user services that expect a reply -- exactly what a
+    # D-Bus notify-send call to mako is. A journal entry has no such
+    # dependency and always lands, dry run or real.
+    log "lid closed for ${closed_for}s straight -- $([ "$DRY_RUN" = "1" ] && echo "DRY RUN, not powering off" || echo "powering off")"
 
-      if [ "$DRY_RUN" = "1" ]; then
-        # Best-effort only -- may not land if user.slice is still frozen
-        # at this exact instant (see comment above). The logger line
-        # above is the one guaranteed to work; check that if this
-        # doesn't show up.
-        user=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$4=="seat0" {print $3; exit}')
-        uid=$(id -u "${user:-nobody}" 2>/dev/null || echo 0)
-        [ -n "$user" ] && sudo -u "$user" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
-          notify-send -u critical -a "lid-timeout-poweroff" \
-          -i /usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png \
-          "DRY RUN: would power off" \
-          "Lid was closed for ${TIMEOUT_SECONDS}s straight -- this would be a real poweroff with DRY_RUN=0." \
-          2>/dev/null || true
-      else
-        systemctl poweroff
-      fi
+    if [ "$DRY_RUN" = "1" ]; then
+      # Best-effort only -- may not land if user.slice is still frozen
+      # at this exact instant (see comment above). The logger line
+      # above is the one guaranteed to work; check that if this
+      # doesn't show up.
+      user=$(loginctl list-sessions --no-legend 2>/dev/null | awk '$4=="seat0" {print $3; exit}')
+      uid=$(id -u "${user:-nobody}" 2>/dev/null || echo 0)
+      [ -n "$user" ] && sudo -u "$user" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$uid/bus" \
+        notify-send -u critical -a "lid-timeout-poweroff" \
+        -i /usr/share/icons/AdwaitaLegacy/48x48/legacy/dialog-warning.png \
+        "DRY RUN: would power off" \
+        "Lid was closed for ${closed_for}s straight -- this would be a real poweroff with DRY_RUN=0." \
+        2>/dev/null || true
+    else
+      systemctl poweroff
     fi
     ;;
 esac
