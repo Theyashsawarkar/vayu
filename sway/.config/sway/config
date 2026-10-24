@@ -164,8 +164,10 @@ for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move posi
 # raga's Super+Shift+y is gone.)
 #: Toggle video player window (drishya)
 bindsym $mod+y exec ~/.local/bin/drishya
-for_window [app_id="^dev\.vayu\.Drishya$" title="^(?!drishya mini$)"] floating enable, resize set 80 ppt 80 ppt, move position center, blur enable, corner_radius 20, shadows enable
-for_window [app_id="^dev\.vayu\.Drishya$" title="^drishya mini$"] floating enable, sticky enable, resize set 25 ppt 25 ppt, move position 73 ppt 72 ppt, corner_radius 14, shadows enable
+# Every drishya window floats at 80%; the mini player's rule comes after
+# and overrides size and place (sway runs matching rules in order).
+for_window [app_id="^dev\.vayu\.Drishya$"] floating enable, resize set 80 ppt 80 ppt, move position center, blur enable, corner_radius 20, shadows enable
+for_window [app_id="^dev\.vayu\.Drishya$" title="^drishya mini$"] sticky enable, resize set 25 ppt 25 ppt, move position 73 ppt 72 ppt, corner_radius 14
 
 # Cycle notification mode (normal -> silent -> dnd -> normal) -- same
 # script and same three-state cycle the waybar bell's scroll wheel uses

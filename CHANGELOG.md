@@ -18,7 +18,10 @@ full branch/release process.
 - `Super+y` opens it (the key raga had). It runs as the `drishya` user
   service from sway-session.sh's `UNITS` (`vayu-logs drishya`); sway
   floats it centred at 80% of the screen, and its mini player (`z`) in the
-  bottom-right corner, sticky, sized in ppt so any screen works.
+  bottom-right corner, sticky, sized in ppt so any screen works. (The first rule used a
+  title lookahead that sway never matched, so drishya opened tiled across
+  the whole screen: now one rule floats every drishya window, and the mini
+  player's rule after it overrides size and place.)
 - Video files and HLS playlists open in drishya (mimeapps.list); audio
   files stay with mpv. The keybinding search lists its 64 keys (mudra
   0.3.2 colours them); kosha's registry and the install manifest have it;
