@@ -19,6 +19,7 @@
 		"custom/docker",
 		"custom/phone",
 		"custom/caffeine",
+		"bluetooth",
 		"group/connectivity",
 		"group/system",
 		"custom/quick"
@@ -28,7 +29,7 @@
 	// #system: waybar names a group widget after it), modules inside
 	// are plain segments (spacing only, no dividers).
 	"group/clockbox": { "orientation": "horizontal", "modules": ["custom/notifications", "clock#time", "clock"] },
-	"group/connectivity": { "orientation": "horizontal", "modules": ["network", "bluetooth", "network#speed"] },
+	"group/connectivity": { "orientation": "horizontal", "modules": ["network", "network#speed"] },
 	"group/system": { "orientation": "horizontal", "modules": ["pulseaudio", "backlight", "battery"] },
 
 	"sway/workspaces": {
@@ -151,20 +152,23 @@
 		"interval": 2,
 		// Fixed-width values (monospace): the capsule never jitters as the
 		// numbers change length, without a min-width that left a gap.
-		"format": "<span color='{{accent}}'>\uf063</span>{bandwidthDownBytes:<8} <span color='{{accent}}'>\uf062</span>{bandwidthUpBytes:<8}",
+		"format": "<span color='{{accent}}'>\uf063</span>  {bandwidthDownBytes:<8} <span color='{{accent}}'>\uf062</span>  {bandwidthUpBytes:<8}",
 		"tooltip": false
 	},
 
 	"bluetooth": {
-		// Only a connected device shows here; on/off is in quick settings.
+		// Its own capsule, left of the network one, only while a device is
+		// connected: just the icon; which device (and its battery) is in the
+		// tooltip. On/off is in quick settings.
 		"format-off": "",
 		"format-on": "",
 		"format-disabled": "",
-		"format-connected": "  {device_alias}",
-		"format-connected-battery": "  {device_alias}  {device_battery_percentage}%",
-		"tooltip-format": "Bluetooth Status: {status}",
-		"on-click": "$HOME/.local/bin/vyom setu",
-		"max-length": 25
+		"format-connected": "<span size='125%' rise='-1pt'>󰂱</span>",
+		"format-connected-battery": "<span size='125%' rise='-1pt'>󰂱</span>",
+		"tooltip-format-connected": "{device_enumerate}",
+		"tooltip-format-enumerate-connected": "{device_alias}",
+		"tooltip-format-enumerate-connected-battery": "{device_alias}  {device_battery_percentage}%",
+		"on-click": "$HOME/.local/bin/vyom setu"
 	},
 
 	"custom/phone": {

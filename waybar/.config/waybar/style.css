@@ -547,8 +547,8 @@ window#waybar {
 }
 
 /* CAFFEINE — dim gray when off (matches every other "off" state above),
-   warm peach "brewing" glow when on so it's impossible to miss that the
-   screen won't sleep right now */
+   peach when on so it's impossible to miss that the screen won't sleep
+   right now. No glow (removed 2026-10-27): the border colour is enough. */
 #custom-caffeine.inactive {
     color: @overlay0;
 }
@@ -556,7 +556,6 @@ window#waybar {
 #custom-caffeine.active {
     color: @peach;
     border-color: alpha(@peach, 0.45);
-    box-shadow: 0 0 8px alpha(@peach, 0.35);
 }
 
 /* BATTERY STATES -- colored by actual charge status now, not just the
@@ -682,7 +681,7 @@ tooltip label {
 
 /* Segments inside a group: no pill of their own. */
 #clockbox #custom-notifications, #clockbox #clock,
-#connectivity #network, #connectivity #bluetooth,
+#connectivity #network,
 #system #pulseaudio, #system #backlight, #system #battery {
     background: transparent;
     border: none;
@@ -692,7 +691,7 @@ tooltip label {
     border-radius: 0;
 }
 #clockbox #custom-notifications:hover, #clockbox #clock:hover,
-#connectivity #network:hover, #connectivity #bluetooth:hover,
+#connectivity #network:hover,
 #system #pulseaudio:hover, #system #backlight:hover, #system #battery:hover {
     background: transparent;
     border: none;
@@ -700,9 +699,9 @@ tooltip label {
 #clockbox #clock.time { font-weight: bold; }
 #clockbox #clock:not(.time) { color: @subtext0; }
 #connectivity #network { color: @text; padding: 0 4px 0 12px; }
-/* Bluetooth shows only a connected device; otherwise it takes no space. */
-#connectivity #bluetooth { padding: 0; }
-#connectivity #bluetooth.connected { padding: 0 9px; }
+/* Bluetooth is its own capsule left of the network one, only while a
+   device is connected (an empty label hides it): just the icon. */
+#bluetooth.connected { padding: 2px 12px; }
 #connectivity #network.disconnected, #connectivity #network.disabled { color: @red; }
 #connectivity #network.speed { color: @subtext0; font-size: 11px; padding-left: 8px; padding-right: 6px; min-width: 0; }
 /* (the old 177px min-width against jitter is replaced by fixed-width

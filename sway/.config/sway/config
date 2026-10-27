@@ -551,7 +551,8 @@ bindsym $mod+Print exec ~/.config/sway/scripts/screenshot.sh region
 bindsym $mod+Shift+s exec ~/.config/sway/scripts/screenshot.sh region
 
 # No key locks the screen (Super+Escape did, removed by request); the
-# idle timeout and going to sleep still lock it.
+# idle timeout and going to sleep still lock it, through vayu-lock (themed
+# by varna) from sway/idle/config and idle/lock-on-sleep.
 
 ### User Executions & Environment Settings
 # Import WAYLAND_DISPLAY/SWAYSOCK into the systemd --user manager's own

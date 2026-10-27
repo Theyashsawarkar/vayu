@@ -142,6 +142,31 @@ if ! grep -qx 'Color' /etc/pacman.conf; then
   fi
 fi
 
+# Bluetooth: pair once, reconnect after. bluez leaves the adapter
+# non-pairable unless an agent asks, and a non-pairable adapter is also
+# non-bondable: a device then connects with a key that's never stored, so
+# it showed "Trusted: yes, Paired: no" and had to pair again every time.
+# AlwaysPairable keeps it bondable; FastConnectable makes reconnects quick.
+bt_conf=/etc/bluetooth/main.conf
+bt_restart=false
+for kv in "AlwaysPairable = true" "FastConnectable = true"; do
+  key=${kv%% *}
+  [ -f "$bt_conf" ] || break
+  grep -qx "$kv" "$bt_conf" && continue
+  changed+=("bluetooth $key")
+  if $check; then
+    echo "differs: $bt_conf ($kv not set)"
+  else
+    if grep -qE "^#?$key *=" "$bt_conf"; then
+      sudo sed -i -E "0,/^#?$key *=.*/s//$kv/" "$bt_conf"
+    else
+      sudo sed -i "/^\[General\]/a $kv" "$bt_conf"
+    fi
+    echo "set $kv in $bt_conf"
+    bt_restart=true
+  fi
+done
+
 if $check; then
   [ "${#changed[@]}" -eq 0 ] && echo "system files match the repo"
   [ "${#changed[@]}" -eq 0 ]
@@ -163,4 +188,6 @@ fi
 if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/journald.conf.d/'; then
   reload sudo systemctl restart systemd-journald.service
 fi
+# Drops any connected Bluetooth device for a moment; it reconnects.
+$bt_restart && reload sudo systemctl restart bluetooth.service
 echo "system files applied: ${#changed[@]} change(s)"

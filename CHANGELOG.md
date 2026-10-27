@@ -9,6 +9,18 @@ full branch/release process.
 
 - **Super+Escape no longer locks the screen**: the binding is removed.
   The screen still locks on the idle timeout and before sleep.
+- **Waybar: Bluetooth in its own capsule.** It was squeezed into the
+  network capsule next to the speeds; now it's a separate capsule just
+  left of the network one, shown only while a device is connected, with
+  just the icon (the device and its battery are in the tooltip). The
+  speeds have a gap between each arrow and its number. Caffeine's "on"
+  capsule lost its glow; its peach border is enough.
+- **Bluetooth pairs once.** bluez left the adapter non-pairable, which
+  also makes it non-bondable: devices connected with a key that was never
+  stored, so they showed "Trusted, not Paired" and had to pair again every
+  time. `system/apply.sh` now sets `AlwaysPairable = true` (and
+  `FastConnectable = true`) in `/etc/bluetooth/main.conf` and restarts
+  bluetooth. Pair each device once more; after that it reconnects.
 
 ## 2026-10-24 (drishya: a video player like nāda)
 
