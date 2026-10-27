@@ -41,6 +41,12 @@ bindsym $mod+Shift+b exec $vyom setu
 #: Open phone panel (doot, KDE Connect: send file, clipboard, ring, browse)
 bindsym $mod+Shift+o exec $vyom doot
 
+#: Open ekatva window (phone and laptop: phones, log, caffeine, phone)
+bindsym $mod+o exec ~/.local/bin/ekatva window
+
+#: Open ekatva pairing (QR code to pair a phone, from any network)
+bindsym $mod+Ctrl+o exec ~/.local/bin/ekatva window pair
+
 # Stops the laptop ringing (Find my device) if it is; otherwise, since
 # mako's left click only runs a notification's default action, this lists
 # all of them (Accept/Reject a pairing request, Undo a phone clipboard...).

@@ -78,6 +78,10 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/vinyasa/vinyasa",
     # drishya, the video player (its own repo): its window's keys.
     HOME / ".local/share/drishya/drishya",
+    # ekatva, phone and laptop as one (its own repo): its desktop window's
+    # keys, found through the `ekatva` command's link into the repo.
+    *([Path(os.path.realpath(HOME / ".local/bin/ekatva")).parents[2] / "desktop/src/renderer/src"]
+      if (HOME / ".local/bin/ekatva").exists() else []),
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # anumati's approval window (own repo; installed root-owned).
@@ -126,7 +130,7 @@ describe detach edit enter evaluate exit focus force format go grow hover instal
 jump kill leave lock lower merge move normal open paste pick play quit raise rate record
 reload remove rename reopen request rerun rescan reset resize restore rotate run save scroll
 search seek select send set show shrink shuffle split start step stop swap switch
-take toggle trash update
+take toggle trash undo update
 """.split())
 
 

@@ -13,6 +13,7 @@ charge: an agent can ask, only you can approve.
 | Tool | What it does | How agents use it |
 |---|---|---|
 | [anumati](#anumati) | Runs root commands an agent asks for, after you see each one and why, tick which to allow, and type your password once. | `anumati` (JSON on stdin), or the MCP tool `request_root_commands` |
+| [ekatva](#ekatva) | Your phone: status, ring, lock, SMS, calls, its clipboard and files; an SMS or a call only after you allow it. | `ekatva mcp` (MCP server), or the `ekatva` command |
 
 Each is its own repository (Vayu's plugin rule), cloned by `install.sh` and
 installed root-owned, so an agent can't change what it shows you or what it
@@ -43,3 +44,25 @@ type your password once; the agent gets the results as JSON. It was called
 Claude Code on this desktop is told to use it in the global
 `~/.claude/CLAUDE.md` (the stowed `claude/` package). Problems: the "AI
 tools" entries in [Troubleshooting](TROUBLESHOOTING.md).
+
+## ekatva
+
+**Your phone, for agents too.** [ekatva](https://github.com/Theyashsawarkar/ekatva)
+(एकत्व, "oneness") links the laptop and your Android phone end to end,
+from any network (a Cloudflare quick tunnel when they're apart). Its
+`ekatva mcp` server lets an agent check the phone, ring or lock it, read
+SMS, use its clipboard and files and keep the laptop awake. Sending an SMS
+or placing a call opens an **Allow / Decline** dialog with the number and
+the text first.
+
+| At a glance | |
+|---|---|
+| MCP | `ekatva mcp`; registered with `claude mcp add --scope user ekatva -e EKATVA_AGENT=claude -- ekatva mcp` |
+| Tools | `status`, `phone_status`, `phone_ring`, `phone_lock`, `sms_threads`, `sms_read`, `call_hang_up`, `phone_clipboard_get`/`_set`, `phone_files_list`/`_read`, `caffeine_set`, `log_recent`; asking first: `sms_send`, `call_dial` |
+| Log | every call is in ekatva's action log as `yash via claude` (`EKATVA_AGENT`); `ekatva undo N` |
+| Service | `ekatva.service` (user unit, in `sway-session.sh`'s `UNITS`); the window is <kbd>Super</kbd>+<kbd>o</kbd> |
+| Docs | [For AI agents](https://theyashsawarkar.github.io/ekatva/guides/ai-agents/) |
+
+Messages, the phone's clipboard and files come back inside `<untrusted>`
+blocks: they were written by other people. The dialog is a consent step,
+not a sandbox: an agent with a shell can run `ekatva` itself.

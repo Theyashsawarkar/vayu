@@ -27,6 +27,8 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi‑Fi ([tarang](https://github.com/Theyashsawarkar/tarang)): connect (password typed inline), <kbd>Ctrl</kbd>+<kbd>D</kbd> disconnect, the Hotspot tab (<kbd>Ctrl</kbd>+<kbd>L</kbd>) with a QR code
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> — Bluetooth ([setu](https://github.com/Theyashsawarkar/setu)): devices with battery, <kbd>Enter</kbd> connects / pairs
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>o</kbd> — Phone ([doot](https://github.com/Theyashsawarkar/doot), KDE Connect): send clipboard or a file, ring, browse
+- <kbd>Super</kbd>+<kbd>o</kbd> — Phone and laptop ([ekatva](https://github.com/Theyashsawarkar/ekatva)): the window with your phones, the action log, caffeine (keys inside it: `?`)
+- <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>o</kbd> — Pair a phone with ekatva (QR code, works from any network)
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>a</kbd> — Stop the laptop ringing (phone's Find my device), otherwise pick an action on the current notification (Accept/Reject pairing, Undo phone clipboard, Show received file in folder)
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd> — Docker ([patra](https://github.com/Theyashsawarkar/patra)): <kbd>Enter</kbd> logs, <kbd>Ctrl</kbd>+<kbd>R</kbd> restart, <kbd>Ctrl</kbd>+<kbd>S</kbd> stop/start, <kbd>Ctrl</kbd>+<kbd>T</kbd> shell
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notifications ([suchana](https://github.com/Theyashsawarkar/suchana)): what's on screen with its actions, the history, do not disturb

@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-27 (ekatva: the phone, set up and for agents)
+
+- **ekatva runs as a session service.** `ekatva.service` joins the
+  `UNITS` that `sway-session.sh` starts (the unit is ekatva's own, linked
+  from `~/personal/ekatva`). KDE Connect and doot stay until ekatva covers
+  everything they do.
+- **Keys:** <kbd>Super</kbd>+<kbd>o</kbd> opens the ekatva window (phones, the
+  action log, caffeine), <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>o</kbd> opens it
+  on pairing. The window's own keys are in the keybinding search
+  (`keybind-search.py` scans its `keys.ts`; `undo` joins the verbs).
+- **Agents:** `ekatva mcp` is registered with Claude Code; see
+  docs/AI-TOOLS.md. An SMS or a call asks you first.
+
 ## 2026-10-27 (no lock key)
 
 - **Super+Escape no longer locks the screen**: the binding is removed.
