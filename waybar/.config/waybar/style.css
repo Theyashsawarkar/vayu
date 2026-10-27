@@ -516,10 +516,8 @@ window#waybar {
     border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
 }
 
-#bluetooth.connected {
-    color: @green; /* Pastel green when paired */
-    border-color: alpha(@green, 0.4);
-}
+/* Connected: the icon is in the theme's accent (config), the capsule
+   the same as every other. */
 
 /* Phone (KDE Connect), between docker and caffeine in the device-controls
    cluster: same status language as bluetooth -- green border

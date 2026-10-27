@@ -21,6 +21,14 @@ full branch/release process.
   time. `system/apply.sh` now sets `AlwaysPairable = true` (and
   `FastConnectable = true`) in `/etc/bluetooth/main.conf` and restarts
   bluetooth. Pair each device once more; after that it reconnects.
+- **Bluetooth icon follows the theme**: it's in the accent colour now
+  (was a fixed green), in a capsule like every other.
+- **Each audio output keeps its own volume** (new `wireplumber` package):
+  the buds come back at the volume you left them at, and disconnecting
+  them returns the speakers to theirs. WirePlumber already saved a volume
+  per device; Bluetooth "hardware volume" let the headphones override it
+  with their own on connect, so it's off for the headphone roles. The
+  headphones' own volume buttons no longer move the laptop's volume.
 
 ## 2026-10-24 (drishya: a video player like nāda)
 
