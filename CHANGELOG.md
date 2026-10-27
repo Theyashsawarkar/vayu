@@ -5,6 +5,11 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-27 (no lock key)
+
+- **Super+Escape no longer locks the screen**: the binding is removed.
+  The screen still locks on the idle timeout and before sleep.
+
 ## 2026-10-24 (drishya: a video player like nāda)
 
 - **drishya** (github.com/Theyashsawarkar/drishya, its own repo, in

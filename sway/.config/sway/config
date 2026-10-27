@@ -550,9 +550,8 @@ bindsym $mod+Print exec ~/.config/sway/scripts/screenshot.sh region
 #: Take screenshot: select a region
 bindsym $mod+Shift+s exec ~/.config/sway/scripts/screenshot.sh region
 
-# Manual lock trigger (was Alt+Shift+;)
-#: Lock the screen
-bindsym $mod+Escape exec ~/.local/bin/vayu-lock
+# No key locks the screen (Super+Escape did, removed by request); the
+# idle timeout and going to sleep still lock it.
 
 ### User Executions & Environment Settings
 # Import WAYLAND_DISPLAY/SWAYSOCK into the systemd --user manager's own
