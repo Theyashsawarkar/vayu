@@ -18,6 +18,79 @@ full branch/release process.
 - **Agents:** `ekatva mcp` is registered with Claude Code; see
   docs/AI-TOOLS.md. An SMS or a call asks you first.
 
+## 2026-10-27 (tmux bar: unread mail and chat)
+
+- **A mail and chat capsule** on the tmux bar: `󰇮 3` unread mail threads
+  in your inbox and `󰭹 2` chats (spaces and DMs) with unread messages, from
+  sandesh, each shown only when there are any, next to the PR capsule.
+  Clicking the mail count opens sandesh on mail, the chat count on chat
+  (`sandesh --tab chat`, new in sandesh).
+- It follows sandesh's local copy, never polling Google: bar-events watches
+  sandesh's database, which changes when a sync brings something or you
+  read it (in sandesh, `sandesh mail read`, or an agent through `sandesh
+  mcp`), and asks `sandesh status`. Within about a second either way.
+- Colours from the theme: varna 0.1.12 adds tmux's `@mail` and `@chat`
+  (a theme's yellow and teal unless it sets its own).
+
+## 2026-10-27 (PR capsule follows sangam; sangam for AI agents)
+
+- **The PR capsule shows the account you're looking at.** It counted every
+  signed-in account (your personal PRs showed while you worked on the work
+  account), then only gh's active one, which ignored the account picked in
+  sangam (`u`). Now it counts exactly what sangam shows: the account picked
+  there (empty: all accounts), else gh's active one.
+- **It never lags behind.** It recounts at once when the account changes
+  (sangam's `u`, `gh auth switch`) and when sangam changes or reloads a PR
+  (a merge, review or comment there or by an agent: sangam writes
+  `~/.cache/sangam/changed`), again 30 s later (GitHub's search lags a
+  merge by a few seconds), and every 2 minutes (was 5) for changes made on
+  github.com. Merging the last open PR used to leave ` 1` up for minutes.
+- If a lookup fails (offline) right after a switch, the capsule clears
+  instead of showing the previous account's numbers. tmux's `@gh_account`
+  says whose numbers are shown (`gh-review-count --account` prints it).
+- **sangam is an AI tool** (v2.1): `sangam mcp` (MCP server) and `sangam
+  call <tool> [json]` let agents list, read and diff your PRs, and comment,
+  review or merge after you approve in a tmux popup (`y` / `n` / `e` edits
+  the text). Register it once: `claude mcp add --scope user sangam -- sangam mcp`.
+
+## 2026-10-27 (pattan and nauka: ports and Docker tools)
+
+- **pattan, prefix P**: a new tool ([pattan](https://github.com/Theyashsawarkar/pattan),
+  a tmux plugin and kosha package) for the ports your dev servers listen
+  on: the app (vite, next, express...), the project, whether it answers
+  and its page title, the tmux pane it runs in; Enter opens
+  `localhost:port` in the browser. It also lists every listening port,
+  Docker's published ports and tunnels (ngrok, cloudflared, tailscale
+  serve/funnel, ssh -R, localtunnel, bore), and `t` shares a port through
+  one. A click on the dev servers capsule (`󰒋 5`) opens it.
+- **nauka, prefix D**: a new tool ([nauka](https://github.com/Theyashsawarkar/nauka))
+  for all of Docker: containers (with the volumes and networks each is
+  attached to, logs, stats, env, inspect, files; start/stop, restart,
+  pause, shell, remove), compose projects (up, down, build, pull, logs),
+  images, volumes, networks and disk use with pruning. Deleting always
+  asks first. A click on the Docker capsule opens it.
+- The keybinding search knows a few more verbs (build, connect,
+  disconnect, follow, pause, pull, restart) for Docker's keys.
+
+## 2026-10-27 (tmux bar: dev servers, your PRs, clickable usage)
+
+- **Capsules in a steady order**: the ones that come and go sit on the
+  left, shortest first (Docker, dev servers, PRs, Claude waiting); the
+  always-there Claude usage capsule is last, at the far right. The Docker
+  capsule is clickable (range `docker`), ready for its tool.
+- **Dev servers: the server icon and a count**: the ports capsule shows
+  `󰒋 5` (how many ports your dev servers have open) instead of the port
+  numbers. Clicking it opens the server in the browser, or asks which when
+  there are several (`dev-ports --open all`, a Vyom picker that shows each
+  server's kind).
+- **Your open pull requests**: the PR capsule now also shows your own open
+  PRs (` 5`) next to the ones waiting for your review (`󰊤 1`), each only
+  when there are any, for the GitHub account `gh` has active
+  (`gh auth switch` changes it); `gh-review-count` sets `@gh_prs` too. A
+  click still opens sangam.
+- **Claude usage capsule opens vesha**: clicking `✳ work 72%` opens vesha
+  in a popup, like `prefix C`.
+
 ## 2026-10-27 (no lock key)
 
 - **Super+Escape no longer locks the screen**: the binding is removed.
@@ -42,6 +115,22 @@ full branch/release process.
   per device; Bluetooth "hardware volume" let the headphones override it
   with their own on connect, so it's off for the headphone roles. The
   headphones' own volume buttons no longer move the laptop's volume.
+
+## 2026-10-26 (sandesh: mail and chat in tmux)
+
+- **Bigger popups**: every popup (`@popup_width` / `@popup_height`, and
+  extrakto's to match) is now 96% × 94% of the pane area, up from 90% × 88%,
+  so sandesh and the other tools get more room.
+
+- **sandesh** (github.com/Theyashsawarkar/sandesh, its own repo): Gmail
+  and Google Chat in the terminal, laid out like sangam. `prefix e` opens
+  it as a popup (through `popup.sh`, like sangam); `sandesh` works in any
+  terminal. With no Google credentials yet it opens a setup screen that
+  takes the OAuth client and signs you in. `sandesh mcp` lets Claude read,
+  draft and (after your OK in a popup) send mail and chat.
+- TPM installs it like sangam (`set -g @plugin 'Theyashsawarkar/sandesh'`);
+  its plugin runs the `sandesh` on PATH, or builds its own copy with Go the
+  first time.
 
 ## 2026-10-24 (drishya: a video player like nāda)
 

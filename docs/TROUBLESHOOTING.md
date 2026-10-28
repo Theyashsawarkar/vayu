@@ -400,6 +400,33 @@ by hand (e.g. `pacman -R`, `systemctl disable`). To stop agents using the
 tool: `~/.local/share/anumati/install.sh --uninstall`. (anumati was called
 vayu-elevate before 2026-10-21; that name is now a link to it.)
 
+## tmux bar: the PR capsule shows the wrong account's PRs, or an old count
+
+The capsule (`  N` your open PRs, `󰊤 N` waiting for your review) counts
+the account sangam shows: the one picked there with `u`, or all accounts
+when "all" is picked; with nothing picked, gh's active one (`gh auth
+switch`). See whose numbers it shows, and what it would count now:
+
+```
+tmux show -gv @gh_account
+gh-review-count --account
+```
+
+It recounts as soon as the account changes or sangam changes a PR, 30 s
+after that, and every 2 minutes. A PR merged or closed on github.com shows
+up within 2 minutes; press `R` in sangam (or open it) to recount at once.
+If it never changes, bar-events isn't running or can't reach GitHub:
+`systemctl --user status bar-events`, `vayu-logs gh-review-count`.
+
+## AI tools: sangam's approval popup doesn't appear
+
+A comment, review or merge an agent asks for through `sangam mcp` opens a
+popup on the agent's tmux pane, or the tmux client you used last. With no
+tmux client attached, a desktop notification asks instead; with neither,
+sangam refuses the write and tells the agent so. Unanswered for 10
+minutes, it counts as declined. Check the server is registered:
+`claude mcp list` should show `sangam: sangam mcp`.
+
 ## Keys: I don't know (or forgot) a keybinding
 
 `Super+Shift+/` searches every keybinding on the system (sway, tmux, kitty,

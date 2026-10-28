@@ -17,8 +17,14 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               `iw event` new/del station (a device joined
                               or left the hotspot)
 
-tmux's "to review" capsule (@gh_reviews) is set from gh-review-count every
-5 minutes (GitHub has no push for "review requested" to a desktop). Its dev
+tmux's pull request capsule (@gh_reviews, @gh_prs) is set from gh-review-count every
+2 minutes (GitHub has no push for "review requested" to a desktop), and
+right away when the account it counts changes -- gh's hosts.yml (gh auth
+switch), sangam's last-account (u in sangam) -- or sangam says PRs changed
+(~/.cache/sangam/changed: a merge, review or reload there, or by an agent
+through `sangam mcp`). Its unread mail and chat capsule (@sandesh_mail,
+@sandesh_chat) follows sandesh's local copy (its database changes when a
+sync brings mail or you read something), asking `sandesh status`. Its dev
 servers capsule (@dev_ports) from dev-ports every 15 seconds (listening
 sockets have no event). Its Claude limit capsule (@claude_limit, and
 @claude_limit_class ok/warn/full) follows `vesha waybar`, which prints a
@@ -33,7 +39,8 @@ compose starts several containers) collapse into one refresh 0.3 s after
 the last event.
 
 `bar-events.py --tmux-docker` sets tmux's @docker_count once and exits
-(tmux.conf runs it on load, since tmux can start after this daemon).
+(tmux.conf runs it on load, since tmux can start after this daemon);
+`--tmux-sandesh` the same for @sandesh_mail and @sandesh_chat.
 """
 import os
 import signal
@@ -187,14 +194,21 @@ def read_docker_events(stream, proc):
 
 
 busy = set()   # helpers still running from their last tick
+again = set()  # helpers asked for while running: run once more when done
 
 
-def run_once(name, *args):
+def run_once(name, *args, rerun=False):
     """Starts a helper in the background unless its last run is still going
-    (a hung `gh api` used to pile up a new one every 5 minutes). Its stderr
-    goes to this service's journal. Returns True to keep the GLib timer."""
+    (a hung `gh api` used to pile up a new one every 5 minutes). With
+    rerun, a call during a run starts one more after it instead of being
+    dropped (the account changed: the running one counts the old one).
+    Its stderr goes to this service's journal. Returns True to keep the
+    GLib timer."""
     if name in busy:
-        log(f"{name}: last run still going, skipping this one")
+        if rerun:
+            again.add(name)
+        else:
+            log(f"{name}: last run still going, skipping this one")
         return True
     try:
         proc = Gio.Subprocess.new([os.path.expanduser(f"~/.local/bin/{name}"), *args],
@@ -206,6 +220,9 @@ def run_once(name, *args):
 
     def done(p, result):
         busy.discard(name)
+        if name in again:
+            again.discard(name)
+            GLib.idle_add(lambda: (run_once(name, *args), False)[1])
         try:
             p.wait_finish(result)
             if p.get_if_exited() and p.get_exit_status():
@@ -216,9 +233,108 @@ def run_once(name, *args):
     return True
 
 
-def gh_reviews():
-    """gh-review-count sets tmux's @gh_reviews."""
-    return run_once("gh-review-count", "--set-tmux")
+def gh_reviews(rerun=False):
+    """gh-review-count sets tmux's @gh_reviews, @gh_prs and @gh_account."""
+    return run_once("gh-review-count", "--set-tmux", rerun=rerun)
+
+
+gh_monitors = []  # kept alive: a dropped Gio.FileMonitor stops watching
+
+
+def watch_gh_account():
+    """Recounts as soon as the account the PR capsule counts changes, or
+    sangam changed a PR, so the bar never lags behind sangam. Once more
+    30 s later: GitHub's search index (what the count asks) lists a just
+    merged PR as open for a few seconds. A file monitor also sees a file
+    that doesn't exist yet appear (sangam never run) and gh's
+    write-and-rename of hosts.yml."""
+    config = os.environ.get("GH_CONFIG_DIR") or os.path.join(
+        os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "gh")
+    cache = os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache")
+    for path in (os.path.join(config, "hosts.yml"), os.path.join(cache, "sangam", "last-account"),
+                 os.path.join(cache, "sangam", "changed")):
+        try:
+            m = Gio.File.new_for_path(path).monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        except GLib.Error as e:
+            log(f"can't watch {path}, the PR capsule follows it every 2 minutes only:", e.message)
+            continue
+        m.set_rate_limit(1000)
+        m.connect("changed", lambda *a: (debounce("gh-account", lambda: gh_reviews(rerun=True)),
+                                         debounce("gh-settle", lambda: gh_reviews(rerun=True), 30000)))
+        gh_monitors.append(m)
+
+
+SANDESH = os.path.expanduser("~/.local/bin/sandesh")
+sandesh_monitor = None  # kept alive, like gh_monitors
+
+
+def set_sandesh(out):
+    """@sandesh_mail / @sandesh_chat from `sandesh status --json` output;
+    unset (no capsule) when sandesh can't say."""
+    import json
+    try:
+        d = json.loads(out or "")
+        mail, chat = int(d.get("mail", 0)), int(d.get("chat", 0))
+    except (ValueError, TypeError, AttributeError):
+        tmux("set", "-gu", "@sandesh_mail")
+        tmux("set", "-gu", "@sandesh_chat")
+        return
+    tmux("set", "-g", "@sandesh_mail", str(mail))
+    tmux("set", "-g", "@sandesh_chat", str(chat))
+
+
+def tmux_sandesh():
+    """Asks sandesh for its unread counts (its local copy, no network) in
+    the background: SQLite can wait on a sync's write lock."""
+    if not os.access(SANDESH, os.X_OK):
+        return False
+    if "sandesh" in busy:
+        again.add("sandesh")
+        return False
+    try:
+        proc = Gio.Subprocess.new([SANDESH, "status", "--json"],
+                                  Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("sandesh status:", e.message)
+        return False
+    busy.add("sandesh")
+
+    def done(p, result):
+        busy.discard("sandesh")
+        try:
+            _, out, _ = p.communicate_utf8_finish(result)
+        except GLib.Error as e:
+            log("sandesh status:", e.message)
+            out = None
+        if p.get_if_exited() and p.get_exit_status() == 0:
+            set_sandesh(out)
+        if "sandesh" in again:
+            again.discard("sandesh")
+            tmux_sandesh()
+    proc.communicate_utf8_async(None, None, done)
+    return False
+
+
+def watch_sandesh():
+    """sandesh's data folder: its database (and WAL) change on every sync
+    write and every read/unread, from the screen, the CLI or an agent."""
+    global sandesh_monitor
+    data = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "sandesh")
+    try:
+        sandesh_monitor = Gio.File.new_for_path(data).monitor_directory(Gio.FileMonitorFlags.NONE, None)
+    except GLib.Error as e:
+        log(f"can't watch {data}, the mail capsule updates every 2 minutes only:", e.message)
+        return
+    sandesh_monitor.set_rate_limit(1000)
+    sandesh_monitor.connect("changed", lambda *a: debounce("sandesh", tmux_sandesh, 1000))
+
+
+def debounce(key, fn, ms=500):
+    """Runs fn once, ms after the last call with this key (a write is
+    several file events)."""
+    if key in pending:
+        GLib.source_remove(pending[key])
+    pending[key] = GLib.timeout_add(ms, lambda: (pending.pop(key, None), fn(), False)[2])
 
 
 def dev_ports():
@@ -295,6 +411,13 @@ def watch_stations():
 
 def main():
     global docker_active
+    if sys.argv[1:] == ["--tmux-sandesh"]:
+        try:
+            r = subprocess.run([SANDESH, "status", "--json"], capture_output=True, text=True, timeout=15)
+            set_sandesh(r.stdout if r.returncode == 0 else None)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            log("sandesh status:", e)
+        return
     if sys.argv[1:] == ["--tmux-docker"]:
         docker_active = subprocess.run(["systemctl", "is-active", "--quiet", "docker.service"]).returncode == 0
         tmux_docker()
@@ -330,7 +453,11 @@ def main():
     watch_stations()
 
     gh_reviews()
-    GLib.timeout_add_seconds(300, gh_reviews)
+    GLib.timeout_add_seconds(120, gh_reviews)
+    watch_gh_account()
+    tmux_sandesh()
+    watch_sandesh()
+    GLib.timeout_add_seconds(120, lambda: (tmux_sandesh(), True)[1])   # if the watch misses one
     dev_ports()
     GLib.timeout_add_seconds(15, dev_ports)
     watch_claude_limit()

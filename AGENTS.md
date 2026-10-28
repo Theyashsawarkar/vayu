@@ -98,8 +98,12 @@ they want without the rest of vayu.
   moves installs between releases; to test a local change, `kosha link
   <name> ~/personal/<name>` and `kosha unlink <name>` afterwards.
 - **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
-  (pull requests: a command, and the prefix G popup; `install.sh` links
-  TPM's copy to `~/.local/bin/sangam`).
+  (pull requests: a command, the prefix G popup, and `sangam mcp` for
+  agents; `install.sh` links TPM's copy to `~/.local/bin/sangam`).
+  [`sandesh`](https://github.com/Theyashsawarkar/sandesh) (Gmail and
+  Google Chat: a Go command, the prefix e popup, and `sandesh mcp` for
+  agents; its plugin builds `bin/sandesh` on first use when it isn't on
+  PATH).
   [`vyom`](https://github.com/Theyashsawarkar/vyom), the launcher/panels
   runtime that replaced wofi and nwg-bar, and its tools, each its own
   repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),

@@ -14,6 +14,7 @@ charge: an agent can ask, only you can approve.
 |---|---|---|
 | [anumati](#anumati) | Runs root commands an agent asks for, after you see each one and why, tick which to allow, and type your password once. | `anumati` (JSON on stdin), or the MCP tool `request_root_commands` |
 | [ekatva](#ekatva) | Your phone: status, ring, lock, SMS, calls, its clipboard and files; an SMS or a call only after you allow it. | `ekatva mcp` (MCP server), or the `ekatva` command |
+| [sangam](#sangam) | Your GitHub pull requests: list, read, diff; comment, review and merge after you approve in a tmux popup. | `sangam mcp` (MCP server), or `sangam call <tool> [json]` |
 
 Each is its own repository (Vayu's plugin rule), cloned by `install.sh` and
 installed root-owned, so an agent can't change what it shows you or what it
@@ -44,6 +45,29 @@ type your password once; the agent gets the results as JSON. It was called
 Claude Code on this desktop is told to use it in the global
 `~/.claude/CLAUDE.md` (the stowed `claude/` package). Problems: the "AI
 tools" entries in [Troubleshooting](TROUBLESHOOTING.md).
+
+## sangam
+
+**Pull requests, for agents too.** [sangam](https://github.com/Theyashsawarkar/sangam)
+(the `prefix G` PR popup) is also an MCP server, so an agent can see the
+PRs you see (the same accounts and sections) and act on them with your
+yes. Reading is free; a comment, review or merge opens a popup on your tmux
+client showing the PR, the account and the text: `y` approves, `n`
+declines, `e` edits the text first. Without tmux a notification with
+Approve / Decline asks instead.
+
+| At a glance | |
+|---|---|
+| MCP | `sangam mcp`; register with `claude mcp add --scope user sangam -- sangam mcp` |
+| Command | `sangam call` lists the tools; `sangam call pr_view '{"pr":"owner/repo#12"}'` |
+| Tools | `pr_accounts`, `pr_counts`, `pr_list`, `pr_view`, `pr_diff`; asking first: `pr_comment`, `pr_review`, `pr_merge` |
+| Account | the one picked in sangam (`u`), else gh's active one: the same as the tmux PR capsule |
+| Expires | 10 minutes without an answer (counts as declined) |
+| Docs | the [README](https://github.com/Theyashsawarkar/sangam#for-ai-agents) |
+
+The popup is a consent step, not a sandbox: an agent with a shell can run
+`gh` itself. A write through sangam also makes the tmux PR capsule recount
+at once.
 
 ## ekatva
 

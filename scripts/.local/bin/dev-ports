@@ -5,8 +5,12 @@ so daemons (KDE Connect, mpd, syncthing, the browser) don't show up.
 
   dev-ports              the ports, one per line: "3000 node ~/code/app"
   dev-ports --set-tmux   sets tmux's @dev_ports ("3000 5173") and
-                         @dev_ports_fmt (the capsule's clickable ports);
+                         @dev_ports_fmt (the capsule: the server icon and
+                         how many ports are open, "󰒋 5", clickable);
                          bar-events.py runs this every 15 s
+  dev-ports --open all   opens a server in the browser (a click on the
+                         capsule): the only one, else pick one (KIND, e.g.
+                         node, or a port number, narrows it)
 """
 import os
 import re
@@ -14,7 +18,29 @@ import subprocess
 import sys
 
 HOME = os.path.expanduser("~")
-MAX = 4   # ports shown in the capsule; the rest are "+N"
+MAX = 3   # kinds of server shown in the capsule; the rest are "+N"
+# The kind of server a process is, and its icon (Nerd Font).
+KINDS = [
+    (re.compile(r"^(node|npm|npx|pnpm|yarn|bun|deno|next-server|vite|nuxt|astro)"), "node", "󰎙"),
+    (re.compile(r"^(python|uvicorn|gunicorn|flask|django|hypercorn|daphne)"), "python", ""),
+    (re.compile(r"^(ruby|puma|rails|unicorn)"), "ruby", ""),
+    (re.compile(r"^(java|gradle|mvn)"), "java", ""),
+    (re.compile(r"^(php|php-fpm|artisan)"), "php", ""),
+    (re.compile(r"^(go|air)$"), "go", ""),
+    (re.compile(r"^(cargo|rustc)"), "rust", ""),
+    (re.compile(r"^(dotnet)"), "dotnet", "󰪮"),
+    (re.compile(r"^docker-proxy"), "docker", ""),
+    (re.compile(r"^(postgres|postmaster)"), "postgres", ""),
+    (re.compile(r"^(redis)"), "redis", ""),
+    (re.compile(r"^(nginx|caddy|httpd)"), "web", "󰖟"),
+]
+
+
+def kind(name):
+    for rx, k, icon in KINDS:
+        if rx.match(name):
+            return k, icon
+    return "other", "󰒋"
 IGNORE = {"adb", "kdeconnectd", "mpd", "syncthing"}   # listen on ports, but aren't servers you'd open
 
 
@@ -45,12 +71,19 @@ def ports():
     return sorted(found.items())
 
 
+def groups(items):
+    """[(kind, icon, [ports])], the kinds with most ports first."""
+    by = {}
+    for p, (name, _) in items:
+        k, icon = kind(name)
+        by.setdefault((k, icon), []).append(p)
+    return sorted(((k, i, ps) for (k, i), ps in by.items()), key=lambda g: (-len(g[2]), g[0]))
+
+
 def set_tmux(items):
     nums = [str(p) for p, _ in items]
-    shown = nums[:MAX]
-    fmt = " ".join(f"#[range=user|dev{p}]:{p}#[norange]" for p in shown)
-    if len(nums) > MAX:
-        fmt += f" +{len(nums) - MAX}"
+    # the server icon and how many ports are open; a click picks one
+    fmt = f"#[range=user|devall]󰒋 {len(nums)}#[norange]" if nums else ""
     for k, v in (("@dev_ports", " ".join(nums)), ("@dev_ports_fmt", fmt)):
         cur = subprocess.run(["tmux", "show", "-gv", k], capture_output=True, text=True).stdout.rstrip("\n")
         if cur != v:
@@ -58,10 +91,31 @@ def set_tmux(items):
     subprocess.run(["tmux", "refresh-client", "-S"], capture_output=True)
 
 
+def open_kind(items, want):
+    """Open that kind's server: the only one, else pick from a list."""
+    rows = [(p, name, cwd) for p, (name, cwd) in items if want == "all" or kind(name)[0] == want or str(p) == want]
+    if not rows:
+        return
+    port = rows[0][0]
+    if len(rows) > 1:
+        choices = "\n".join(f"{p}  {kind(name)[1]} {name}  {cwd}" for p, name, cwd in rows)
+        try:
+            pick = subprocess.run(["vyom", "dmenu", "-p", "open which server?"], input=choices,
+                                  capture_output=True, text=True, timeout=120).stdout.strip()
+        except (OSError, subprocess.TimeoutExpired):
+            return
+        if not pick:
+            return
+        port = int(pick.split()[0])
+    subprocess.Popen(["xdg-open", f"http://localhost:{port}"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
 if __name__ == "__main__":
     items = ports()
     if sys.argv[1:] == ["--set-tmux"]:
         set_tmux(items)
+    elif sys.argv[1:2] == ["--open"] and len(sys.argv) == 3:
+        open_kind(items, sys.argv[2])
     else:
         for p, (name, cwd) in items:
             print(f"{p} {name} {cwd}")

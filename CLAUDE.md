@@ -95,8 +95,18 @@ they want without the rest of vayu.
   moves installs between releases; to test a local change, `kosha link
   <name> ~/personal/<name>` and `kosha unlink <name>` afterwards.
 - **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
-  (pull requests: a command, and the prefix G popup; `install.sh` links
-  TPM's copy to `~/.local/bin/sangam`).
+  (pull requests: a command, the prefix G popup, and `sangam mcp` for
+  agents; `install.sh` links TPM's copy to `~/.local/bin/sangam`).
+  [`sandesh`](https://github.com/Theyashsawarkar/sandesh) (Gmail and
+  Google Chat: a Go command, the prefix e popup, and `sandesh mcp` for
+  agents; its plugin builds `bin/sandesh` on first use when it isn't on
+  PATH).
+  [`pattan`](https://github.com/Theyashsawarkar/pattan) (dev servers'
+  ports, Docker's and their tunnels: a Go command, the prefix P popup and
+  the dev-servers capsule's click) and
+  [`nauka`](https://github.com/Theyashsawarkar/nauka) (Docker: a Go
+  command, the prefix D popup and the Docker capsule's click); both
+  plugins build `bin/<name>` on first use when it isn't on PATH.
   [`nada`](https://github.com/Theyashsawarkar/nada), the music player, and
   [`anumati`](https://github.com/Theyashsawarkar/anumati), root commands for
   AI agents (both cloned into `~/.local/share/<name>` by `install.sh`).
