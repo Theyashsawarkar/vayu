@@ -13,6 +13,7 @@ charge: an agent can ask, only you can approve.
 | Tool | What it does | How agents use it |
 |---|---|---|
 | [anumati](#anumati) | Runs the commands an agent can't run itself, as root or as you, after you see each one and why (marked ROOT or YOU) and tick which to allow; your password once for the root ones. | `anumati` (JSON on stdin), or the MCP tool `request_commands` |
+| [kaushal](#kaushal) | Every skill and MCP tool of Vayu's, in every agent (Claude Code on every account, Codex, opencode, Gemini CLI), every session. | Nothing to do: it's already there |
 | [ekatva](#ekatva) | Your phone: status, ring, lock, SMS, calls, its clipboard and files; an SMS or a call only after you allow it. | `ekatva mcp` (MCP server), or the `ekatva` command |
 | [sangam](#sangam) | Your GitHub pull requests: list, read, diff; comment, review and merge after you approve in a tmux popup. | `sangam mcp` (MCP server), or `sangam call <tool> [json]` |
 
@@ -96,3 +97,23 @@ the text first.
 Messages, the phone's clipboard and files come back inside `<untrusted>`
 blocks: they were written by other people. The dialog is a consent step,
 not a sandbox: an agent with a shell can run `ekatva` itself.
+
+## kaushal
+
+**Every skill and tool, in every agent.** [kaushal](https://github.com/Theyashsawarkar/kaushal)
+(कौशल, "skill") keeps Vayu's skills (folders with a SKILL.md, the open
+Agent Skills format) and the MCP servers above in one place, and `kaushal
+sync` puts them into every agent it finds: Claude Code, on every vesha
+account (each profile has its own MCP config), Codex, opencode, Gemini CLI,
+and `~/.agents/skills` for any agent following the convention. It runs at
+login (`kaushal.service`, in `sway-session.sh`'s `UNITS`) and on every
+`kosha install`/`update`, so a new agent or account has everything without
+asking.
+
+| At a glance | |
+|---|---|
+| Skills | `dsr`: the Daily Status Report, from the day's commits to an HTML table sent as a reply-all in the DSR thread (settings: `~/.config/kaushal/dsr.toml`) |
+| Yours | `kaushal new NAME` (in `~/.config/kaushal/skills`), tools in `~/.config/kaushal/mcp.toml` |
+| Check | `kaushal doctor`; `kaushal` lists skills, servers and agents |
+| Safe | changes only what it added (recorded) and its marked blocks; a skill or server of yours with the same name wins; `kaushal unsync` takes it all back |
+| Docs | the [README](https://github.com/Theyashsawarkar/kaushal#readme) |

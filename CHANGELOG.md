@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-28 (kaushal: every skill and tool, in every agent)
+
+- **[kaushal](https://github.com/Theyashsawarkar/kaushal)**, a new kosha
+  package: Vayu's skills and MCP tools for every AI agent. `kaushal sync`
+  gives anumati, ekatva, sandesh and sangam to Claude Code on every vesha
+  account (the second account had none), Codex, opencode and Gemini CLI,
+  and links the skills where each reads them. `kaushal.service` joins the
+  login `UNITS`; kosha syncs on install and update.
+- **The `dsr` skill**: ask any agent for a Daily Status Report and it
+  builds the day from your commits and sends a real HTML table through
+  sandesh (which can now send HTML) as a reply-all in your DSR thread.
+
 ## 2026-10-28 (kosha: fetch, and every tool in it)
 
 - **`kosha fetch`** (kosha 0.4.0) shows what's new on GitHub next to what

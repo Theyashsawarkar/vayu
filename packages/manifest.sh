@@ -84,7 +84,7 @@ STOW_REAL_DIRS=(
 # prompts (pramana), pull requests, mail and chat, ports, Docker.
 KOSHA_PACKAGES=(
   vyom dvara ganit smriti bhava tarang setu doot patra suchana raga mudra urja vishram kendra
-  nada drishya anumati pramana sangam sandesh pattan nauka vesha varna vinyasa
+  nada drishya anumati pramana sangam sandesh pattan nauka vesha varna vinyasa kaushal
 )
 
 # Supplementary groups for the installing user.

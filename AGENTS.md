@@ -105,6 +105,13 @@ they want without the rest of vayu.
   Google Chat: a Go command, the prefix e popup, and `sandesh mcp` for
   agents; its plugin builds `bin/sandesh` on first use when it isn't on
   PATH).
+  [`kaushal`](https://github.com/Theyashsawarkar/kaushal) (skills and
+  MCP tools for every AI agent: Vayu's skills, like `dsr`, the Daily Status
+  Report, live in its `skills/`, the user's in `~/.config/kaushal/skills`;
+  `kaushal sync`, at login and on kosha install, gives them and Vayu's MCP
+  servers to Claude Code (every vesha profile), Codex, opencode and Gemini
+  CLI). A new skill or agent-facing MCP tool goes into kaushal, never into
+  one agent's config by hand.
   [`vyom`](https://github.com/Theyashsawarkar/vyom), the launcher/panels
   runtime that replaced wofi and nwg-bar, and its tools, each its own
   repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),
