@@ -435,9 +435,7 @@ bindsym $mod+v splith
 #: Split vertically (next window opens below)
 bindsym $mod+b splitv
 
-# Switch the current container between different layout styles
-#: Switch to stacking layout
-bindsym $mod+s layout stacking
+# No stacking layout key: $mod+s takes a full screenshot (see below).
 
 # Toggle the current container between split and tabbed layouts
 #: Toggle tabbed layout
@@ -542,19 +540,13 @@ bindsym --locked XF86MonBrightnessDown exec ~/.config/sway/scripts/brightness_os
 #: Raise brightness 5%
 bindsym --locked XF86MonBrightnessUp exec ~/.config/sway/scripts/brightness_osd.sh +5%
 
-# Full screen (existing)
-#: Take screenshot: full screen
-bindsym Print exec ~/.config/sway/scripts/screenshot.sh
-
-# Region select
-#: Take screenshot: select a region (with the Print key)
-bindsym $mod+Print exec ~/.config/sway/scripts/screenshot.sh region
-# Super+Shift+s: the region shot most people already know (and a laptop's
-# Print key is often behind Fn). No Alt+... shortcuts here: a global Alt
-# binding takes that key away from every app (Alt+Space, Alt+Shift+Space
-# and Alt+Shift+; were).
+# No Print key on a 60% keyboard: screenshots live on Super+s /
+# Super+Shift+s. No Alt+... shortcuts here: a global Alt binding takes that
+# key away from every app (Alt+Space, Alt+Shift+Space and Alt+Shift+; were).
 #: Take screenshot: select a region
 bindsym $mod+Shift+s exec ~/.config/sway/scripts/screenshot.sh region
+#: Take screenshot: full screen
+bindsym $mod+s exec ~/.config/sway/scripts/screenshot.sh
 
 # No key locks the screen (Super+Escape did, removed by request); the
 # idle timeout and going to sleep still lock it, through vayu-lock (themed

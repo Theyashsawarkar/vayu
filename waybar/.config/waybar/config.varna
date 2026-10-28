@@ -14,6 +14,7 @@
 	"modules-left": ["sway/workspaces", "custom/nada"],
 	"modules-center": ["group/clockbox"],
 	"modules-right": [
+		"custom/recording",
 		"custom/capslock",
 		"custom/hotspot",
 		"custom/docker",
@@ -177,6 +178,15 @@
 		"signal": 13,
 		"return-type": "json",
 		"on-click": "$HOME/.local/bin/vyom doot"
+	},
+
+	// Shown only while recording (wf-recorder-toggle.sh); a click stops it.
+	"custom/recording": {
+		"exec": "~/.local/bin/wf-recorder-status.sh",
+		"on-click": "~/.local/bin/wf-recorder-toggle.sh",
+		"interval": 1,
+		"signal": 16,
+		"return-type": "json"
 	},
 
 	"custom/caffeine": {

@@ -53,6 +53,23 @@ full branch/release process.
   review or merge after you approve in a tmux popup (`y` / `n` / `e` edits
   the text). Register it once: `claude mcp add --scope user sangam -- sangam mcp`.
 
+## 2026-10-27 (Super+s: full screenshot; screen recording upgrade)
+
+- **Super+s takes a full-screen screenshot** (saved to
+  `~/Pictures/Screenshots` and copied), the partner of Super+Shift+s for a
+  region. It used to switch the container to the stacking layout, which
+  put a title bar on every window; that layout no longer has a key
+  (Super+w still toggles tabbed).
+- **No Print-key bindings**: Print and Super+Print are gone (a 60%
+  keyboard has no Print key); screenshots are Super+s (full) and
+  Super+Shift+s (region).
+- **Screen recording (Super+r full, Super+Shift+r region, same key
+  stops)**: now records the system's sound (what you hear, not the mic),
+  encodes on the GPU (VA-API; the CPU's libx264 only when the GPU can't,
+  logged), shows a red `● REC 00:42` capsule in the bar while it runs
+  (click it to stop), and on stop copies the file, ready to paste into
+  chat or mail. "Saved" waits until the file is fully written.
+
 ## 2026-10-27 (pattan and nauka: ports and Docker tools)
 
 - **pattan, prefix P**: a new tool ([pattan](https://github.com/Theyashsawarkar/pattan),

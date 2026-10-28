@@ -62,7 +62,6 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 ### Layout
 
 - <kbd>Super</kbd>+<kbd>v</kbd> / <kbd>Super</kbd>+<kbd>b</kbd> — Split horizontal / vertical
-- <kbd>Super</kbd>+<kbd>s</kbd> — Stacking layout
 - <kbd>Super</kbd>+<kbd>w</kbd> — Tabbed layout
 - <kbd>Super</kbd>+<kbd>e</kbd> — Toggle split/tabbed
 - <kbd>Super</kbd>+<kbd>f</kbd> — Fullscreen
@@ -83,8 +82,12 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 
 ### Screen recording
 
-- <kbd>Super</kbd>+<kbd>r</kbd> — Record full screen
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>r</kbd> — Record a selected region
+- <kbd>Super</kbd>+<kbd>r</kbd> — Record full screen (press again to stop)
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>r</kbd> — Record a selected region (press again to stop)
+
+With system sound, saved to `~/Videos/recordings/`; the bar shows
+`● REC` and a timer meanwhile (click it to stop), and the file is copied
+when it stops.
 
 ### Media & hardware keys
 
@@ -95,9 +98,8 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 
 ### Screenshots & lock
 
-- <kbd>Print</kbd> — Screenshot, full screen
-- <kbd>Super</kbd>+<kbd>Print</kbd> — Screenshot, select a region
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>s</kbd> — Screenshot, select a region (no Print key needed)
+- <kbd>Super</kbd>+<kbd>s</kbd> — Screenshot, full screen
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>s</kbd> — Screenshot, select a region
 - <kbd>Super</kbd>+<kbd>Escape</kbd> — Lock screen
 
 ## Tmux

@@ -37,6 +37,7 @@ window#waybar {
 #custom-hotspot,
 #custom-phone,
 #custom-caffeine,
+#custom-recording,
 #pulseaudio,
 #battery,
 #custom-power {
@@ -551,6 +552,12 @@ window#waybar {
     color: @overlay0;
 }
 
+/* Recording: red so a running recording can't be forgotten. */
+#custom-recording.active {
+    color: @red;
+    border-color: alpha(@red, 0.45);
+}
+
 #custom-caffeine.active {
     color: @peach;
     border-color: alpha(@peach, 0.45);
@@ -634,7 +641,7 @@ tooltip label {
 #workspaces:hover, #clock:hover, #custom-docker:hover, #custom-capslock:hover,
 #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover,
 #custom-wallpaper:hover, #network:hover, #custom-hotspot:hover, #bluetooth:hover, #custom-phone:hover,
-#custom-caffeine:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
+#custom-caffeine:hover, #custom-recording:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
     border-color: @accent;
     box-shadow: 0 0 6px alpha(@accent, 0.35);
 }

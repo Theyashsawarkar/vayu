@@ -447,6 +447,19 @@ journalctl -b -1 -p 0..4 --no-pager          # previous boot; -b for this one
 Open an issue at
 [github.com/Theyashsawarkar/vayu/issues](https://github.com/Theyashsawarkar/vayu/issues).
 
+## Recording: the laptop gets hot, no sound, or no mic
+
+Super+r / Super+Shift+r record with the GPU's encoder (VA-API) when the
+GPU can, otherwise with the CPU (libx264), which is slower and heats the
+laptop. The start notification says which ("GPU encoding" / "CPU
+encoding"). CPU on a machine with an Intel/AMD GPU usually means its VA-API
+driver is missing: `intel-media-driver` (Broadwell and newer) or
+`libva-intel-driver` (older Intel), `libva-mesa-driver` (AMD).
+
+Sound is the system's output (what you hear), not the microphone. "no
+sound" means `pactl get-default-sink` found no sound server. Details of
+the last attempts: `vayu-logs wf-recorder`.
+
 ## Tools: updating or reinstalling Vayu's tools (kosha)
 
 Vayu's own tools (the Vyom panels and their tools, nāda, anumati, sangam)
