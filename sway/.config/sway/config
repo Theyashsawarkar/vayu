@@ -322,6 +322,13 @@ client.urgent           #DC2626 #11111B #CDD6F4 #DC2626   #DC2626
 output * bg ~/Pictures/Wallpapers/current.jpg fill
 
 ### Input configuration
+# Keyboards: US, plus Shift+Esc types ~. A 60% keyboard has no `/~ key
+# (it shares Esc) and many send a plain Esc for Shift+Esc, so ~ couldn't be
+# typed. Esc alone is unchanged. The keymap: xkb/vayu.xkb.
+input type:keyboard {
+    xkb_file ~/.config/sway/xkb/vayu.xkb
+}
+
 input type:touchpad {
 	tap enabled
 		natural_scroll enabled

@@ -18,6 +18,14 @@ full branch/release process.
 - **Agents:** `ekatva mcp` is registered with Claude Code; see
   docs/AI-TOOLS.md. An SMS or a call asks you first.
 
+## 2026-10-27 (~ on a 60% keyboard)
+
+- **Shift+Esc types `~`.** A 60% keyboard has no `` ` ``/`~` key (it shares
+  Esc), and many (like the BY Tech one) send a plain Esc for Shift+Esc, so
+  `~` couldn't be typed at all. Every keyboard now uses Vayu's keymap
+  (`sway/.config/sway/xkb/vayu.xkb`): US, with `~` on Shift+Esc. Esc alone
+  is unchanged; nothing was bound to Shift+Esc.
+
 ## 2026-10-27 (tmux bar: unread mail and chat)
 
 - **A mail and chat capsule** on the tmux bar: `󰇮 3` unread mail threads

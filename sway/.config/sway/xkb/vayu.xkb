@@ -1,0 +1,13 @@
+// Vayu's keymap: US, plus Shift+Esc types ~ (shifted, so the same key with
+// its shift gives `~`). 60% keyboards have no `/~ key: it shares Esc, and
+// many send a plain Esc for Shift+Esc. Esc alone is unchanged.
+xkb_keymap {
+	xkb_keycodes { include "evdev+aliases(qwerty)" };
+	xkb_types    { include "complete" };
+	xkb_compat   { include "complete" };
+	xkb_symbols  {
+		include "pc+us+inet(evdev)"
+		key <ESC> { type = "TWO_LEVEL", [ Escape, asciitilde ] };
+	};
+	xkb_geometry { include "pc(pc105)" };
+};

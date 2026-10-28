@@ -96,6 +96,10 @@ when it stops.
 - Play/Pause, Prev, Next, Stop — Media playback control (`playerctl`)
 - Brightness Up / Down — Adjust screen brightness (with on-screen indicator)
 
+### Typing
+
+- <kbd>Shift</kbd>+<kbd>Esc</kbd> — `~` (for 60% keyboards, whose `` ` ``/`~` shares the Esc key; on every keyboard, from Vayu's keymap `sway/.config/sway/xkb/vayu.xkb`)
+
 ### Screenshots & lock
 
 - <kbd>Super</kbd>+<kbd>s</kbd> — Screenshot, full screen
