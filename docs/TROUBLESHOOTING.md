@@ -427,6 +427,28 @@ sangam refuses the write and tells the agent so. Unanswered for 10
 minutes, it counts as declined. Check the server is registered:
 `claude mcp list` should show `sangam: sangam mcp`.
 
+## AI tools: an agent doesn't have a Vayu tool or skill
+
+kaushal gives every agent Vayu's MCP servers and skills, at login and on
+every kosha change. Ask it what's missing:
+
+```
+kaushal doctor
+```
+
+- **"out of date"**: run `kaushal sync`, then restart the agent: a running
+  session keeps the tools it started with.
+- **"`<tool>` isn't installed"**: kaushal only registers tools whose
+  command exists; install it (`kosha install <tool>`).
+- **"skip server X: you have your own"** or **"is your own folder"**: a
+  server or skill of the same name was already set up by hand, and yours
+  wins. Remove yours (`claude mcp remove --scope user X`, or the folder)
+  and sync to get Vayu's.
+- **An agent isn't listed at all**: kaushal knows Claude Code, Codex,
+  opencode and Gemini CLI, found by their command or config folder; any
+  other agent can read the skills in `~/.agents/skills`.
+- The login sync's output: `journalctl --user -u kaushal`.
+
 ## Keys: I don't know (or forgot) a keybinding
 
 `Super+Shift+/` searches every keybinding on the system (sway, tmux, kitty,

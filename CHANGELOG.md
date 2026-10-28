@@ -5,6 +5,14 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-28 (kaushal's website; how it works in Vayu)
+
+- **kaushal has a website**, [theyashsawarkar.github.io/kaushal](https://theyashsawarkar.github.io/kaushal/),
+  like the other tools: how it works, and why (seven decision records).
+- **docs/AI-TOOLS.md** explains how kaushal works in Vayu: from install to
+  an agent's first message, where each piece lives, how to add a skill or
+  tool. **Troubleshooting** has "an agent doesn't have a Vayu tool or skill".
+
 ## 2026-10-28 (kaushal: every skill and tool, in every agent)
 
 - **[kaushal](https://github.com/Theyashsawarkar/kaushal)**, a new kosha

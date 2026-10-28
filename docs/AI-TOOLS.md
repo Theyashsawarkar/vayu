@@ -106,9 +106,9 @@ Agent Skills format) and the MCP servers above in one place, and `kaushal
 sync` puts them into every agent it finds: Claude Code, on every vesha
 account (each profile has its own MCP config), Codex, opencode, Gemini CLI,
 and `~/.agents/skills` for any agent following the convention. It runs at
-login (`kaushal.service`, in `sway-session.sh`'s `UNITS`) and on every
-`kosha install`/`update`, so a new agent or account has everything without
-asking.
+login (`kaushal.service`, in `sway-session.sh`'s `UNITS`) and whenever
+kosha installs or updates kaushal, so a new agent or account has everything
+without asking.
 
 | At a glance | |
 |---|---|
@@ -116,4 +116,48 @@ asking.
 | Yours | `kaushal new NAME` (in `~/.config/kaushal/skills`), tools in `~/.config/kaushal/mcp.toml` |
 | Check | `kaushal doctor`; `kaushal` lists skills, servers and agents |
 | Safe | changes only what it added (recorded) and its marked blocks; a skill or server of yours with the same name wins; `kaushal unsync` takes it all back |
-| Docs | the [README](https://github.com/Theyashsawarkar/kaushal#readme) |
+| Docs | [theyashsawarkar.github.io/kaushal](https://theyashsawarkar.github.io/kaushal/): how it works and why (decision records) |
+
+### How it works in Vayu
+
+From a fresh install to an agent's first message:
+
+1. **Installed with the rest.** `install.sh` installs every package in
+   `KOSHA_PACKAGES`, kaushal among them; kosha runs kaushal's own
+   `install.sh`, which links `~/.local/bin/kaushal` and
+   `~/.config/systemd/user/kaushal.service` and syncs once.
+2. **Synced at every login.** `sway-session.sh` starts `kaushal.service`
+   with the session's other units: a oneshot that runs `kaushal sync`. It
+   finds every agent on the machine (by its command on PATH or its config
+   folder) and every vesha account, and gives each what it's missing.
+3. **Synced when kaushal changes.** `kosha update` of kaushal syncs at
+   once (new skills, new tools in its list). A tool you install or remove
+   with kosha (sandesh, say) reaches the agents at the next login, or right
+   away with `kaushal sync`.
+4. **The agent starts** (a terminal, tmux, an editor, the launcher: it
+   doesn't matter) and loads its config as always: the MCP servers are
+   there, and so are the skills, which it reads itself (Claude Code,
+   Codex, opencode) or through the index in its instructions file
+   (Gemini CLI). When a request matches a skill's description ("send my
+   DSR"), the agent opens that skill and follows it.
+
+Where each piece lives:
+
+| Piece | Where |
+|---|---|
+| Vayu's skills and tool list | the kaushal repo (`skills/`, `mcp.toml`), installed at `~/.local/share/kaushal` |
+| Your skills, tools and skill settings | `~/.config/kaushal/` (`skills/`, `mcp.toml`, `dsr.toml`); never in a repo |
+| What kaushal added to each agent | `~/.local/state/kaushal/state.json` |
+| The login sync | `kaushal.service` (`journalctl --user -u kaushal`) |
+
+**Adding to it.** A new Vayu skill is a folder in the kaushal repo
+(`skills/<name>/SKILL.md`, its scripts and tests), released and picked up
+by `kosha update`; a new agent-facing tool is an entry in its `mcp.toml`.
+Never register a tool or copy a skill into one agent by hand: the others
+wouldn't get it (this file's rule for agents, and `CLAUDE.md`'s). A skill
+just for you: `kaushal new NAME`, then `kaushal sync`.
+
+**A new agent or account** needs nothing: install Codex, or add a Claude
+account with vesha, and it has everything at the next login, or now with
+`kaushal sync`. Agent sessions already running keep what they started
+with; restart them to pick up a change.
