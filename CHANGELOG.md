@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-28 (anumati: commands as you, not just root)
+
+- **anumati 1.4.0** takes commands an agent can't run itself, not just
+  root ones: `"as": "user"` (with a `cwd`) runs as you, outside the
+  agent's sandbox, approved with a click. The window marks every command
+  ROOT (red) or YOU and asks for the password only when a ROOT one is
+  ticked. The global agent notes (`claude/.claude/CLAUDE.md`), CLAUDE.md,
+  AGENTS.md and docs/AI-TOOLS.md now point agents at it for both.
+
 ## 2026-10-27 (ekatva: the phone, set up and for agents)
 
 - **ekatva runs as a session service.** `ekatva.service` joins the

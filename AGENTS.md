@@ -9,8 +9,9 @@ repeated here; when a rule changes, change it in both files.
   here, never a copy in `~`.
 - Day-to-day work on `development`; every change gets a dated
   `CHANGELOG.md` entry (`docs/VERSIONING.md`).
-- Commands that need root go through `anumati` (github.com/Theyashsawarkar/anumati, docs/AI-TOOLS.md),
-  never pasted sudo commands.
+- Commands that need root, or that you can't run yourself (sandbox,
+  permission rules), go through `anumati` (github.com/Theyashsawarkar/anumati,
+  docs/AI-TOOLS.md), `"as": "root"` or `"as": "user"`, never pasted commands.
 - Any keybinding created, changed or removed must show up in the central
   keybinding search: describe it verb-first and annotate it as CLAUDE.md
   "Keybindings" says, then make `~/.local/bin/keybind-search.py --check`

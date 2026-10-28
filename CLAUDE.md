@@ -7,8 +7,9 @@ dated `CHANGELOG.md` entry). A change with a trade-off, failure mode or
 known glitch also gets a symptom-first section in `docs/TROUBLESHOOTING.md`
 (on the site as Troubleshooting); see VERSIONING.md.
 
-Commands that need root: use `anumati` (github.com/Theyashsawarkar/anumati, docs/AI-TOOLS.md) rather
-than asking the user to paste sudo commands.
+Commands that need root, or that you can't run yourself (sandbox, permission
+rules): use `anumati` (github.com/Theyashsawarkar/anumati, docs/AI-TOOLS.md),
+`"as": "root"` or `"as": "user"`, rather than asking the user to paste them.
 
 `AGENTS.md` holds the same rules for other agents (Codex, Aider...): a
 change to a rule here goes there too.

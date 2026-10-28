@@ -10,13 +10,18 @@
   current window" (users search action + object). Annotate it as
   `~/dotfiles/CLAUDE.md` describes, then run
   `~/.local/bin/keybind-search.py --check` and make it pass.
-- **Commands that need root:** don't ask the user to copy-paste sudo
-  commands. Send them to `anumati` (JSON on stdin: `requester`,
-  `reason`, `commands: [{cmd, why}]`; `anumati --help` / `--schema`).
-  The user sees each command with its `why` in an approval window, ticks
-  what to allow and types their password once; you get JSON back with each
-  command's `state` (ok/failed/skipped/declined/not_run), exit code and
-  output. Commands run as root via `bash -c`, from `/`, with no stdin: use
-  non-interactive flags (`pacman --noconfirm`). Respect declined commands;
-  never retry a denied request unasked. If `anumati` is missing,
-  fall back to giving the commands as before.
+- **Commands you can't run yourself** (need root, or blocked by your
+  sandbox or a permission rule): don't ask the user to copy-paste them.
+  Send them to `anumati` (JSON on stdin: `requester`, `reason`,
+  `commands: [{cmd, why, as, cwd}]`; `anumati --help` / `--schema`).
+  `"as": "root"` (default) runs as root via `bash -c` from `/` and needs
+  the user's password; `"as": "user"` runs as the user in `cwd` (absolute,
+  default home), outside your sandbox, approved with a click. The user sees
+  each command with its `why`, marked ROOT or YOU, and ticks what to allow;
+  you get JSON back with each command's `state`
+  (ok/failed/skipped/declined/not_run), exit code and output. No stdin:
+  use non-interactive flags (`pacman --noconfirm`). User commands get a
+  filtered session environment, not yours: pass what they need on the
+  command line. Respect declined commands; never retry a denied request
+  unasked, and never use it to get around a refusal. If `anumati` is
+  missing, fall back to giving the commands as before.

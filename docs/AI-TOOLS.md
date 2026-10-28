@@ -12,7 +12,7 @@ charge: an agent can ask, only you can approve.
 
 | Tool | What it does | How agents use it |
 |---|---|---|
-| [anumati](#anumati) | Runs root commands an agent asks for, after you see each one and why, tick which to allow, and type your password once. | `anumati` (JSON on stdin), or the MCP tool `request_root_commands` |
+| [anumati](#anumati) | Runs the commands an agent can't run itself, as root or as you, after you see each one and why (marked ROOT or YOU) and tick which to allow; your password once for the root ones. | `anumati` (JSON on stdin), or the MCP tool `request_commands` |
 | [ekatva](#ekatva) | Your phone: status, ring, lock, SMS, calls, its clipboard and files; an SMS or a call only after you allow it. | `ekatva mcp` (MCP server), or the `ekatva` command |
 | [sangam](#sangam) | Your GitHub pull requests: list, read, diff; comment, review and merge after you approve in a tmux popup. | `sangam mcp` (MCP server), or `sangam call <tool> [json]` |
 
@@ -30,12 +30,18 @@ A window shows every command and why; you untick what you don't want and
 type your password once; the agent gets the results as JSON. It was called
 `vayu-elevate` until 2026-10-21, and that name still works (a link).
 
+Since 1.4.0 it also takes commands that don't need root but that the agent
+can't run itself (its sandbox blocks the network or a folder):
+`"as": "user"`, with a `cwd`. They show in the same window with a **YOU**
+badge (root ones: a red **ROOT** badge), run as you with a click, no
+password, and return the same way.
+
 ![The approval window over the desktop: Claude Code asks to run three commands to install Docker, each with its reason and a checkbox, and a password field with Deny and "Run 3 selected"](../assets/elevate.jpg)
 
 | At a glance | |
 |---|---|
 | Command | `anumati` (JSON on stdin, or `--cmd`/`--why` pairs) |
-| MCP | `anumati --mcp`, tool `request_root_commands` |
+| MCP | `anumati --mcp`, tool `request_commands` (also listed as `request_root_commands`) |
 | Runs as | root, `bash -c`, from `/`, no stdin, 30 min per command |
 | Expires | after 10 minutes without an answer (counts as denied) |
 | Logs | `/var/log/anumati.log` (root-only), `~/.local/state/anumati/requests.jsonl` |
