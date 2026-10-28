@@ -599,8 +599,9 @@ setup_tmux() {
 setup_kosha() {
   # Vayu's own tools, each its own repo (CLAUDE.md "Plugins"), installed and
   # updated by kosha (github.com/Theyashsawarkar/kosha), the package manager
-  # for them: Vyom and its tools, nāda, anumati (whose installer asks for
-  # sudo: root-owned into /usr/local), sangam, vesha, varna, vinyasa. KOSHA_PACKAGES is in
+  # for them: Vyom and its tools, nāda, drishya, anumati and pramana (whose
+  # installers ask for sudo: root-owned into /usr/local), sangam, sandesh,
+  # pattan, nauka, vesha, varna, vinyasa. KOSHA_PACKAGES is in
   # packages/manifest.sh. kosha installs released versions and adopts what's
   # already there; re-running updates nothing (that's `kosha update`).
   local base="$HOME/.local/share/vyom"

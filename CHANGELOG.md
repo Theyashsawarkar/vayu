@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-28 (kosha: fetch, and every tool in it)
+
+- **`kosha fetch`** (kosha 0.4.0) shows what's new on GitHub next to what
+  you have, without changing anything; `kosha update` then installs.
+- **pramana and sandesh are kosha packages** and in Vayu's install list,
+  so a fresh install gets the polkit password prompt (sway already styles
+  it) and mail and chat. sandesh's first releases are tagged (v0.1.0,
+  v0.2.0).
+- **Every tool's website links every other**: drishya, sandesh, pattan,
+  nauka, pramana and ekatva joined the family list; pattan and nauka got
+  websites.
+
 ## 2026-10-28 (anumati: commands as you, not just root)
 
 - **anumati 1.4.0** takes commands an agent can't run itself, not just

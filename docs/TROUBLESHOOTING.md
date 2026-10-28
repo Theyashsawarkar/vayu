@@ -462,11 +462,13 @@ the last attempts: `vayu-logs wf-recorder`.
 
 ## Tools: updating or reinstalling Vayu's tools (kosha)
 
-Vayu's own tools (the Vyom panels and their tools, nāda, anumati, sangam)
-are installed by [kosha](https://theyashsawarkar.github.io/kosha/). At login
-a notification offers "Update now" when any has a new release.
+Vayu's own tools (the Vyom panels and their tools, nāda, drishya, anumati,
+pramana, sangam, sandesh, pattan, nauka...) are installed by
+[kosha](https://theyashsawarkar.github.io/kosha/). At login a notification
+offers "Update now" when any has a new release.
 
 ```sh
+kosha fetch                # what's new on GitHub vs yours (changes nothing)
 kosha list --installed     # versions, and what has an update
 kosha update               # update everything (prints what changed)
 kosha doctor               # missing programs, broken links, local changes
@@ -474,5 +476,6 @@ kosha install nada@0.1.0   # go back to (and pin) an older release; kosha unpin 
 ```
 
 "has local changes" means a tool's folder was edited: commit or stash the
-change there, or `kosha update --force` (stashes it). anumati's update runs
-its installer, which asks for your password: run it in a terminal.
+change there, or `kosha update --force` (stashes it). anumati's and
+pramana's updates run their installers, which ask for your password: run
+them in a terminal.
