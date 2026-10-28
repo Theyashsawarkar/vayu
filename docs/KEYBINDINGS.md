@@ -139,6 +139,7 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - Click the **󰇮 N** (unread mail) or **󰭹 N** (unread chats) count on the tmux bar — sandesh in a popup, on its mail or chat tab (like <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>e</kbd>)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>a</kbd> — jump to the Claude session that has waited longest for you (finished its turn or asks for permission, in another pane); clicking the **"N waiting"** capsule does the same
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>C</kbd> — Claude Code accounts ([vesha](https://github.com/Theyashsawarkar/vesha)); the bar's **"account N%"** capsule shows the active one and its 5-hour usage
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>A</kbd> — Skills and tools for every AI agent ([kaushal](https://github.com/Theyashsawarkar/kaushal)): every skill, tool and agent; sync, doctor, test a tool, turn one off (`?` lists its keys)
 - Click the **󰒋 N** (dev servers) capsule — the ports popup (pattan, like <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>P</kbd>); the Docker capsule opens nauka (like <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>D</kbd>)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>t</kbd> — Scratch shell popup (<kbd>Ctrl</kbd>+<kbd>d</kbd> closes)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>T</kbd> — btop popup

@@ -133,6 +133,7 @@ without asking.
 |---|---|
 | Skills | `dsr`: the Daily Status Report, from the day's commits to an HTML table sent as a reply-all in the DSR thread (settings: `~/.config/kaushal/dsr.toml`) |
 | Yours | `kaushal new NAME` (in `~/.config/kaushal/skills`), tools in `~/.config/kaushal/mcp.toml` |
+| App | `prefix A` (or "kaushal" in the launcher, `kaushal ui`): every skill, tool and agent; read, edit and create skills, test a tool, sync, doctor, turn things off |
 | Check | `kaushal doctor`; `kaushal` lists skills, servers and agents |
 | Safe | changes only what it added (recorded) and its marked blocks; a skill or server of yours with the same name wins; `kaushal unsync` takes it all back |
 | Docs | [theyashsawarkar.github.io/kaushal](https://theyashsawarkar.github.io/kaushal/): how it works and why (decision records) |

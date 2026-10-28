@@ -5,6 +5,16 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-28 (kaushal's app on prefix A)
+
+- **`prefix A` opens kaushal** (v0.2.0) in a popup: every skill, tool and
+  agent in three tabs; read, edit and create skills, test a tool (start
+  it, list its tools), sync, doctor, turn a skill or tool off for every
+  agent. Also "kaushal" in the launcher, and `kaushal ui`.
+- Its 17 keys are in the keybinding search (`keybind-search.py` scans
+  `~/.local/share/kaushal/kaushal`); docs/KEYBINDINGS.md and the Tools page
+  list it.
+
 ## 2026-10-28 (prasar: posts to X and LinkedIn)
 
 - **prasar, prefix B**: a new tool ([prasar](https://github.com/Theyashsawarkar/prasar),

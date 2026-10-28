@@ -74,6 +74,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/nada/nada",
     # vesha, the Claude Code account switcher (its own repo): its switcher keys.
     HOME / ".local/share/vesha/vesha",
+    # kaushal, skills and tools for every AI agent (its own repo): its app's keys.
+    HOME / ".local/share/kaushal/kaushal",
     # vinyasa, the settings app (its own repo): its window's keys.
     HOME / ".local/share/vinyasa/vinyasa",
     # drishya, the video player (its own repo): its window's keys.
