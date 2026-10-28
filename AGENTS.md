@@ -105,6 +105,16 @@ they want without the rest of vayu.
   Google Chat: a Go command, the prefix e popup, and `sandesh mcp` for
   agents; its plugin builds `bin/sandesh` on first use when it isn't on
   PATH).
+  [`pattan`](https://github.com/Theyashsawarkar/pattan) (dev servers'
+  ports, Docker's and their tunnels: a Go command, the prefix P popup and
+  the dev-servers capsule's click) and
+  [`nauka`](https://github.com/Theyashsawarkar/nauka) (Docker: a Go
+  command, the prefix D popup and the Docker capsule's click); both
+  plugins build `bin/<name>` on first use when it isn't on PATH.
+  [`prasar`](https://github.com/Theyashsawarkar/prasar) (posts to X and
+  LinkedIn, free: LinkedIn through its API, X through its share page with
+  one click; a Go command, the prefix B popup, and `prasar mcp` for agents,
+  whose posts always wait for approval).
   [`kaushal`](https://github.com/Theyashsawarkar/kaushal) (skills and
   MCP tools for every AI agent: Vayu's skills, like `dsr`, the Daily Status
   Report, live in its `skills/`, the user's in `~/.config/kaushal/skills`;

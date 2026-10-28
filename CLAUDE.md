@@ -115,6 +115,10 @@ they want without the rest of vayu.
   [`nauka`](https://github.com/Theyashsawarkar/nauka) (Docker: a Go
   command, the prefix D popup and the Docker capsule's click); both
   plugins build `bin/<name>` on first use when it isn't on PATH.
+  [`prasar`](https://github.com/Theyashsawarkar/prasar) (posts to X and
+  LinkedIn, free: LinkedIn through its API, X through its share page with
+  one click; a Go command, the prefix B popup, and `prasar mcp` for agents,
+  whose posts always wait for approval).
   [`nada`](https://github.com/Theyashsawarkar/nada), the music player, and
   [`anumati`](https://github.com/Theyashsawarkar/anumati), root commands for
   AI agents (both cloned into `~/.local/share/<name>` by `install.sh`).

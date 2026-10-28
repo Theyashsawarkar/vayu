@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-10-28 (prasar: posts to X and LinkedIn)
+
+- **prasar, prefix B**: a new tool ([prasar](https://github.com/Theyashsawarkar/prasar),
+  a tmux plugin and kosha package): write a post once and see it as X and
+  LinkedIn will show it, side by side; post it, schedule it or keep a
+  draft. Free: LinkedIn posts through its own API (set up once with
+  `prasar auth linkedin --setup`), X opens in the browser with the post
+  filled in for your click (X's API costs money per post).
+- **Agents** get it through kaushal (`prasar mcp`): they can draft and
+  propose posts; every one waits for your approval in a popup.
+- Scheduled posts go out with `prasar service install`.
+- The keybinding search knows three more verbs (post, schedule, decline)
+  for prasar's keys.
+
 ## 2026-10-28 (kaushal's website; how it works in Vayu)
 
 - **kaushal has a website**, [theyashsawarkar.github.io/kaushal](https://theyashsawarkar.github.io/kaushal/),

@@ -15,6 +15,7 @@ charge: an agent can ask, only you can approve.
 | [anumati](#anumati) | Runs the commands an agent can't run itself, as root or as you, after you see each one and why (marked ROOT or YOU) and tick which to allow; your password once for the root ones. | `anumati` (JSON on stdin), or the MCP tool `request_commands` |
 | [kaushal](#kaushal) | Every skill and MCP tool of Vayu's, in every agent (Claude Code on every account, Codex, opencode, Gemini CLI), every session. | Nothing to do: it's already there |
 | [ekatva](#ekatva) | Your phone: status, ring, lock, SMS, calls, its clipboard and files; an SMS or a call only after you allow it. | `ekatva mcp` (MCP server), or the `ekatva` command |
+| [prasar](#prasar) | Posts to your X and LinkedIn: checks a text against each, drafts, and proposes posts; every one waits for your approval, X for your click. | `prasar mcp` (MCP server) |
 | [sangam](#sangam) | Your GitHub pull requests: list, read, diff; comment, review and merge after you approve in a tmux popup. | `sangam mcp` (MCP server), or `sangam call <tool> [json]` |
 
 Each is its own repository (Vayu's plugin rule), cloned by `install.sh` and
@@ -52,6 +53,24 @@ password, and return the same way.
 Claude Code on this desktop is told to use it in the global
 `~/.claude/CLAUDE.md` (the stowed `claude/` package). Problems: the "AI
 tools" entries in [Troubleshooting](TROUBLESHOOTING.md).
+
+## prasar
+
+**Posts to X and LinkedIn, approved by you.** [prasar](https://github.com/Theyashsawarkar/prasar)
+(the `prefix B` popup) is also an MCP server: an agent can measure a text
+against X's 280 (and its thread split) and LinkedIn's 3000, save drafts, and
+propose posts, now or scheduled. Every proposed post waits for your
+approval in a popup on the agent's pane, where you can edit or decline it.
+LinkedIn then posts through its free API; X opens in your browser with the
+post filled in and you press Post (X's API isn't free).
+
+| At a glance | |
+|---|---|
+| MCP | `prasar mcp`; given to every agent by kaushal |
+| Tools | `post_check`, `post_draft`, `post_list`, `post_accounts`; asking first: `post_publish` |
+| Approve | the popup (`prasar approve`), or Queue in prasar (`a` / `n`) |
+| Expires | the call waits 10 minutes; the post keeps waiting in Queue |
+| Docs | the [README](https://github.com/Theyashsawarkar/prasar#for-ai-agents-mcp) |
 
 ## sangam
 
