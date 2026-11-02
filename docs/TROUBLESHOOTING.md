@@ -362,6 +362,18 @@ Fallbacks keep the desktop usable: stock `sway` if `swayfx` won't build,
 won't. The full list of what install needs first is in the
 [README](https://github.com/Theyashsawarkar/vayu#readme).
 
+## AI tools: the approval window closed but the agent is still waiting
+
+Normal since anumati 1.5.0: the window goes when you answer and the agent
+waits for the commands to finish (30 minutes at most each). A failure shows
+up in what the agent reports, not on screen. If you hid a request with
+`Ctrl+H` without answering, the agent waits until it expires as denied, up to
+10 minutes; a hidden window can't be brought back, so use `Esc` to say no.
+
+```sh
+systemctl --user list-units 'anumati-*'   # a run or a hidden request still going
+```
+
 ## AI tools: the approval window doesn't appear
 
 The agent got `"status": "error"` back, or it's waiting and nothing shows.

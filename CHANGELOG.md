@@ -5,6 +5,14 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-02 (anumati 1.5.0: the window goes when you answer)
+
+- **anumati's approval window closes as soon as you answer**, instead of
+  staying up until the commands finish: the commands run on with no window
+  and the agent does the waiting. A failure now reaches you through the
+  agent. `Ctrl+H` hides the window at any time (in the keybinding search);
+  hiding isn't an answer, so an unanswered request expires as denied.
+
 ## 2026-11-02 (WhatsApp in sandesh, its own capsule)
 
 - **WhatsApp capsule**: sandesh now links WhatsApp too, and its unread

@@ -38,6 +38,10 @@ can't run itself (its sandbox blocks the network or a folder):
 badge (root ones: a red **ROOT** badge), run as you with a click, no
 password, and return the same way.
 
+Since 1.5.0 the window closes as soon as you answer; the commands run on
+without it and the agent waits for the results. `Ctrl+H` hides it at any
+time (not an answer: left unanswered, the request expires as denied).
+
 ![The approval window over the desktop: Claude Code asks to run three commands to install Docker, each with its reason and a checkbox, and a password field with Deny and "Run 3 selected"](../assets/elevate.jpg)
 
 | At a glance | |
