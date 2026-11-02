@@ -362,6 +362,17 @@ Fallbacks keep the desktop usable: stock `sway` if `swayfx` won't build,
 won't. The full list of what install needs first is in the
 [README](https://github.com/Theyashsawarkar/vayu#readme).
 
+## A Vyom tool shows less than it should, or the bar's counts are wrong
+
+The keybinding search shows only Sway's keys, or a capsule disagrees with the
+tool. A long-running user service can be out of date, or missing `~/.local/bin`
+from its PATH (a new login picks up `environment.d`):
+
+```sh
+systemctl --user show-environment | grep ^PATH       # should start with ~/.local/bin
+systemctl --user restart vyom.service bar-events.service
+```
+
 ## AI tools: the approval window closed but the agent is still waiting
 
 Normal since dvarapala 1.5.0: the window goes when you answer and the agent

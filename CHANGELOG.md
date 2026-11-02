@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-02 (user services find ~/.local/bin; approvals redesigned)
+
+- **The keybinding search was empty for tmux and everything else but Sway.**
+  Vyom runs as a user service, whose PATH lacked `~/.local/bin`, so mudra
+  couldn't find `keybind-search.py` and fell back to Sway's keys alone.
+  `~/.config/environment.d/50-local-bin.conf` now adds it for every user
+  service, and Vyom adds it for itself too.
+- **The bar disagreed with narada**: `bar-events` was still the process from
+  before the rename, watching the old folder. Restarted; the counts match.
+- narada, sangam and vaikhari share a new approval screen. narada's AI requests
+  queue in each place and it no longer sends notifications; sangam's popup no
+  longer flickers. mudra opens at once.
+
 ## 2026-11-02 (five tools renamed, and narada is quiet)
 
 Five tools take names from Hindu mythology and culture: suchana is
