@@ -101,7 +101,7 @@
 		"exec": "$HOME/.local/bin/notification-history-status.sh",
 		"interval": "once",
 		"return-type": "json",
-		"on-click": "$HOME/.local/bin/vyom suchana",
+		"on-click": "$HOME/.local/bin/vyom akashvani",
 		"on-scroll-up": "$HOME/.local/bin/notification-mode.sh next",
 		"on-scroll-down": "$HOME/.local/bin/notification-mode.sh prev",
 		"signal": 8

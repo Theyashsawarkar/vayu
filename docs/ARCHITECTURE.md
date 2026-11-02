@@ -379,7 +379,7 @@ warning and up, `vayu-logs <tool>` one tool, `--list` who logged what,
 
 ## One look: every popup is a Vyom-style glass panel
 
-Every floating surface (Vyom's panels, nāda, vinyasa, anumati's root
+Every floating surface (Vyom's panels, nāda, vinyasa, dvarapala's root
 approval, notifications, tmux popups) follows one visual language, so the
 desktop reads as one thing. Vyom's panels are the reference. A new popup
 follows it:
@@ -387,7 +387,7 @@ follows it:
 - **Glass**: the theme's `base` at varna's `ui.glass` (0.55) over the
   compositor's blur: `layer_effects` for layer surfaces, a `for_window ...
   blur enable, corner_radius 20, shadows enable` rule for windows (nāda,
-  vinyasa, anumati in sway's config). anumati alone stays at 0.84: what's
+  vinyasa, dvarapala in sway's config). dvarapala alone stays at 0.84: what's
   behind a root prompt must never read as part of it.
 - **Shape**: 20 px corners on the panel, 12 px on rows and cards, 10 px on
   buttons, inputs and pills; a 1 px border in the accent (soft on panels).

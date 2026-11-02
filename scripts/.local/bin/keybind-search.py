@@ -24,7 +24,7 @@ tool's own annotation mechanism:
           the popup/picker scripts, for keys that only exist inside them
           (fzf --bind etc.), e.g. the tmux session picker's Ctrl+x.
           Same annotation in /etc/sysctl.d (source Kernel): the Magic
-          SysRq combos; in /usr/local/lib/anumati (source Anumati): the
+          SysRq combos; in /usr/local/lib/dvarapala (source Dvarapala): the
           root approval window; in /usr/local/lib/pramana (source
           Pramana): the polkit password prompt.
 
@@ -74,8 +74,8 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/nada/nada",
     # vesha, the Claude Code account switcher (its own repo): its switcher keys.
     HOME / ".local/share/vesha/vesha",
-    # kaushal, skills and tools for every AI agent (its own repo): its app's keys.
-    HOME / ".local/share/kaushal/kaushal",
+    # vishvakarma, skills and tools for every AI agent (its own repo): its app's keys.
+    HOME / ".local/share/vishvakarma/vishvakarma",
     # vinyasa, the settings app (its own repo): its window's keys.
     HOME / ".local/share/vinyasa/vinyasa",
     # drishya, the video player (its own repo): its window's keys.
@@ -86,8 +86,8 @@ ANNOTATED_SCRIPT_DIRS = [
       if (HOME / ".local/bin/ekatva").exists() else []),
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
-    # anumati's approval window (own repo; installed root-owned).
-    Path("/usr/local/lib/anumati"),
+    # dvarapala's approval window (own repo; installed root-owned).
+    Path("/usr/local/lib/dvarapala"),
     # pramana, the polkit password prompt (own repo; installed root-owned).
     Path("/usr/local/lib/pramana"),
 ]
@@ -112,7 +112,7 @@ def _palette():
 PALETTE = _palette()
 SOURCE_COLORS = {src: PALETTE[name] for src, name in {
     "Sway": "sky", "Tmux": "teal", "Kitty": "pink", "Zed": "blue", "rmpc": "mauve", "Kernel": "red", "Vyom": "lavender",
-    "Nada": "pink", "Drishya": "sky", "Anumati": "green", "Pramana": "yellow", "Vesha": "peach", "Vinyasa": "teal"}.items()}
+    "Nada": "pink", "Drishya": "sky", "Dvarapala": "green", "Pramana": "yellow", "Vesha": "peach", "Vinyasa": "teal"}.items()}
 SCOPE_COLOR = PALETTE["peach"]
 DIM_COLOR = PALETTE["overlay1"]   # stock tmux defaults
 KEY_COLOR = PALETTE["accent2"]

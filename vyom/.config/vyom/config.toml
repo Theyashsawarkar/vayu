@@ -15,7 +15,7 @@ scale = 1.25
 # The theme's colours (varna, Vayu's theme engine), loaded after every style.
 css = ["~/.local/state/varna/vyom.css"]
 # Tab inside a panel moves through these, in this order.
-cycle = ["dvara", "ganit", "smriti", "bhava", "tarang", "setu", "doot", "patra", "suchana", "raga", "mudra"]
+cycle = ["dvara", "ganit", "smriti", "bhava", "tarang", "setu", "doot", "patra", "akashvani", "raga", "mudra"]
 
 [plugin.dvara]
 terminal = "kitty"
@@ -28,7 +28,7 @@ terminal = "kitty"
 
 # Vayu's three notification modes (normal / silent / dnd) live in
 # notification-mode.sh; the switch moves between normal and dnd.
-[plugin.suchana]
+[plugin.akashvani]
 dnd_status = "cat ~/.local/state/notification-mode/current"
 dnd_on_when = "^dnd$"
 dnd_on = "~/.local/bin/notification-mode.sh dnd"

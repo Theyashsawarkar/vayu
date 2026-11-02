@@ -80,11 +80,11 @@ STOW_REAL_DIRS=(
 # Vyom and its tools replace wofi and nwg-bar: apps, calculator, clipboard,
 # emoji, Wi-Fi + hotspot, Bluetooth, phone, Docker, notifications, YouTube,
 # keybindings, battery, power menu, quick settings. Then the music and video
-# players, approvals for AI agents (anumati) and the system's password
+# players, approvals for AI agents (dvarapala) and the system's password
 # prompts (pramana), pull requests, mail and chat, ports, Docker.
 KOSHA_PACKAGES=(
-  vyom dvara ganit smriti bhava tarang setu doot patra suchana raga mudra urja vishram kendra
-  nada drishya anumati pramana sangam sandesh pattan nauka prasar darshan vesha varna vinyasa kaushal
+  vyom dvara ganit smriti bhava tarang setu doot patra akashvani raga mudra urja vishram kendra
+  nada drishya dvarapala pramana sangam narada pattan nauka vaikhari darshan vesha varna vinyasa vishvakarma
 )
 
 # Supplementary groups for the installing user.

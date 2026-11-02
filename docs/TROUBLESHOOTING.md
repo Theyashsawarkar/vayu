@@ -364,14 +364,14 @@ won't. The full list of what install needs first is in the
 
 ## AI tools: the approval window closed but the agent is still waiting
 
-Normal since anumati 1.5.0: the window goes when you answer and the agent
+Normal since dvarapala 1.5.0: the window goes when you answer and the agent
 waits for the commands to finish (30 minutes at most each). A failure shows
 up in what the agent reports, not on screen. If you hid a request with
 `Ctrl+H` without answering, the agent waits until it expires as denied, up to
 10 minutes; a hidden window can't be brought back, so use `Esc` to say no.
 
 ```sh
-systemctl --user list-units 'anumati-*'   # a run or a hidden request still going
+systemctl --user list-units 'dvarapala-*'   # a run or a hidden request still going
 ```
 
 ## AI tools: the approval window doesn't appear
@@ -379,8 +379,8 @@ systemctl --user list-units 'anumati-*'   # a run or a hidden request still goin
 The agent got `"status": "error"` back, or it's waiting and nothing shows.
 
 ```sh
-~/.local/share/anumati/install.sh --check         # installed? (run it without --check to install)
-journalctl --user -u 'anumati-*' -n 30 --no-pager   # the window's own errors
+~/.local/share/dvarapala/install.sh --check         # installed? (run it without --check to install)
+journalctl --user -u 'dvarapala-*' -n 30 --no-pager   # the window's own errors
 echo "$WAYLAND_DISPLAY"                           # the agent must run inside your desktop session
 ```
 
@@ -390,7 +390,7 @@ Wayland session found"). If notifications are in Do Not Disturb you won't
 get the "Root access requested" popup, but the window still opens on the
 current workspace.
 
-## AI tools: a command hung or failed only under anumati
+## AI tools: a command hung or failed only under dvarapala
 
 Commands run as root with no input and no terminal, from `/`, with root's
 environment. So:
@@ -401,15 +401,15 @@ environment. So:
 - relative paths are relative to `/`.
 
 The full output is in the result the agent got, and every run is logged:
-`sudo tail /var/log/anumati.log | jq .`.
+`sudo tail /var/log/dvarapala.log | jq .`.
 
 ## AI tools: I approved by mistake, or want to see what ran
 
-Everything that ran as root is in `/var/log/anumati.log` (one JSON line
+Everything that ran as root is in `/var/log/dvarapala.log` (one JSON line
 per command, with its exit code), and every request, including denied ones,
-in `~/.local/state/anumati/requests.jsonl`. There's no undo: reverse it
+in `~/.local/state/dvarapala/requests.jsonl`. There's no undo: reverse it
 by hand (e.g. `pacman -R`, `systemctl disable`). To stop agents using the
-tool: `~/.local/share/anumati/install.sh --uninstall`. (anumati was called
+tool: `~/.local/share/dvarapala/install.sh --uninstall`. (dvarapala was called
 vayu-elevate before 2026-10-21; that name is now a link to it.)
 
 ## tmux bar: the PR capsule shows the wrong account's PRs, or an old count
@@ -441,25 +441,25 @@ minutes, it counts as declined. Check the server is registered:
 
 ## AI tools: an agent doesn't have a Vayu tool or skill
 
-kaushal gives every agent Vayu's MCP servers and skills, at login and on
+vishvakarma gives every agent Vayu's MCP servers and skills, at login and on
 every kosha change. Ask it what's missing:
 
 ```
-kaushal doctor
+vishvakarma doctor
 ```
 
-- **"out of date"**: run `kaushal sync`, then restart the agent: a running
+- **"out of date"**: run `vishvakarma sync`, then restart the agent: a running
   session keeps the tools it started with.
-- **"`<tool>` isn't installed"**: kaushal only registers tools whose
+- **"`<tool>` isn't installed"**: vishvakarma only registers tools whose
   command exists; install it (`kosha install <tool>`).
 - **"skip server X: you have your own"** or **"is your own folder"**: a
   server or skill of the same name was already set up by hand, and yours
   wins. Remove yours (`claude mcp remove --scope user X`, or the folder)
   and sync to get Vayu's.
-- **An agent isn't listed at all**: kaushal knows Claude Code, Codex,
+- **An agent isn't listed at all**: vishvakarma knows Claude Code, Codex,
   opencode and Gemini CLI, found by their command or config folder; any
   other agent can read the skills in `~/.agents/skills`.
-- The login sync's output: `journalctl --user -u kaushal`.
+- The login sync's output: `journalctl --user -u vishvakarma`.
 
 ## Keys: I don't know (or forgot) a keybinding
 
@@ -496,8 +496,8 @@ the last attempts: `vayu-logs wf-recorder`.
 
 ## Tools: updating or reinstalling Vayu's tools (kosha)
 
-Vayu's own tools (the Vyom panels and their tools, nāda, drishya, anumati,
-pramana, sangam, sandesh, pattan, nauka...) are installed by
+Vayu's own tools (the Vyom panels and their tools, nāda, drishya, dvarapala,
+pramana, sangam, narada, pattan, nauka...) are installed by
 [kosha](https://theyashsawarkar.github.io/kosha/). At login a notification
 offers "Update now" when any has a new release.
 
@@ -510,6 +510,6 @@ kosha install nada@0.1.0   # go back to (and pin) an older release; kosha unpin 
 ```
 
 "has local changes" means a tool's folder was edited: commit or stash the
-change there, or `kosha update --force` (stashes it). anumati's and
+change there, or `kosha update --force` (stashes it). dvarapala's and
 pramana's updates run their installers, which ask for your password: run
 them in a terminal.

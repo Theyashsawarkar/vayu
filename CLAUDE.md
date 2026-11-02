@@ -8,7 +8,7 @@ known glitch also gets a symptom-first section in `docs/TROUBLESHOOTING.md`
 (on the site as Troubleshooting); see VERSIONING.md.
 
 Commands that need root, or that you can't run yourself (sandbox, permission
-rules): use `anumati` (github.com/Theyashsawarkar/anumati, docs/AI-TOOLS.md),
+rules): use `dvarapala` (github.com/Theyashsawarkar/dvarapala, docs/AI-TOOLS.md),
 `"as": "root"` or `"as": "user"`, rather than asking the user to paste them.
 
 `AGENTS.md` holds the same rules for other agents (Codex, Aider...): a
@@ -98,16 +98,16 @@ they want without the rest of vayu.
 - **Existing:** [`sangam`](https://github.com/Theyashsawarkar/sangam)
   (pull requests: a command, the prefix G popup, and `sangam mcp` for
   agents; `install.sh` links TPM's copy to `~/.local/bin/sangam`).
-  [`sandesh`](https://github.com/Theyashsawarkar/sandesh) (Gmail and
-  Google Chat: a Go command, the prefix e popup, and `sandesh mcp` for
-  agents; its plugin builds `bin/sandesh` on first use when it isn't on
+  [`narada`](https://github.com/Theyashsawarkar/narada) (Gmail and
+  Google Chat: a Go command, the prefix e popup, and `narada mcp` for
+  agents; its plugin builds `bin/narada` on first use when it isn't on
   PATH).
-  [`kaushal`](https://github.com/Theyashsawarkar/kaushal) (skills and
+  [`vishvakarma`](https://github.com/Theyashsawarkar/vishvakarma) (skills and
   MCP tools for every AI agent: Vayu's skills, like `dsr`, the Daily Status
-  Report, live in its `skills/`, the user's in `~/.config/kaushal/skills`;
-  `kaushal sync`, at login and on kosha install, gives them and Vayu's MCP
+  Report, live in its `skills/`, the user's in `~/.config/vishvakarma/skills`;
+  `vishvakarma sync`, at login and on kosha install, gives them and Vayu's MCP
   servers to Claude Code (every vesha profile), Codex, opencode and Gemini
-  CLI). A new skill or agent-facing MCP tool goes into kaushal, never into
+  CLI). A new skill or agent-facing MCP tool goes into vishvakarma, never into
   one agent's config by hand.
   [`pattan`](https://github.com/Theyashsawarkar/pattan) (dev servers'
   ports, Docker's and their tunnels: a Go command, the prefix P popup and
@@ -115,12 +115,12 @@ they want without the rest of vayu.
   [`nauka`](https://github.com/Theyashsawarkar/nauka) (Docker: a Go
   command, the prefix D popup and the Docker capsule's click); both
   plugins build `bin/<name>` on first use when it isn't on PATH.
-  [`prasar`](https://github.com/Theyashsawarkar/prasar) (posts to X and
+  [`vaikhari`](https://github.com/Theyashsawarkar/vaikhari) (posts to X and
   LinkedIn, free: LinkedIn through its API, X through its share page with
-  one click; a Go command, the prefix B popup, and `prasar mcp` for agents,
+  one click; a Go command, the prefix B popup, and `vaikhari mcp` for agents,
   whose posts always wait for approval).
   [`nada`](https://github.com/Theyashsawarkar/nada), the music player, and
-  [`anumati`](https://github.com/Theyashsawarkar/anumati), root commands for
+  [`dvarapala`](https://github.com/Theyashsawarkar/dvarapala), root commands for
   AI agents (both cloned into `~/.local/share/<name>` by `install.sh`).
   [`vesha`](https://github.com/Theyashsawarkar/vesha), Claude Code
   accounts (kosha package; tmux `prefix C` popup; its `claude` wrapper in
@@ -133,7 +133,7 @@ they want without the rest of vayu.
   runtime that replaced wofi and nwg-bar, and its tools, each its own
   repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),
   tarang (Wi-Fi + hotspot), setu (Bluetooth), doot (phone), patra (Docker),
-  suchana (notifications), raga (YouTube), mudra (keybindings), urja
+  akashvani (notifications), raga (YouTube), mudra (keybindings), urja
   (battery), vishram (power menu), kendra (quick settings). `install.sh`
   clones Vyom to `~/.local/share/vyom/core` and the tools
   (`VYOM_TOOLS`, packages/manifest.sh) to `.../plugins/`; Vayu's settings
@@ -202,7 +202,7 @@ same change:
    | vinyasa (settings app, own repo) | `vinyasa/app.py` in github.com/Theyashsawarkar/vinyasa (scanned at `~/.local/share/vinyasa/vinyasa`) | `# keybind: Vinyasa/settings \| <keys> \| <description>` |
    | Keys inside a script/popup (fzf `--bind`, pickers) | the script, in `~/.tmux/scripts`, `~/.local/bin`, `~/.config/sway/scripts` or a tmux plugin's `scripts/` or `bin/` (`~/.tmux/plugins/*/{scripts,bin}`) | `# keybind: <Source>/<scope> \| <keys> \| <description>`, e.g. `# keybind: Tmux/session picker \| Ctrl+x \| Kill the highlighted session` |
 | Kernel Magic SysRq | `system/etc/sysctl.d/99-sysrq.conf` (scanned at `/etc/sysctl.d`, so run `system/apply.sh` first) | `# keybind: Kernel \| <keys> \| <description>` |
-| anumati approval window (own repo) | `lib/dialog.py` in github.com/Theyashsawarkar/anumati (scanned at `/usr/local/lib/anumati`, installed by its `install.sh`) | `# keybind: Anumati/root approval \| <keys> \| <description>` in its docstring |
+| dvarapala approval window (own repo) | `lib/dialog.py` in github.com/Theyashsawarkar/dvarapala (scanned at `/usr/local/lib/dvarapala`, installed by its `install.sh`) | `# keybind: Dvarapala/root approval \| <keys> \| <description>` in its docstring |
 
    A new tool with its own keybinding config gets a parser in
    `keybind-search.py` (and a row here) rather than going unlisted.

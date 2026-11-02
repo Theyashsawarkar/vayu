@@ -65,7 +65,7 @@ Secrets (API keys, tokens) are never in this repo — see
 📖 **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** explains how the stow packages map
 to `$HOME`, what `install.sh` does step by step, and what's deliberately excluded.
 **[CHANGELOG.md](CHANGELOG.md)** is the detailed log of what changed and why.
-🤖 **[docs/AI-TOOLS.md](docs/AI-TOOLS.md)**: tools for AI agents, like [`anumati`](https://github.com/Theyashsawarkar/anumati)
+🤖 **[docs/AI-TOOLS.md](docs/AI-TOOLS.md)**: tools for AI agents, like [`dvarapala`](https://github.com/Theyashsawarkar/dvarapala)
 (an agent asks to run root commands; you see why, tick which, and approve once).
 🩺 **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** lists known problems by symptom
 (a shutdown that hangs, text after the logo, a login that won't start) and how to fix each.

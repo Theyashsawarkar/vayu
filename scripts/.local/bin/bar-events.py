@@ -22,10 +22,10 @@ tmux's pull request capsule (@gh_reviews, @gh_prs) is set from gh-review-count e
 right away when the account it counts changes -- gh's hosts.yml (gh auth
 switch), sangam's last-account (u in sangam) -- or sangam says PRs changed
 (~/.cache/sangam/changed: a merge, review or reload there, or by an agent
-through `sangam mcp`). Its unread mail and chat capsule (@sandesh_mail,
-@sandesh_chat) follows sandesh's local copy (its database changes when a
-sync brings mail or you read something), asking `sandesh status`; WhatsApp
-gets its own green capsule (@sandesh_whatsapp). Its dev
+through `sangam mcp`). Its unread mail and chat capsule (@narada_mail,
+@narada_chat) follows narada's local copy (its database changes when a
+sync brings mail or you read something), asking `narada status`; WhatsApp
+gets its own green capsule (@narada_whatsapp). Its dev
 servers capsule (@dev_ports) from dev-ports every 15 seconds (listening
 sockets have no event). Its Claude limit capsule (@claude_limit, and
 @claude_limit_class ok/warn/full) follows `vesha waybar`, which prints a
@@ -41,7 +41,7 @@ the last event.
 
 `bar-events.py --tmux-docker` sets tmux's @docker_count once and exits
 (tmux.conf runs it on load, since tmux can start after this daemon);
-`--tmux-sandesh` the same for @sandesh_mail and @sandesh_chat.
+`--tmux-narada` the same for @narada_mail and @narada_chat.
 """
 import os
 import signal
@@ -265,75 +265,75 @@ def watch_gh_account():
         gh_monitors.append(m)
 
 
-SANDESH = os.path.expanduser("~/.local/bin/sandesh")
-sandesh_monitor = None  # kept alive, like gh_monitors
+NARADA = os.path.expanduser("~/.local/bin/narada")
+narada_monitor = None  # kept alive, like gh_monitors
 
 
-def set_sandesh(out):
-    """@sandesh_mail / @sandesh_chat / @sandesh_whatsapp from `sandesh
-    status --json` output; unset (no capsule) when sandesh can't say, and
-    the WhatsApp one when WhatsApp isn't linked (-1) or sandesh predates it."""
+def set_narada(out):
+    """@narada_mail / @narada_chat / @narada_whatsapp from `narada
+    status --json` output; unset (no capsule) when narada can't say, and
+    the WhatsApp one when WhatsApp isn't linked (-1) or narada predates it."""
     import json
     try:
         d = json.loads(out or "")
         mail, chat = int(d.get("mail", 0)), int(d.get("chat", 0))
         wa = int(d.get("whatsapp", -1))
     except (ValueError, TypeError, AttributeError):
-        for opt in ("@sandesh_mail", "@sandesh_chat", "@sandesh_whatsapp"):
+        for opt in ("@narada_mail", "@narada_chat", "@narada_whatsapp"):
             tmux("set", "-gu", opt)
         return
-    tmux("set", "-g", "@sandesh_mail", str(mail))
-    tmux("set", "-g", "@sandesh_chat", str(chat))
+    tmux("set", "-g", "@narada_mail", str(mail))
+    tmux("set", "-g", "@narada_chat", str(chat))
     if wa < 0:
-        tmux("set", "-gu", "@sandesh_whatsapp")
+        tmux("set", "-gu", "@narada_whatsapp")
     else:
-        tmux("set", "-g", "@sandesh_whatsapp", str(wa))
+        tmux("set", "-g", "@narada_whatsapp", str(wa))
 
 
-def tmux_sandesh():
-    """Asks sandesh for its unread counts (its local copy, no network) in
+def tmux_narada():
+    """Asks narada for its unread counts (its local copy, no network) in
     the background: SQLite can wait on a sync's write lock."""
-    if not os.access(SANDESH, os.X_OK):
+    if not os.access(NARADA, os.X_OK):
         return False
-    if "sandesh" in busy:
-        again.add("sandesh")
+    if "narada" in busy:
+        again.add("narada")
         return False
     try:
-        proc = Gio.Subprocess.new([SANDESH, "status", "--json"],
+        proc = Gio.Subprocess.new([NARADA, "status", "--json"],
                                   Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
     except GLib.Error as e:
-        log("sandesh status:", e.message)
+        log("narada status:", e.message)
         return False
-    busy.add("sandesh")
+    busy.add("narada")
 
     def done(p, result):
-        busy.discard("sandesh")
+        busy.discard("narada")
         try:
             _, out, _ = p.communicate_utf8_finish(result)
         except GLib.Error as e:
-            log("sandesh status:", e.message)
+            log("narada status:", e.message)
             out = None
         if p.get_if_exited() and p.get_exit_status() == 0:
-            set_sandesh(out)
-        if "sandesh" in again:
-            again.discard("sandesh")
-            tmux_sandesh()
+            set_narada(out)
+        if "narada" in again:
+            again.discard("narada")
+            tmux_narada()
     proc.communicate_utf8_async(None, None, done)
     return False
 
 
-def watch_sandesh():
-    """sandesh's data folder: its database (and WAL) change on every sync
+def watch_narada():
+    """narada's data folder: its database (and WAL) change on every sync
     write and every read/unread, from the screen, the CLI or an agent."""
-    global sandesh_monitor
-    data = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "sandesh")
+    global narada_monitor
+    data = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "narada")
     try:
-        sandesh_monitor = Gio.File.new_for_path(data).monitor_directory(Gio.FileMonitorFlags.NONE, None)
+        narada_monitor = Gio.File.new_for_path(data).monitor_directory(Gio.FileMonitorFlags.NONE, None)
     except GLib.Error as e:
         log(f"can't watch {data}, the mail capsule updates every 2 minutes only:", e.message)
         return
-    sandesh_monitor.set_rate_limit(1000)
-    sandesh_monitor.connect("changed", lambda *a: debounce("sandesh", tmux_sandesh, 1000))
+    narada_monitor.set_rate_limit(1000)
+    narada_monitor.connect("changed", lambda *a: debounce("narada", tmux_narada, 1000))
 
 
 def debounce(key, fn, ms=500):
@@ -418,12 +418,12 @@ def watch_stations():
 
 def main():
     global docker_active
-    if sys.argv[1:] == ["--tmux-sandesh"]:
+    if sys.argv[1:] == ["--tmux-narada"]:
         try:
-            r = subprocess.run([SANDESH, "status", "--json"], capture_output=True, text=True, timeout=15)
-            set_sandesh(r.stdout if r.returncode == 0 else None)
+            r = subprocess.run([NARADA, "status", "--json"], capture_output=True, text=True, timeout=15)
+            set_narada(r.stdout if r.returncode == 0 else None)
         except (OSError, subprocess.TimeoutExpired) as e:
-            log("sandesh status:", e)
+            log("narada status:", e)
         return
     if sys.argv[1:] == ["--tmux-docker"]:
         docker_active = subprocess.run(["systemctl", "is-active", "--quiet", "docker.service"]).returncode == 0
@@ -462,9 +462,9 @@ def main():
     gh_reviews()
     GLib.timeout_add_seconds(120, gh_reviews)
     watch_gh_account()
-    tmux_sandesh()
-    watch_sandesh()
-    GLib.timeout_add_seconds(120, lambda: (tmux_sandesh(), True)[1])   # if the watch misses one
+    tmux_narada()
+    watch_narada()
+    GLib.timeout_add_seconds(120, lambda: (tmux_narada(), True)[1])   # if the watch misses one
     dev_ports()
     GLib.timeout_add_seconds(15, dev_ports)
     watch_claude_limit()

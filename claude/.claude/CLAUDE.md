@@ -12,8 +12,8 @@
   `~/.local/bin/keybind-search.py --check` and make it pass.
 - **Commands you can't run yourself** (need root, or blocked by your
   sandbox or a permission rule): don't ask the user to copy-paste them.
-  Send them to `anumati` (JSON on stdin: `requester`, `reason`,
-  `commands: [{cmd, why, as, cwd}]`; `anumati --help` / `--schema`).
+  Send them to `dvarapala` (JSON on stdin: `requester`, `reason`,
+  `commands: [{cmd, why, as, cwd}]`; `dvarapala --help` / `--schema`).
   `"as": "root"` (default) runs as root via `bash -c` from `/` and needs
   the user's password; `"as": "user"` runs as the user in `cwd` (absolute,
   default home), outside your sandbox, approved with a click. The user sees
@@ -23,5 +23,5 @@
   use non-interactive flags (`pacman --noconfirm`). User commands get a
   filtered session environment, not yours: pass what they need on the
   command line. Respect declined commands; never retry a denied request
-  unasked, and never use it to get around a refusal. If `anumati` is
+  unasked, and never use it to get around a refusal. If `dvarapala` is
   missing, fall back to giving the commands as before.

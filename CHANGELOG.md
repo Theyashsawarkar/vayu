@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-02 (five tools renamed, and narada is quiet)
+
+Five tools take names from Hindu mythology and culture: suchana is
+**akashvani** (the voice from the sky), kaushal is **vishvakarma** (the divine
+craftsman), anumati is **dvarapala** (the guardian at the door), sandesh is
+**narada** (the divine messenger) and prasar is **vaikhari** (speech spoken
+aloud). Keys are unchanged; units, plugins, MCP servers and docs carry the new
+names. `kosha update` (v0.5.0) moves installs over, each tool moves its own data
+on first run (narada's WhatsApp link and sign-ins included), and
+`/usr/local/bin/anumati` stays as a link to dvarapala. ekatva still sends
+`via: "anumati"` to the phone, so phones on older builds keep working.
+
+narada no longer sends desktop notifications for new mail, chat or WhatsApp
+(`notify = true` brings them back); the tmux capsule shows what came.
+
 ## 2026-11-02 (darshan: the PDF and image viewer, in tmux)
 
 New tool, [darshan](https://github.com/Theyashsawarkar/darshan): PDFs, images and
