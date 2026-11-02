@@ -5,6 +5,16 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-02 (darshan: the PDF and image viewer, in tmux)
+
+New tool, [darshan](https://github.com/Theyashsawarkar/darshan): PDFs, images and
+Markdown in a tmux popup (`prefix v`), with vim keys, a search across the system
+with a live preview, zen mode (`z`), and an MCP server (through kaushal) so an
+agent can show you a file and you can ask it about what you're reading. It is the
+default for PDFs and JPEG, PNG, GIF, WebP and BMP images; swayimg stays for the
+formats darshan doesn't read (TIFF, AVIF, HEIC, SVG). `tdf` was tried first and
+draws nothing inside tmux.
+
 ## 2026-11-02 (anumati 1.5.0: the window goes when you answer)
 
 - **anumati's approval window closes as soon as you answer**, instead of
