@@ -5,6 +5,14 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-02 (WhatsApp in sandesh, its own capsule)
+
+- **WhatsApp capsule**: sandesh now links WhatsApp too, and its unread
+  chats get their own green capsule (`󰖣 N`, @sandesh_whatsapp) next to
+  the mail and chat one, so a WhatsApp message is never mistaken for mail
+  or Google Chat. A click opens sandesh on its WhatsApp tab; no capsule
+  while WhatsApp isn't linked.
+
 ## 2026-10-28 (kaushal's app on prefix A)
 
 - **`prefix A` opens kaushal** (v0.2.0) in a popup: every skill, tool and

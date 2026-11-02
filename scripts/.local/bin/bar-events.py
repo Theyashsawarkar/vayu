@@ -24,7 +24,8 @@ switch), sangam's last-account (u in sangam) -- or sangam says PRs changed
 (~/.cache/sangam/changed: a merge, review or reload there, or by an agent
 through `sangam mcp`). Its unread mail and chat capsule (@sandesh_mail,
 @sandesh_chat) follows sandesh's local copy (its database changes when a
-sync brings mail or you read something), asking `sandesh status`. Its dev
+sync brings mail or you read something), asking `sandesh status`; WhatsApp
+gets its own green capsule (@sandesh_whatsapp). Its dev
 servers capsule (@dev_ports) from dev-ports every 15 seconds (listening
 sockets have no event). Its Claude limit capsule (@claude_limit, and
 @claude_limit_class ok/warn/full) follows `vesha waybar`, which prints a
@@ -269,18 +270,24 @@ sandesh_monitor = None  # kept alive, like gh_monitors
 
 
 def set_sandesh(out):
-    """@sandesh_mail / @sandesh_chat from `sandesh status --json` output;
-    unset (no capsule) when sandesh can't say."""
+    """@sandesh_mail / @sandesh_chat / @sandesh_whatsapp from `sandesh
+    status --json` output; unset (no capsule) when sandesh can't say, and
+    the WhatsApp one when WhatsApp isn't linked (-1) or sandesh predates it."""
     import json
     try:
         d = json.loads(out or "")
         mail, chat = int(d.get("mail", 0)), int(d.get("chat", 0))
+        wa = int(d.get("whatsapp", -1))
     except (ValueError, TypeError, AttributeError):
-        tmux("set", "-gu", "@sandesh_mail")
-        tmux("set", "-gu", "@sandesh_chat")
+        for opt in ("@sandesh_mail", "@sandesh_chat", "@sandesh_whatsapp"):
+            tmux("set", "-gu", opt)
         return
     tmux("set", "-g", "@sandesh_mail", str(mail))
     tmux("set", "-g", "@sandesh_chat", str(chat))
+    if wa < 0:
+        tmux("set", "-gu", "@sandesh_whatsapp")
+    else:
+        tmux("set", "-g", "@sandesh_whatsapp", str(wa))
 
 
 def tmux_sandesh():
