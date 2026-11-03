@@ -198,6 +198,10 @@
 	},
 
 	"battery": {
+		// Waybar re-reads the battery when something reads its uevent file:
+		// battery-limit-watch.sh does that on the kernel's power_supply events,
+		// so plugging in shows at once. This is only the fallback.
+		"interval": 10,
 		"states": {
 			"critical": 15,
 			"warning": 30,
@@ -206,8 +210,11 @@
 		"format": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
 		"format-charging": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
 		"format-plugged": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
+		"format-full": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
 		"format-icons": {
 			"charging": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
+			"plugged": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
+			"full": ["󰂅"],
 			"default": ["󰁺", "󰁽", "󰁿", "󰂁", "󰁹"]
 		},
 		"on-click": "$HOME/.local/bin/vyom urja"

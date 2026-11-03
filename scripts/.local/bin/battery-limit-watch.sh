@@ -20,6 +20,11 @@
 # battery-warning-dismiss.sh), plus a 60 s tick so a plug/unplug that happens
 # during suspend, or a missed uevent, is still caught after resume.
 #
+# It also keeps the bar honest: Waybar's battery module re-reads the battery
+# when something reads its uevent file, and otherwise only every "interval"
+# seconds, so each power_supply event reads it, at once and again 2 s later
+# (the battery's own status can lag the charger's by a moment).
+#
 # Test hooks (env): BATTERY_PS_ROOT, BATTERY_STATE_DIR, BATTERY_NOTIFY.
 set -uo pipefail
 
@@ -128,6 +133,13 @@ init() {
     fi
 }
 
+refresh_bar() {
+    local d
+    for d in "$PS_ROOT"/*; do
+        [ "$(cat "$d/type" 2>/dev/null)" = "Battery" ] && cat "$d/uevent" >/dev/null 2>&1
+    done
+}
+
 main() {
     init
     exec {fd}< <(udevadm monitor --udev --subsystem-match=power_supply 2>/dev/null)
@@ -135,6 +147,8 @@ main() {
     while true; do
         if read -r -t "$TICK" -u "$fd" line; then
             case "$line" in *change*|*add*|*remove*) ;; *) continue ;; esac
+            refresh_bar
+            ( sleep 2; refresh_bar ) &
         else
             rc=$?
             [ "$rc" -le 128 ] && exit 1            # udevadm ended -> let systemd restart us

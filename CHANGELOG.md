@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.20.2-nightly -- 2026-11-04
+
+## 2026-11-04 (charging shows at once; vaikhari 0.4.1; urja 0.1.4)
+
+- **Plugging the charger in shows at once on the bar.** Waybar's battery module only
+  looked every 60 seconds. `battery-limit-watch.sh` already hears the kernel's
+  power_supply events, and it now has Waybar look on each one (and again 2 seconds
+  later, as the battery's status can trail the charger's). Waybar's own check runs
+  every 10 seconds as a fallback. "Full" and "plugged in" get the charging icons.
+- **urja 0.1.4**: the battery panel stays true while it's open (2 seconds), without
+  disturbing the reminder slider. It used to show only how things were when it opened.
+- **vaikhari 0.4.1**: an independent review of 0.4.0 found 17 problems, two of them
+  serious: Retry could post to LinkedIn twice, and `Ctrl+S` could approve a popup
+  that opened while you typed elsewhere. All fixed, each with a test.
+- **sangam 2.4.2**: `--version` was still 2.4.0.
+
 ## v1.20.1-nightly -- 2026-11-03
 
 ## 2026-11-03 (narada 0.8.0; Zen goes in)
