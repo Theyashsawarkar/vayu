@@ -1,17 +1,18 @@
 [Default Applications]
-# Web: one browser, Chrome, for every link and HTML page (it was split
-# between Chrome, Zen and Brave depending on the type).
-text/html=google-chrome.desktop
-application/xhtml+xml=google-chrome.desktop
-application/x-extension-htm=google-chrome.desktop
-application/x-extension-html=google-chrome.desktop
-application/x-extension-shtml=google-chrome.desktop
-application/x-extension-xhtml=google-chrome.desktop
-application/x-extension-xht=google-chrome.desktop
-x-scheme-handler/http=google-chrome.desktop
-x-scheme-handler/https=google-chrome.desktop
-x-scheme-handler/about=google-chrome.desktop
-x-scheme-handler/unknown=google-chrome.desktop
+# Web: one browser, Zen, for every link and HTML page, so everything that
+# opens "the default browser" (xdg-open, apps, AI agents) lands in Zen.
+# chrome:// links still go to Chrome: only Chrome understands them.
+text/html=zen.desktop
+application/xhtml+xml=zen.desktop
+application/x-extension-htm=zen.desktop
+application/x-extension-html=zen.desktop
+application/x-extension-shtml=zen.desktop
+application/x-extension-xhtml=zen.desktop
+application/x-extension-xht=zen.desktop
+x-scheme-handler/http=zen.desktop
+x-scheme-handler/https=zen.desktop
+x-scheme-handler/about=zen.desktop
+x-scheme-handler/unknown=zen.desktop
 x-scheme-handler/chrome=google-chrome.desktop
 x-scheme-handler/claude-cli=claude-code-url-handler.desktop
 x-scheme-handler/bruno=bruno.desktop

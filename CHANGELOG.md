@@ -5,6 +5,17 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.20.1-nightly -- 2026-11-03
+
+## 2026-11-03 (narada 0.8.0; Zen goes in)
+
+- **narada 0.8.0**: your chat message shows the moment you send it, and WhatsApp
+  read receipts wait in a queue until they've really gone out.
+- The Zen default browser and the `xdg-open` note, from 2026-10-28, were still
+  uncommitted. They're in now.
+- The audit's drishya question: 446 MB wasn't a leak. It fell to 286 MB by itself
+  and stayed flat at idle.
+
 ## v1.20.0-nightly -- 2026-11-03
 
 ## 2026-11-03 (a full check of the desktop; every tool gets a logo and a shloka; vaikhari 0.4.0)
@@ -128,6 +139,16 @@ draws nothing inside tmux.
 - **The `dsr` skill**: ask any agent for a Daily Status Report and it
   builds the day from your commits and sends a real HTML table through
   sandesh (which can now send HTML) as a reply-all in your DSR thread.
+
+## 2026-10-28 (Zen is the default browser)
+
+- **Links and HTML pages open in Zen**, not Chrome: `mimeapps.list` points
+  every web type (`http`, `https`, `text/html`, `xhtml`…) at `zen.desktop`,
+  so `xdg-open`, apps and AI agents all land in the same browser.
+  `chrome://` links still open Chrome.
+- **AI agents open pages in the system's default browser**, whatever it is:
+  the global Claude notes (`claude/.claude/CLAUDE.md`) say to use
+  `xdg-open`, never a specific browser.
 
 ## 2026-10-28 (kosha: fetch, and every tool in it)
 

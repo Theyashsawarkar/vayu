@@ -25,6 +25,10 @@
   command line. Respect declined commands; never retry a denied request
   unasked, and never use it to get around a refusal. If `dvarapala` is
   missing, fall back to giving the commands as before.
+- **Opening things in a browser** (links, URLs, HTML files you made): use
+  `xdg-open <url-or-file>`, which opens the system's default browser,
+  whatever it is. Never launch a specific browser (`google-chrome`,
+  `zen-browser`, `firefox`…) and never assume which one is the default.
 - **Every tool we make has a logo and a Sanskrit shloka**: a Sanskrit name,
   `assets/logo.svg` in the family's style, and one real, verified verse as
   its tag, in its README, on its website and on its own screen where there's
