@@ -44,6 +44,20 @@ installed by `system/apply.sh`). Check with `sysctl kernel.sysrq`. Press the
 letters about a second apart, holding `Alt+PrtSc` the whole time. On keyboards
 where PrtSc needs `Fn`, hold `Fn` too.
 
+## Wi-Fi: it drops for a moment, with iwlwifi errors in the journal
+
+The Wi-Fi card's firmware crashes and the driver resets it, usually within a few
+seconds: `journalctl -k -g "Device error - SW reset"` shows `iwlwifi` "HW error,
+resetting". It happened 7 times in 36 hours on the machine this was checked on,
+and came back each time. It's the kernel driver and Intel's firmware, not Vayu.
+If it gets frequent, update `linux-firmware` and the kernel first.
+
+## Audio: sound blips once and WirePlumber restarts
+
+`coredumpctl list wireplumber` shows a crash in `libspa-bluez5.so` (PipeWire's
+Bluetooth code, one crash in 36 hours when this was checked). systemd restarts it
+in a second, so audio comes back alone. It's upstream: update `pipewire`.
+
 ## Shutdown: the logo stays up and the machine doesn't turn off
 
 **Why:** a service is taking long to stop. systemd waits up to 90 s per

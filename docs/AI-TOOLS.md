@@ -66,7 +66,9 @@ against X's 280 (and its thread split) and LinkedIn's 3000, save drafts, and
 propose posts, now or scheduled. Every proposed post waits for your
 approval in a popup on the agent's pane, where you can edit or decline it.
 LinkedIn then posts through its free API; X opens in your browser with the
-post filled in and you press Post (X's API isn't free).
+post filled in, the image goes on your clipboard, and you press Post (X's API
+isn't free). `vaikhari web` is the same in your browser, and its Settings tab sets
+up LinkedIn.
 
 | At a glance | |
 |---|---|

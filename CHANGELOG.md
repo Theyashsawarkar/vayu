@@ -5,6 +5,32 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.20.0-nightly -- 2026-11-03
+
+## 2026-11-03 (a full check of the desktop; every tool gets a logo and a shloka; vaikhari 0.4.0)
+
+- **Every tool has a logo and a shloka**: one real Sanskrit verse, each checked
+  against a source (nine needed corrections), at the top of its README and
+  website. It's a rule for every agent now, through vishvakarma's new
+  `tool-identity` skill, with two more for their screens: colour that means
+  something, and forms that open read-only so stray typing changes nothing.
+- **vaikhari 0.4.0**: `vaikhari web` in the browser, capsules and real images
+  on the approval screen (kitty draws them sharp even inside a tmux popup), a
+  Settings tab for LinkedIn, and `Tab` no longer sticks in the editor. Approving
+  an agent's post used to ignore the time and any network you'd unticked in the
+  browser: it posted to all of them at once. Fixed. A real post went out through
+  it on both networks.
+- **vishvakarma 0.4.0**: the `tool-identity` and `post-about-tool` skills
+  (posts carry an image and emojis; terminal tools are shot in their own big
+  terminal, on demo data). **sangam 2.4.1**: its keys' wording.
+- **nauka and pattan** had lost their `~/.local/bin` links: `kosha install` put
+  them back. vaikhari's schedule service is running.
+- **Checked, on the running desktop**: all failed units, boot time (22 s), the
+  journal, crashes, memory, `sway -C`, the tmux config, every shell and Python
+  script, all MCP servers, every tool's own tests, and every Vyom panel opened
+  on a private headless screen. Two things it found are in
+  `docs/TROUBLESHOOTING.md`: Wi-Fi firmware resets and a WirePlumber crash.
+
 ## 2026-11-02 (user services find ~/.local/bin; approvals redesigned)
 
 - **The keybinding search was empty for tmux and everything else but Sway.**
