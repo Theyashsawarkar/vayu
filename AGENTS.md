@@ -46,6 +46,11 @@ failing silently. Known limits go in `docs/TROUBLESHOOTING.md`
 - A new popup or panel looks like Vyom's: glass at varna's `ui.glass`,
   20 px corners, a mode pill, key caps in the footer, the theme's colours
   only (docs/ARCHITECTURE.md, "One look").
+- **Every corner is rounded, in every tool** (a rule): frames, cards, bubbles, popups,
+  buttons, progress bars and website boxes. In a terminal use `╭╮╰╯`, even beside
+  heavy lines (`━┃`): Unicode has no heavy arc, and `┌┐└┘` or `┏┓┗┛` are never used.
+  In CSS, a visible corner never has `border-radius: 0`. The only exceptions are
+  what can't be rounded: fullscreen windows, and tmux's own pane borders.
 - Test GUI changes in a headless sway with its own D-Bus session
   (`dbus-run-session`, `WLR_BACKENDS=headless`, grim, `wtype -s 250`),
   never by restarting or driving the user's running desktop.

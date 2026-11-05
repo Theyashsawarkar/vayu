@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.21.0-nightly -- 2026-11-05
+
+## 2026-11-05 (every corner is rounded; narada 0.9.0)
+
+- **Every corner is rounded, in every tool**: a rule now, in `CLAUDE.md`, `AGENTS.md`
+  and vishvakarma's `tool-identity` skill. Fixed drishya's video area and bars, nada's
+  slim bar, kosha's and vesha's tree lines, ekatva's rows and every website's callouts.
+  tmux's own pane borders can't be rounded: it has no such option.
+- **narada 0.9.0**: react on WhatsApp, and other people's reactions show; scheduled and
+  queued mail shows its tables and formatting; the message you're on has a heavy rounded
+  frame and a `▶`.
+- kosha 0.5.1, vesha 0.3.4, vishvakarma 0.4.1.
+
 ## v1.20.2-nightly -- 2026-11-04
 
 ## 2026-11-04 (charging shows at once; vaikhari 0.4.1; urja 0.1.4)

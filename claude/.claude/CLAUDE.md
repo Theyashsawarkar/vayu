@@ -38,3 +38,8 @@
   red danger, green done, yellow waiting, peach what to look for, accent where
   you are), and forms that open read-only, so stray typing changes nothing.
   The `tool-identity` skill has the details.
+- **Every corner is rounded, in every tool** (a rule): frames, cards, bubbles, popups,
+  buttons, progress bars and website boxes. In a terminal use `╭╮╰╯`, even beside
+  heavy lines (`━┃`): Unicode has no heavy arc, and `┌┐└┘` or `┏┓┗┛` are never used.
+  In CSS, a visible corner never has `border-radius: 0`. The only exceptions are
+  what can't be rounded: fullscreen windows, and tmux's own pane borders.
