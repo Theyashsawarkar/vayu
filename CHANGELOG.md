@@ -5,6 +5,13 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.21.1-nightly -- 2026-11-05
+
+## 2026-11-05 (narada 0.10.0: tag people on WhatsApp by name)
+
+- **narada 0.10.0**: `@` while typing on WhatsApp lists who you can tag, by name,
+  and tags show as names everywhere (the name you saved, else theirs, else the number).
+
 ## v1.21.0-nightly -- 2026-11-05
 
 ## 2026-11-05 (every corner is rounded; narada 0.9.0)
