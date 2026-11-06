@@ -7,6 +7,8 @@ full branch/release process.
 
 ## v1.21.2-nightly -- 2026-11-06
 
+## v1.21.3-nightly -- 2026-11-06
+
 ## 2026-11-06 (kitty keeps its own colours)
 
 - **kitty no longer follows the desktop's theme**: it uses kitty's own default colours,
