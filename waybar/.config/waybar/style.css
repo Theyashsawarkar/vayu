@@ -855,3 +855,12 @@ tooltip { border: 1px solid alpha(@surface2, 0.8); }
 #custom-docker.running, #custom-docker.idle { box-shadow: 0 0 8px alpha(@sky, 0.3); }
 #custom-caffeine.active, #custom-caffeine.inactive { box-shadow: 0 0 8px alpha(@peach, 0.3); }
 #bluetooth.on, #bluetooth.off, #bluetooth.disabled, #bluetooth.connected { box-shadow: 0 0 8px alpha(@blue, 0.3); }
+/* The clock capsule glows in its bell's yellow; the workspaces capsule in the
+   theme's colour, the same as the active workspace's underline (the only
+   parts of the bar that follow the theme). The date reads as clearly as the
+   time, a little lighter in weight. */
+#clockbox { border: 1px solid @yellow; box-shadow: 0 0 10px alpha(@yellow, 0.5); } /* solid: the pale yellow vanishes on bright wallpapers at less */
+#clockbox:hover { border: 1px solid @yellow; box-shadow: 0 0 14px alpha(@yellow, 0.7); }
+#workspaces { border-color: alpha(@accent, 0.75); box-shadow: 0 0 8px alpha(@accent, 0.35); }
+#workspaces:hover { border-color: @accent; box-shadow: 0 0 12px alpha(@accent, 0.55); }
+#clockbox #clock:not(.time) { color: @text; font-weight: 600; }
