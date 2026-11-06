@@ -18,6 +18,7 @@ full branch/release process.
   Every other colour is fixed and means one thing, in every theme.
 - The docker icon is a size bigger.
 - Download and upload speeds each have their own colour, arrow and number: download green, upload peach.
+- Every capsule has the glowing outline in its own colour: workspaces flamingo, caps and num lock yellow (brighter while locked), power red, as well as the rest.
 
 ## v1.21.1-nightly -- 2026-11-05
 

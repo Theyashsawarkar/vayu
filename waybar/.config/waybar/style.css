@@ -841,3 +841,17 @@ tooltip { border: 1px solid alpha(@surface2, 0.8); }
 #custom-phone.request { border-color: @yellow; box-shadow: 0 0 10px alpha(@yellow, 0.45); } /* a request waiting on you */
 #custom-caffeine.active, #custom-caffeine.inactive { border-color: alpha(@peach, 0.7); }
 #bluetooth.on, #bluetooth.off, #bluetooth.disabled, #bluetooth.connected { border-color: alpha(@blue, 0.7); }
+/* Every capsule glows in its own colour, like docker, caffeine and system:
+   workspaces flamingo (the active one alone is in the theme's colour),
+   caps and num lock yellow (brighter while locked), power red. */
+#workspaces { border-color: alpha(@flamingo, 0.7); box-shadow: 0 0 8px alpha(@flamingo, 0.3); }
+#workspaces:hover { border-color: @flamingo; box-shadow: 0 0 12px alpha(@flamingo, 0.5); }
+#custom-capslock, #custom-numlock { border-color: alpha(@yellow, 0.5); box-shadow: 0 0 6px alpha(@yellow, 0.2); }
+#custom-capslock.locked, #custom-numlock.locked { border-color: @yellow; box-shadow: 0 0 12px alpha(@yellow, 0.5); }
+#custom-power { border-color: alpha(@red, 0.7); box-shadow: 0 0 8px alpha(@red, 0.3); }
+#custom-recording, #custom-recording.active { border-color: alpha(@red, 0.8); box-shadow: 0 0 10px alpha(@red, 0.45); }
+#custom-hotspot, #custom-hotspot.on { box-shadow: 0 0 8px alpha(@teal, 0.35); }
+#custom-phone.connected, #custom-phone.disconnected { box-shadow: 0 0 8px alpha(@green, 0.3); }
+#custom-docker.running, #custom-docker.idle { box-shadow: 0 0 8px alpha(@sky, 0.3); }
+#custom-caffeine.active, #custom-caffeine.inactive { box-shadow: 0 0 8px alpha(@peach, 0.3); }
+#bluetooth.on, #bluetooth.off, #bluetooth.disabled, #bluetooth.connected { box-shadow: 0 0 8px alpha(@blue, 0.3); }
