@@ -67,7 +67,7 @@
 		// icon's weight next to it (this sun fills more of its box than
 		// the speaker does, so 150% looked bigger); rise='-1pt' centres
 		// it on the digits, measured from screenshots (2026-09-29).
-		"format": "<span size='125%' rise='-1pt' color='{{accent}}'>{icon}</span>  {percent}%",
+		"format": "<span size='125%' rise='-1pt' color='{{yellow}}'>{icon}</span>  {percent}%",
 		"format-icons": ["󰃞", "󰃟", "󰃠"],
 		"tooltip-format": "Click: drag to set   Scroll: +/-5%",
 		"on-click": "$HOME/.local/bin/brightness-slider.sh",
@@ -125,8 +125,8 @@
 	"network": {
 		// Just the icon (Wi-Fi signal or the wired-network glyph), then the
 		// speed next to it; the network name and IP are in the tooltip.
-		"format-wifi": "<span size='150%' rise='-2pt' color='{{accent}}'>{icon}</span> ",
-		"format-ethernet": "<span size='150%' rise='-2pt' color='{{accent}}'>󰌗</span> ",
+		"format-wifi": "<span size='150%' rise='-2pt' color='{{teal}}'>{icon}</span> ",
+		"format-ethernet": "<span size='150%' rise='-2pt' color='{{teal}}'>󰌗</span> ",
 		"format-disconnected": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span> ",
 		"format-disabled": "<span size='150%' rise='-2pt' color='{{red}}'>󰖪</span> ",
 		"format-linked": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span> ",
@@ -153,7 +153,7 @@
 		"interval": 2,
 		// Fixed-width values (monospace): the capsule never jitters as the
 		// numbers change length, without a min-width that left a gap.
-		"format": "<span color='{{accent}}'>\uf063</span>  {bandwidthDownBytes:<8} <span color='{{accent}}'>\uf062</span>  {bandwidthUpBytes:<8}",
+		"format": "<span color='{{teal}}'>\uf063</span>  {bandwidthDownBytes:<8} <span color='{{sky}}'>\uf062</span>  {bandwidthUpBytes:<8}",
 		"tooltip": false
 	},
 
@@ -164,8 +164,8 @@
 		"format-off": "",
 		"format-on": "",
 		"format-disabled": "",
-		"format-connected": "<span size='125%' rise='-1pt' color='{{accent}}'>󰂱</span>",
-		"format-connected-battery": "<span size='125%' rise='-1pt' color='{{accent}}'>󰂱</span>",
+		"format-connected": "<span size='125%' rise='-1pt' color='{{blue}}'>󰂱</span>",
+		"format-connected-battery": "<span size='125%' rise='-1pt' color='{{blue}}'>󰂱</span>",
 		"tooltip-format-connected": "{device_enumerate}",
 		"tooltip-format-enumerate-connected": "{device_alias}",
 		"tooltip-format-enumerate-connected-battery": "{device_alias}  {device_battery_percentage}%",
@@ -207,10 +207,12 @@
 			"warning": 30,
 			"moderate": 60
 		},
-		"format": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
-		"format-charging": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
-		"format-plugged": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
-		"format-full": "<span color='{{accent}}'>{icon}</span>  {capacity}%",
+		"format": "<span color='{{green}}'>{icon}</span>  {capacity}%",
+		"format-charging": "<span color='{{green}}'>{icon}</span>  {capacity}%",
+		"format-plugged": "<span color='{{green}}'>{icon}</span>  {capacity}%",
+		"format-full": "<span color='{{green}}'>{icon}</span>  {capacity}%",
+		"format-warning": "<span color='{{yellow}}'>{icon}</span>  {capacity}%",
+		"format-critical": "<span color='{{red}}'>{icon}</span>  {capacity}%",
 		"format-icons": {
 			"charging": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
 			"plugged": ["󰢜", "󰂈", "󰂉", "󰂊", "󰂅"],
@@ -228,7 +230,7 @@
 		// screenshots, 2026-09-29). An icon-only span was tried before
 		// and "broke", but that was the threshold-object format-icons
 		// bug below hiding the icon, not the span.
-		"format": "<span size='150%' rise='-2pt' color='{{accent}}'>{icon}</span>  {volume}%",
+		"format": "<span size='150%' rise='-2pt' color='{{blue}}'>{icon}</span>  {volume}%",
 		"format-muted": "<span size='150%' rise='-2pt' color='{{red}}'>󰝟</span>  Muted",
 		// Plain array, NOT waybar's threshold-object form
 		// ({"icon":...,"max":...}) -- that form is real and documented

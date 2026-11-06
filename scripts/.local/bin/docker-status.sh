@@ -25,9 +25,9 @@ else
     tooltip="No containers running"
 fi
 
-# Icon in the theme's accent, count in its text colour. running/idle is still
-# signaled, just via the pill's border-color now instead of the text.
-text="<span color='$(col accent '#CBA6F7')'>$ICON</span>  <span color='$(col fg '#CDD6F4')'>$count</span>"
+# Icon in Docker's own sky blue (only the active workspace follows the theme's
+# accent), a size up so the whale reads at a glance; count in the text colour.
+text="<span size='135%' rise='-2pt' color='$(col sky '#89DCEB')'>$ICON</span>  <span color='$(col fg '#CDD6F4')'>$count</span>"
 # Hidden while nothing runs: an "only while on" indicator on the bar.
 [ "$count" -gt 0 ] || text=""
 printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"

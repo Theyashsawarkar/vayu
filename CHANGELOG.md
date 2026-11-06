@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.21.2-nightly -- 2026-11-06
+
+## 2026-11-06 (the bar goes Neon edge)
+
+- **Waybar, Neon edge**: dark glass capsules, each with a thin outline and soft glow in
+  its own colour: clock blue, network teal, system peach, quick settings pink, docker
+  sky, phone green, caffeine peach, bluetooth blue. Icons inside take the same colours:
+  brightness yellow, volume blue, battery green (yellow when low, red when critical).
+- **Only the active workspace follows the theme's main colour**: its number and apps in
+  the accent, underlined, with no fill; occupied workspaces in silver, empty ones dim.
+  Every other colour is fixed and means one thing, in every theme.
+- The docker icon is a size bigger.
+
 ## v1.21.1-nightly -- 2026-11-05
 
 ## 2026-11-05 (narada 0.10.0: tag people on WhatsApp by name)

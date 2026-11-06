@@ -763,3 +763,81 @@ tooltip label {
 #system #pulseaudio.muted { color: @red; }
 #system #battery.warning:not(.charging) { color: @peach; }
 #system #battery.critical:not(.charging) { color: @red; }
+
+/* ===================================================================
+   NEON EDGE (2026-11-06): dark glass capsules, each with a thin outline
+   in its own colour and a soft glow of it. Only the active workspace
+   follows the theme's main colour (@accent); every other colour here is
+   fixed and means one thing, in every theme:
+     clock blue · network teal · system peach · quick settings pink
+     docker sky · phone green · caffeine peach · bluetooth blue
+     hotspot teal · recording red · caps lock yellow · music pink
+   Last in the file: it overrides the one-accent rules above.
+   =================================================================== */
+#workspaces, #clockbox, #connectivity, #system, #custom-nada, #custom-quick,
+#custom-docker, #custom-phone, #custom-caffeine, #bluetooth, #custom-hotspot,
+#custom-recording, #custom-capslock, #custom-numlock, #custom-notifications, #custom-power {
+    background-color: alpha(@crust, 0.88);
+    border: 1px solid alpha(@surface1, 0.9);
+    border-radius: 14px;
+    box-shadow: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+#clockbox         { border-color: alpha(@blue, 0.75);  box-shadow: 0 0 8px alpha(@blue, 0.35); }
+#connectivity     { border-color: alpha(@teal, 0.75);  box-shadow: 0 0 8px alpha(@teal, 0.35); }
+#system           { border-color: alpha(@peach, 0.75); box-shadow: 0 0 8px alpha(@peach, 0.35); }
+#custom-quick     { border-color: alpha(@pink, 0.75);  box-shadow: 0 0 8px alpha(@pink, 0.35); color: @pink; }
+#custom-nada      { border-color: alpha(@pink, 0.6);   box-shadow: 0 0 8px alpha(@pink, 0.25); }
+#custom-docker    { border-color: alpha(@sky, 0.7);    box-shadow: 0 0 8px alpha(@sky, 0.3); }
+#custom-phone     { border-color: alpha(@green, 0.7);  box-shadow: 0 0 8px alpha(@green, 0.3); }
+#custom-caffeine  { border-color: alpha(@peach, 0.7);  box-shadow: 0 0 8px alpha(@peach, 0.3); }
+#custom-caffeine.active { color: @peach; }
+#bluetooth        { border-color: alpha(@blue, 0.7);   box-shadow: 0 0 8px alpha(@blue, 0.3); }
+#custom-hotspot, #custom-hotspot.on { border-color: alpha(@teal, 0.7); box-shadow: 0 0 8px alpha(@teal, 0.3); color: @teal; }
+#custom-recording { border-color: alpha(@red, 0.8);    box-shadow: 0 0 10px alpha(@red, 0.45); }
+#custom-capslock.locked, #custom-numlock.locked { border-color: alpha(@yellow, 0.75); box-shadow: 0 0 8px alpha(@yellow, 0.3); }
+#clockbox #custom-notifications, #custom-notifications.normal { color: @yellow; }
+#clockbox #custom-notifications.dnd, #custom-notifications.dnd { color: @overlay0; }
+#workspaces { border-color: alpha(@surface1, 0.9); }
+
+/* Pointing at a capsule brightens its own outline and glow. */
+#clockbox:hover     { border-color: @blue;  box-shadow: 0 0 12px alpha(@blue, 0.55); }
+#connectivity:hover { border-color: @teal;  box-shadow: 0 0 12px alpha(@teal, 0.55); }
+#system:hover       { border-color: @peach; box-shadow: 0 0 12px alpha(@peach, 0.55); }
+#custom-quick:hover, #custom-nada:hover { border-color: @pink; box-shadow: 0 0 12px alpha(@pink, 0.55); }
+#custom-docker:hover    { border-color: @sky;   box-shadow: 0 0 12px alpha(@sky, 0.5); }
+#custom-phone:hover     { border-color: @green; box-shadow: 0 0 12px alpha(@green, 0.5); }
+#custom-caffeine:hover  { border-color: @peach; box-shadow: 0 0 12px alpha(@peach, 0.5); }
+#bluetooth:hover        { border-color: @blue;  box-shadow: 0 0 12px alpha(@blue, 0.5); }
+#custom-hotspot:hover   { border-color: @teal;  box-shadow: 0 0 12px alpha(@teal, 0.5); }
+#workspaces:hover       { border-color: @surface2; box-shadow: none; }
+#clockbox:hover, #connectivity:hover, #system:hover, #custom-nada:hover, #custom-quick:hover { background-color: alpha(@crust, 0.92); }
+tooltip { border: 1px solid alpha(@surface2, 0.8); }
+
+/* Workspaces: the active one is its number and apps in the theme's main
+   colour, underlined; occupied ones in silver; empty ones dim. No fill. */
+#workspaces button {
+    background: transparent;
+    color: @surface2;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 10px;
+    padding: 0 10px;
+    margin: 4px 2px;
+}
+#workspaces button:not(.empty):not(.focused) { color: @subtext1; font-weight: 600; }
+#workspaces button:hover { background: alpha(@text, 0.06); color: @text; border-bottom-color: transparent; }
+#workspaces button.focused {
+    background: transparent;
+    color: @accent;
+    font-weight: 800;
+    border-bottom: 2px solid @accent;
+}
+#workspaces button.urgent { background: transparent; color: @red; border-bottom: 2px solid @red; }
+/* State classes above set their own borders; in Neon edge each capsule keeps
+   its colour whatever its state, and "off" is shown by a dimmed icon. */
+#custom-docker.running, #custom-docker.idle { border-color: alpha(@sky, 0.7); }
+#custom-phone.connected, #custom-phone.disconnected { border-color: alpha(@green, 0.7); }
+#custom-phone.request { border-color: @yellow; box-shadow: 0 0 10px alpha(@yellow, 0.45); } /* a request waiting on you */
+#custom-caffeine.active, #custom-caffeine.inactive { border-color: alpha(@peach, 0.7); }
+#bluetooth.on, #bluetooth.off, #bluetooth.disabled, #bluetooth.connected { border-color: alpha(@blue, 0.7); }
