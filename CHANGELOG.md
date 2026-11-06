@@ -5,7 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
-## v1.21.2-nightly -- 2026-11-06
+## v1.22.0-nightly -- 2026-11-06
+
+## 2026-11-06 (Vyom: Tab switches a tool's tabs, F11 fullscreen, a new ganit)
+
+- **Tab in a Vyom panel switches that tool's own tabs**, its main kinds (ganit's
+  Calculate and Convert, smriti's All/Text/Images), the same as `Ctrl+1..9`; it no
+  longer jumps to another Vyom tool, so the `cycle` list is gone from `config.toml`.
+  dvara's numbered app actions moved to `Alt+1..9` to make room (Vyom 0.5.0, dvara 0.1.7).
+- **F11 makes any Vyom tool fullscreen**, and back; each tool remembers it.
+- **ganit 0.3.0, a calculator and converter that stay open**: `Enter` keeps the answer
+  on a paper tape instead of closing the panel (`Esc` closes), a sum can carry on from
+  the last answer (`+ 100`), and Convert is two-sided with From/To amounts, nine
+  coloured kinds and a saved list.
 
 ## v1.21.3-nightly -- 2026-11-06
 
@@ -16,6 +28,8 @@ full branch/release process.
   more; its font, size and transparency are its own, as before.
 - Without varna, the bar's fallback now fills in every colour its template uses (the
   Neon edge colours were left as raw `{{teal}}`-style text before).
+
+## v1.21.2-nightly -- 2026-11-06
 
 ## 2026-11-06 (the bar goes Neon edge)
 
