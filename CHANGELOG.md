@@ -17,6 +17,7 @@ full branch/release process.
   the accent, underlined, with no fill; occupied workspaces in silver, empty ones dim.
   Every other colour is fixed and means one thing, in every theme.
 - The docker icon is a size bigger.
+- Download and upload speeds each have their own colour, arrow and number: download green, upload peach.
 
 ## v1.21.1-nightly -- 2026-11-05
 

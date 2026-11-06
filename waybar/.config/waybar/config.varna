@@ -153,7 +153,7 @@
 		"interval": 2,
 		// Fixed-width values (monospace): the capsule never jitters as the
 		// numbers change length, without a min-width that left a gap.
-		"format": "<span color='{{teal}}'>\uf063</span>  {bandwidthDownBytes:<8} <span color='{{sky}}'>\uf062</span>  {bandwidthUpBytes:<8}",
+		"format": "<span color='{{green}}'>\uf063  {bandwidthDownBytes:<8}</span> <span color='{{peach}}'>\uf062  {bandwidthUpBytes:<8}</span>",
 		"tooltip": false
 	},
 
