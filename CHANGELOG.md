@@ -7,6 +7,14 @@ full branch/release process.
 
 ## v1.21.2-nightly -- 2026-11-06
 
+## 2026-11-06 (kitty keeps its own colours)
+
+- **kitty no longer follows the desktop's theme**: it uses kitty's own default colours,
+  whatever theme the desktop switches to. `kitty.conf` doesn't include varna's file any
+  more; its font, size and transparency are its own, as before.
+- Without varna, the bar's fallback now fills in every colour its template uses (the
+  Neon edge colours were left as raw `{{teal}}`-style text before).
+
 ## 2026-11-06 (the bar goes Neon edge)
 
 - **Waybar, Neon edge**: dark glass capsules, each with a thin outline and soft glow in
