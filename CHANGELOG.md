@@ -5,6 +5,11 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-07 (Alt+a jumps to a waiting Claude session)
+
+- **`Alt+a` jumps to the Claude session waiting longest for you**, without the prefix,
+  like clicking the "N waiting" capsule or `prefix a`; press it again for the next one.
+
 ## 2026-11-07 (Hindi and Marathi line up in tmux)
 
 - **Rows with Hindi, Marathi or another Indian script no longer break** the screen in
