@@ -376,6 +376,23 @@ Fallbacks keep the desktop usable: stock `sway` if `swayfx` won't build,
 won't. The full list of what install needs first is in the
 [README](https://github.com/Theyashsawarkar/vayu#readme).
 
+## tmux: a row with Hindi or Marathi has stray characters or broken borders
+
+kitty and tmux count some letters of Indian scripts differently: kitty puts a whole
+syllable (का, स्क) in one cell, tmux gave its vowel sign and each joined consonant a cell
+of their own. On a row holding such text, everything after it was drawn a few columns
+further left than the program planned, leaving stray characters at the end of the row.
+
+- **Vowel signs**: `tmux.conf` sets `codepoint-widths` so every spacing vowel sign takes
+  no cell, as in kitty. Check it's loaded: `tmux show -s codepoint-widths`. A tmux older
+  than 3.5 has no such option.
+- **Joined consonants** (स्क, क्ष): no tmux setting fixes these. narada adds an invisible
+  ZWNJ after the halant in what it draws, so both count the same (the consonants show
+  joined by a halant, not as one shape). Other tools can still be a column off on such
+  words.
+- Another terminal than kitty may count differently again; the setting is safe to remove
+  there.
+
 ## A Vyom tool shows less than it should, or the bar's counts are wrong
 
 The keybinding search shows only Sway's keys, or a capsule disagrees with the

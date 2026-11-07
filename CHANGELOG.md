@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-07 (Hindi and Marathi line up in tmux)
+
+- **Rows with Hindi, Marathi or another Indian script no longer break** the screen in
+  tmux: tmux now gives a vowel sign (the ा in का) no cell of its own, as kitty does, so
+  borders and columns after such text stay where they belong. Before, narada's chat list
+  showed stray `│` marks and pushed the conversation's bubbles out of line on any row
+  with such text. Joined consonants (स्क) still differ between the two; narada handles
+  them itself.
+
 ## v1.22.0-nightly -- 2026-11-06
 
 ## 2026-11-06 (Vyom: Tab switches a tool's tabs, F11 fullscreen, a new ganit)
