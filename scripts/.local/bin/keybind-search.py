@@ -526,8 +526,14 @@ def parse_script_annotations():
             for m in re.finditer(r"#\s*keybind:\s*(\w[^|<\n]*?)\s*\|\s*([^|\n]+?)\s*\|\s*(.+)", text):
                 where, keys, desc = (g.strip() for g in m.groups())
                 source, _, scope = where.partition("/")
+                extra = {}
+                if source.strip() == "Vyom":
+                    # Which Vyom tool it belongs to (its package's directory,
+                    # or "vyom" for every panel), so mudra can group Vyom's
+                    # keys per tool and find them by the tool's name.
+                    extra["tool"] = d.parent.name if d.parent.name != "core" else "vyom"
                 entries.append(entry(source.strip(), keys, desc, scope=scope.strip() or None,
-                                     origin="script", file=f.name))
+                                     origin="script", file=f.name, **extra))
     return entries
 
 

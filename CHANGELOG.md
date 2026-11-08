@@ -5,6 +5,17 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.23.0-nightly -- 2026-11-08
+
+## 2026-11-08 (Vyom's keys grouped per tool; no numbers on tabs)
+
+- **The keybinding search groups Vyom by tool.** `keybind-search.py --json` tags every
+  Vyom key with its tool, so mudra (`Super+Shift+/`, Vyom 0.5.1) shows Vyom as one group
+  with a section per tool (`Vyom · ganit`, `Vyom · tarang`…), and typing a tool's name or
+  title ("ganit", "calculator") finds its keys.
+- **No numbers on Vyom's tabs** (Vyom 0.6.3), bhava's category rail, dvara's dock or
+  ganit's tape; `Ctrl+1..9` still switches tabs, and the tooltips say which key.
+
 ## 2026-11-07 (Alt+a jumps to a waiting Claude session)
 
 - **`Alt+a` jumps to the Claude session waiting longest for you**, without the prefix,
