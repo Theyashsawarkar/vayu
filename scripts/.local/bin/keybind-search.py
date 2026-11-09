@@ -146,7 +146,7 @@ SEARCH_HINT = "action + object, e.g. kill window, open lazygit, raise volume"
 TMUX_SEARCH_HINT = "action + object, e.g. kill window, split pane, rename session"
 VERBS = set("""
 add alternate approve begin build cancel clear close confirm connect continue copy create
-cut cycle decline delete describe detach disconnect edit enter evaluate exit focus follow
+cut cycle decline delete describe detach disconnect edit enter evaluate exit filter focus follow
 force format go grow hover install invert jump kill leave lock lower merge move normal open
 paste pause pick play post pull quit raise rate record reload remove rename reopen request
 rerun rescan reset resize restart restore rotate run save schedule scroll search seek select

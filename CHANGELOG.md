@@ -5,6 +5,15 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.25.1-nightly -- 2026-11-09
+
+## 2026-11-09 (keybinding search: "filter" is a verb)
+
+- `keybind-search.py --check --strict` failed after `kosha update` on sangam v2.5.0's
+  `Space f f` "Filter the list (as /)": `filter` wasn't in `VERBS`, although the grammar's
+  `Space f` group is "find / filter" and already accepts it. Added; the strict check is OK
+  on the whole live system (every tool updated, Vyom restarted, tmux reloaded).
+
 ## v1.25.0-nightly -- 2026-11-09
 
 ## 2026-11-09 (narada and vishvakarma join the Space grammar)
