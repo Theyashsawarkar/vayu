@@ -5,6 +5,30 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.26.0-nightly -- 2026-11-09
+
+## 2026-11-09 (Vyom panels: a compact kendra, tarang's live dashboard, buds battery per part)
+
+- **Vyom 0.7.1 / 0.7.2**: the footer's key hints never widen a card any more (kendra was
+  about 700 px for 420 asked); its gaps are 12 px. In a grid (bhava's emoji),
+  `Ctrl+H` / `Ctrl+L` move left / right like `Ctrl+J` / `Ctrl+K`, instead of switching
+  the category; tabs stay on `H` / `L` and `Tab`.
+- **kendra 0.3.1** (quick settings, `Super+q`): more compact (about 450 px wide, smaller
+  tiles, icons and sliders); a click on a tile's `>` arrow opens its panel (Wi-Fi in
+  tarang, Bluetooth in setu, the hotspot), a click elsewhere on the tile toggles it.
+- **tarang 0.5.0** (Wi-Fi, `Super+Shift+w`): the right side is a live dashboard:
+  download and upload every second with peak and average, the last minute as a graph,
+  totals, connected time, signal with its history, and the connection at a glance
+  (internet state, security, band, IP, router, link rate, DNS, access point, IPv6). It
+  reads the card's own counters: no speed test, no ping, only while open. The network
+  you're on is listed again (the list looked empty with nothing else in range).
+- **setu 0.4.0** (Bluetooth, `Super+Shift+b`): left bud, right bud and case battery for
+  Google Fast Pair buds (tested on OnePlus Nord Buds 3 Pro), read from their broadcasts
+  while the panel is open; nothing is sent to the buds. Without Fast Pair, the single
+  level as before.
+- **bhava 0.4.1**: the footer says `Ctrl+H/J/K/L move`.
+- After updating: `kosha update`, then `systemctl --user restart vyom` (not `vyom reload`).
+
 ## v1.25.1-nightly -- 2026-11-09
 
 ## 2026-11-09 (keybinding search: "filter" is a verb)
