@@ -5,6 +5,28 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.25.0-nightly -- 2026-11-09
+
+## 2026-11-09 (narada and vishvakarma join the Space grammar)
+
+- **narada v0.12.0** ([github.com/Theyashsawarkar/narada](https://github.com/Theyashsawarkar/narada)):
+  the two tools left out of v1.24.0 now follow the shared Space grammar too.
+  - Keys are data on vyākaraṇa (now **v0.2.0**: Backspace goes up a level of a pending
+    `Space` sequence). Counts, `H`/`L` places, Space groups with a nested which-key,
+    `Space Space` palette, `dd` with a `y`-only confirm that refuses when its target moved.
+  - A floating `:` command bar (completion, history, `:news` for what moved), Vim verbs
+    (`d{motion}`, `.`, `u`/`Ctrl+r`, marks, the jump list) and Vim inside the message box.
+  - **WhatsApp statuses stay quiet**: viewing, playing or marking one sends no "seen"
+    receipt and no presence (online, typing, watching) to their poster.
+  - The unreleased work from other sessions ships with it: chat bubbles in WhatsApp's
+    layout, online status, Claude drafting your reply (`A` / `Space k d`), `Ctrl+g`
+    polish, a sent message shown once, and a try-it page on the website.
+  - The hidden old keys are gone: only keys on the key sheet act (plain `e` archives on
+    purpose and `u` undoes it).
+- **vishvakarma v0.5.0** (and the dsr work as **v0.4.2**): vim keys in `vishvakarma ui`
+  with Space as the leader; `x` (on/off for every agent) now asks first.
+- After updating: `kosha update`, then reopen narada's popup (`prefix e`).
+
 ## v1.24.0-nightly -- 2026-11-09
 
 ## 2026-11-09 (Space leader in every tool: the tools' releases)
