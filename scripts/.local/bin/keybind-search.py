@@ -20,13 +20,18 @@ tool's own annotation mechanism:
           otherwise the action name, humanized.
   rmpc    ~/.config/rmpc/config.ron   `keybinds:` sections, action names
           humanized.
-  Scripts `# keybind: <Source>/<scope> | <keys> | <description>` lines in
+  Scripts `# keybind: <Source>/<scope>[:<mode>] | <keys> | <description>` lines in
           the popup/picker scripts, for keys that only exist inside them
           (fzf --bind etc.), e.g. the tmux session picker's Ctrl+x.
           Same annotation in /etc/sysctl.d (source Kernel): the Magic
           SysRq combos; in /usr/local/lib/dvarapala (source Dvarapala): the
           root approval window; in /usr/local/lib/pramana (source
           Pramana): the polkit password prompt.
+          The optional `:normal` / `:insert` / `:visual` / `:command`
+          suffix on the scope is the vim mode the key works in (the Space
+          grammar, docs/KEYBINDINGS.md); it becomes the entry's `mode`.
+          `# keybind-group: <Source>/<scope> | Space y | Copy` names a
+          leader group; every key under it gets the group path.
 
 Front-ends:
   (no args)          opens mudra (a Vyom tool, Super+Shift+/), which reads --json.
@@ -34,11 +39,22 @@ Front-ends:
   --tmux-fzf         fzf list of tmux keys for the tmux `prefix ?` popup;
                      prints the picked entry's table<TAB>key for tmux_keys.sh
                      to replay with `send-keys -K`.
-  --list [SOURCE]    plain table of everything (or one source) on stdout.
-  --check [--tmux-conf FILE]
+  --tmux-fzf TABLE   the same, only tables starting with TABLE (the
+                     launcher's palette: `--tmux-fzf launch`).
+  --list [SOURCE] [--keys "space y"]
+                     plain table of everything (or one source) on stdout;
+                     --keys keeps bindings whose keys start with that
+                     sequence, in order ("space y" = the Copy group).
+  --groups           the leader groups (# keybind-group lines).
+  --check [--strict] [--tmux-conf FILE]
                      exit 1 listing every binding without a real
                      description, or bound twice in the same scope. Run it
                      after any keybinding change (see ~/dotfiles/CLAUDE.md).
+                     Space-grammar rules (a reserved leader group used for
+                     something else, `g` bound beside `g g` in one mode, an
+                     annotated capital the code never checks, a lone key
+                     that does something irreversible) are WARNINGS, and
+                     failures with --strict.
 """
 import html
 import json
@@ -61,8 +77,10 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".config/sway/scripts",
     # Vayu's own tmux plugins (own repos, cloned by TPM), e.g. sangam's
     # keys in its bin/sangam. Third-party plugins don't use the annotation.
-    *sorted((HOME / ".tmux/plugins").glob("*/scripts")),
-    *sorted((HOME / ".tmux/plugins").glob("*/bin")),
+    # (not kosha's `<name>.kosha-release` copy, kept while a plugin is
+    # `kosha link`ed: an old clone, e.g. narada's sandesh-era keys)
+    *sorted(p for p in (HOME / ".tmux/plugins").glob("*/scripts") if "." not in p.parent.name),
+    *sorted(p for p in (HOME / ".tmux/plugins").glob("*/bin") if "." not in p.parent.name),
     # Vyom (the launcher/panels runtime) and its tools, each a separate
     # repo: their keys are annotated in their Python packages.
     HOME / ".local/share/vyom/core/vyom",
@@ -132,7 +150,7 @@ cut cycle decline delete describe detach disconnect edit enter evaluate exit foc
 force format go grow hover install invert jump kill leave lock lower merge move normal open
 paste pause pick play post pull quit raise rate record reload remove rename reopen request
 rerun rescan reset resize restart restore rotate run save schedule scroll search seek select
-send set show shrink shuffle split start step stop swap switch take toggle trash undo update
+send set show shrink shuffle sort split start step stop swap switch take toggle trash undo update
 """.split())
 
 
@@ -318,6 +336,7 @@ def _tmux_table(table, socket=None, conf=None):
 # --check --tmux-conf FILE: describe FILE as loaded into a throwaway server
 # instead of the live one, so an edit is checked before anyone reloads it.
 TMUX_CONF = None
+STRICT = False   # --check --strict: Space-grammar warnings fail too
 
 
 def parse_tmux():
@@ -344,6 +363,13 @@ def _parse_tmux(sock, probe):
     prefix = _tmux("show-options", "-gv", "prefix", socket=sock).strip() or "C-a"
     copy_table = "copy-mode-vi" if _tmux("show-options", "-gv", "mode-keys", socket=sock).strip() == "vi" else "copy-mode"
     tables = [("prefix", None), ("root", None), (copy_table, "tmux copy mode")]
+    # Every other key table too: the floating-pane `move` table, and the
+    # launcher's `launch*` tables (prefix Space, drawn by whichkey.sh).
+    skip = {"prefix", "root", "copy-mode", "copy-mode-vi"}
+    others = sorted({m.group(1) for m in re.finditer(r"-T\s+(\S+)", _tmux("list-keys", socket=sock))} - skip)
+    paths = _launch_paths(sock, prefix)
+    for t in others:
+        tables.append((t, "launcher" if t in paths else f"tmux {t} table"))
 
     entries = []
     for table, scope in tables:
@@ -366,13 +392,53 @@ def _parse_tmux(sock, probe):
                     # A stock key, or a copy-mode `send-keys -X <action>`,
                     # names itself; a custom bind without -N does not.
                     documented = origin == "default" or command.startswith("send-keys")
-            keys = f"{tmux_key(prefix)} {tmux_key(key)}" if table == "prefix" else tmux_key(key)
+            extra = {}
+            if table == "prefix":
+                keys = f"{tmux_key(prefix)} {tmux_key(key)}"
+            elif table in paths:
+                keys = f"{paths[table]} {tmux_key(key)}"
+                extra["leader"] = True
+            else:
+                keys = tmux_key(key)
             entries.append(entry("Tmux", keys, desc, scope=scope, origin=origin,
                                  documented=documented, table=table, tmux_key=key,
-                                 command=command))
+                                 command=command, **extra))
     rank = {"custom": 0, "plugin": 1, "default": 2}
     entries.sort(key=lambda e: rank[e["origin"]])  # stable: keeps table order
     return entries
+
+
+def _launch_paths(sock, prefix):
+    """{table: "Ctrl+a Space n"}: how each launcher table is reached. A
+    binding that opens one runs `whichkey.sh '<client>' <table>`; follow
+    those from the prefix table down."""
+    raw = _tmux("list-keys", socket=sock)
+    opens = {}
+    for ln in raw.splitlines():
+        m = re.match(r"bind-key\s+(?:-r\s+)?-T\s+(\S+)\s+(\S+)\s+(.*)", ln)
+        if not m:
+            continue
+        t = re.search(r"whichkey\.sh\s+\S+\s+'?(launch[\w-]*)", m.group(3))
+        if t:
+            k = m.group(2)
+            opens[t.group(1)] = (m.group(1), k[1:] if k.startswith("\\") and len(k) > 1 else k)
+    paths = {}
+
+    def path(table, depth=0):
+        if table in paths:
+            return paths[table]
+        if table not in opens or depth > 8:
+            return None
+        parent, key = opens[table]
+        base = tmux_key(prefix) if parent == "prefix" else path(parent, depth + 1)
+        if base is None and parent != "root":
+            return None
+        paths[table] = f"{base} {tmux_key(key)}".strip() if base else tmux_key(key)
+        return paths[table]
+
+    for t in opens:
+        path(t)
+    return paths
 
 
 # ---------------------------------------------------------------------- Zed
@@ -507,8 +573,70 @@ def parse_rmpc():
 
 
 # ------------------------------------------------------------------ Scripts
+MODES = ("normal", "insert", "visual", "command")
+GROUPS = []   # `# keybind-group:` lines, filled by parse_script_annotations
+
+
+def split_mode(scope):
+    """"ganit calculator:normal" -> ("ganit calculator", "normal")."""
+    base, sep, mode = scope.rpartition(":")
+    if sep and mode.strip().lower() in MODES:
+        return base.strip(), mode.strip().lower()
+    return scope, None
+
+
+# Single keys spelled in full; anything else lowercase of 2-3 letters
+# ("gg", "dd", "cw") is a sequence of single keys.
+KEY_WORDS = {"esc", "tab", "end", "del", "ins", "spc"}
+
+
+def key_seqs(keys):
+    """Every alternative of an annotation's keys as a token tuple:
+    "gg / G" -> [("g","g"), ("G",)], "Space y y" -> [("Space","y","y")].
+    Ranges and prose ("1..9", "new name + Enter") stay single tokens."""
+    out = []
+    for alt in re.split(r"\s+/\s+|\s+\|\s+|\s+or\s+", keys.strip()):
+        # prose, a range, or a count placeholder ("N G", ": N"; a lone N
+        # is the key): one opaque token
+        if re.search(r"[()–,]|\.\.|\bthen\b|\s\+\s|\s-\s|\sN\b|\bN\s", alt.strip()):
+            out.append((alt.strip(),))
+            continue
+        toks = []
+        for t in alt.split():
+            if re.fullmatch(r"[a-z]{2,3}", t) and t not in KEY_WORDS:
+                toks.extend(t)
+            else:
+                toks.append(t)
+        if toks:
+            out.append(tuple(toks))
+    return out
+
+
+def key_query_match(query, keys):
+    """Ordered prefix match of a key query ("space y", "<leader>y", "gg")
+    against an entry's keys: True when one alternative starts with it."""
+    q = re.sub(r"<leader>|\bspc\b|␣", " space ", query, flags=re.I)
+    want = []
+    for t in q.split():
+        if t.lower() == "space":
+            want.append("space")
+        elif re.fullmatch(r"[a-z]{2,3}", t) and t not in KEY_WORDS:
+            want.extend(t)
+        else:
+            want.append(t)
+    if not want:
+        return False
+    for seq in key_seqs(keys):
+        norm = [t.lower() if t.lower() == "space" or "+" in t else t for t in seq]
+        if len(norm) >= len(want) and all(
+                a == b or (len(b) > 1 and a.lower() == b.lower()) for a, b in zip(norm, want, strict=False)):
+            return True
+    return False
+
+
 def parse_script_annotations():
     entries, seen = [], set()
+    GROUPS.clear()
     for d in ANNOTATED_SCRIPT_DIRS:
         if not d.is_dir():
             continue
@@ -518,15 +646,30 @@ def parse_script_annotations():
                 continue
             seen.add(real)
             try:
+                with open(f, "rb") as fh:
+                    if b"\0" in fh.read(4096):
+                        continue   # a compiled program (a plugin's bin/): no annotations, and slow to read
                 text = f.read_text(errors="ignore")
             except OSError:
                 continue
             # Source must be a plain word, so the <Source>/<scope> usage
             # examples in docstrings (this file's own) never parse.
+            # (a line of its own: not a tool's generator writing one in an f-string)
+            for m in re.finditer(r"^[ \t]*#\s*keybind-group:\s*(\w[^|<\n]*?)\s*\|\s*([^|\n]+?)\s*\|\s*(.+)", text, re.M):
+                where, keys, name = (g.strip() for g in m.groups())
+                source, _, scope = where.partition("/")
+                scope, mode = split_mode(scope.strip())
+                GROUPS.append(dict(source=source.strip(), scope=scope or None, mode=mode,
+                                   keys=keys, name=name, file=f.name))
             for m in re.finditer(r"#\s*keybind:\s*(\w[^|<\n]*?)\s*\|\s*([^|\n]+?)\s*\|\s*(.+)", text):
                 where, keys, desc = (g.strip() for g in m.groups())
                 source, _, scope = where.partition("/")
-                extra = {}
+                scope, mode = split_mode(scope.strip())
+                extra = {"path": str(f)}
+                if mode:
+                    extra["mode"] = mode
+                if key_seqs(keys) and any(q[0] == "Space" for q in key_seqs(keys)):
+                    extra["leader"] = True
                 if source.strip() == "Vyom":
                     # Which Vyom tool it belongs to (its package's directory,
                     # or "vyom" for every panel), so mudra can group Vyom's
@@ -534,6 +677,20 @@ def parse_script_annotations():
                     extra["tool"] = d.parent.name if d.parent.name != "core" else "vyom"
                 entries.append(entry(source.strip(), keys, desc, scope=scope.strip() or None,
                                      origin="script", file=f.name, **extra))
+    # Each leader key gets its which-key path of group names
+    # ("Space y y" under a ganit group line naming "Space y" Copy).
+    for e in entries:
+        if not e.get("leader"):
+            continue
+        names = []
+        for g in GROUPS:
+            if g["source"] != e["source"] or (g["scope"] and not (e["scope"] or "").startswith(g["scope"])):
+                continue
+            gseq = key_seqs(g["keys"])
+            if gseq and any(len(q) > len(gseq[0]) and q[:len(gseq[0])] == gseq[0] for q in key_seqs(e["keys"])):
+                names.append((len(gseq[0]), g["name"]))
+        if names:
+            e["group"] = [n for _, n in sorted(set(names))]
     return entries
 
 
@@ -561,44 +718,158 @@ def ansi(hex_color):
     return f"\033[38;2;{r};{g};{b}m"
 
 
-def run_tmux_fzf():
+def run_groups():
+    parse_script_annotations()
+    for g in GROUPS:
+        where = g["source"] + (f"/{g['scope']}" if g["scope"] else "") + (f":{g['mode']}" if g["mode"] else "")
+        print(f"{where:34s} {g['keys']:14s} {g['name']}")
+
+
+def run_tmux_fzf(only=None):
     """Lines for the prefix ? popup: tmux keys plus tmux-scoped script keys.
     Hidden fields 1-2 (table, raw key) tell tmux_keys.sh what to replay."""
     reset = "\033[0m"
     P = PALETTE
     rows = []
-    for e in parse_tmux() + [e for e in parse_script_annotations() if e["source"] == "Tmux"]:
+    if only:   # the launcher's palette: just its own tables (tmux's, no script keys)
+        picked = [e for e in parse_tmux() if e.get("table", "").startswith(only)]
+    else:
+        picked = parse_tmux() + [e for e in parse_script_annotations() if e["source"] == "Tmux"]
+    for e in picked:
         keycol = ansi(DIM_COLOR if e["origin"] == "default" else KEY_COLOR) + f"{e['keys']:20s}" + reset
         tags = [t for t in (e["scope"], "default" if e["origin"] == "default" else None) if t]
         tag = f"  {ansi(SCOPE_COLOR)}[{', '.join(tags)}]{reset}" if tags else ""
         rows.append(f"{e.get('table', '-')}\t{e.get('tmux_key', '-')}\t{keycol} {e['desc']}{tag}")
     if not rows:
         return
+    # Normal/Insert modes, the same as every tmux picker (fzf-vim.sh):
+    # typing searches; Esc goes to NORMAL (j/k, gg/G, q), Esc again closes.
+    vim = []
+    helper = HOME / ".tmux/scripts/fzf-vim.sh"
+    if helper.exists():
+        try:
+            vim = subprocess.run(["bash", str(helper), "--print0", " keys " if not only else " launcher "],
+                                 capture_output=True, text=True, timeout=5).stdout.split("\0")[:-1]
+        except subprocess.SubprocessError:
+            vim = []
     r = subprocess.run(
-        ["fzf", "--ansi", "--delimiter", "\t", "--with-nth", "3",
+        ["fzf", *vim, "--input-border", "rounded", "--ansi", "--delimiter", "\t", "--with-nth", "3",
          "--layout", "reverse", "--info", "inline-right", "--no-separator", "--no-scrollbar",
          "--prompt", "❯ ", "--ghost", TMUX_SEARCH_HINT,
          "--pointer", "▌", "--marker", " ", "--gutter", " ",
          # The tmux popup draws the border and the " keys" title.
          "--padding", "1,2",
-         "--header", "⏎ run it · ctrl-j/k move · esc close · everything else: Super+Shift+/\n",
+         "--header", "⏎ run it · ctrl-j/k move · esc normal mode (j/k, q), again closes · everything else: Super+Shift+/\n",
          "--color", f"bg:-1,bg+:{P['surface0']},fg:{P['fg']},fg+:{P['text']},"
                     f"hl:{P['accent2']},hl+:{P['accent2']}",
          "--color", f"border:{P['accent2']},label:{P['accent2']},prompt:{P['accent2']},pointer:{P['accent2']},"
                     f"header:{P['subtext0']},info:{P['overlay1']},query:{P['fg']}"],
         input="\n".join(rows), capture_output=True, text=True,
+        env={**os.environ, "SHELL": "bash"},   # fzf-vim.sh's transforms are bash
     )
     pick = r.stdout.strip()
     if pick:
         print("\t".join(pick.split("\t")[:2]))
 
 
-def run_list(source=None):
+def run_list(source=None, keys=None):
     for e in all_entries():
         if source and e["source"].lower() != source.lower():
             continue
-        tags = ", ".join(t for t in (e["scope"], e["origin"] if e["origin"] != "custom" else None) if t)
+        if keys and not key_query_match(keys, e["keys"]):
+            continue
+        tags = ", ".join(t for t in (e["scope"], e.get("mode"), e["origin"] if e["origin"] != "custom" else None) if t)
         print(f"{e['source']:6s} {e['keys']:26s} {e['desc']}" + (f"  [{tags}]" if tags else ""))
+
+
+# The Space grammar (docs/KEYBINDINGS.md): letters after Space that mean
+# the same thing in every tool, and the first words their keys may start
+# with. A tool may leave a group empty, never use it for something else.
+RESERVED = {
+    "Space": ("palette", None),
+    "?": ("keys", {"show", "open", "search"}),
+    "q": ("close", {"close", "quit", "leave", "exit", "hide"}),
+    "t": ("tabs", {"switch", "go", "show", "open", "jump", "focus", "move"}),
+    "u": ("UI toggles", {"toggle", "show", "hide", "turn", "switch", "enter", "leave", "invert", "zoom", "fit"}),
+    "y": ("copy", {"copy", "yank", "save"}),
+    "f": ("find / filter", {"find", "filter", "search", "show", "clear", "hide", "pick", "open", "jump", "toggle"}),
+    "s": ("sort", {"sort", "order", "reverse"}),
+    "r": ("refresh", {"refresh", "reload", "rescan", "update", "sync", "fetch", "search", "retry", "resync"}),
+    "a": ("add / new", {"add", "create", "new", "save", "pair", "start", "accept", "write", "make",
+                          "compose", "send", "attach", "connect"}),
+    "d": ("delete", {"delete", "remove", "clear", "forget", "dismiss", "kill", "prune", "unpair", "disconnect",
+                     "stop", "drop", "reject", "trash", "close", "cancel", "take", "decline", "archive"}),
+    "e": ("edit", {"edit", "rename", "pick", "change", "set", "open"}),
+    "o": ("open outside", {"open", "run", "show", "browse", "play"}),
+    "g": ("go to", {"go", "jump", "switch", "show", "open", "focus", "move", "check"}),
+    "m": ("mark", {"mark", "toggle", "pin", "unpin", "star", "unstar", "label", "flag", "move", "set"}),
+    ",": ("settings", {"open", "show", "edit", "change", "set", "toggle", "sign", "connect"}),
+    "k": ("ask the AI", {"ask", "summarize", "draft", "write", "explain", "show", "open", "talk", "send"}),
+}
+IRREVERSIBLE = {"delete", "remove", "kill", "archive", "reboot", "lock", "ring", "forget", "unpair",
+                "dismiss", "trash", "prune", "power"}
+
+
+def grammar_warnings(entries):
+    """The Space-grammar rules: warnings (failures with --strict)."""
+    warn = []
+    groups = {(g["source"], g["scope"], key_seqs(g["keys"])[0]): g["name"]
+              for g in GROUPS if key_seqs(g["keys"])}
+    for (src, scope, seq), name in groups.items():
+        if len(seq) == 2 and seq[0] == "Space" and seq[1] in RESERVED:
+            meaning = RESERVED[seq[1]][0]
+            first = meaning.split()[0].lower()
+            if first not in name.lower() and not any(v in name.lower() for v in (RESERVED[seq[1]][1] or ())):
+                warn.append(f"{src}/{scope}: group Space {seq[1]} is '{name}', but Space {seq[1]} is reserved for "
+                            f"{meaning} in every tool (docs/KEYBINDINGS.md, the Space grammar)")
+    for e in entries:
+        if e["origin"] != "script":
+            continue
+        words = e["desc"].split()
+        verb = words[0].split("/")[0].lower() if words else ""
+        for seq in key_seqs(e["keys"]):
+            if len(seq) >= 3 and seq[0] == "Space" and seq[1] in RESERVED and RESERVED[seq[1]][1] \
+                    and verb not in RESERVED[seq[1]][1]:
+                warn.append(f"{e['source']}/{e['scope']}: {e['keys']} '{e['desc']}' -- Space {seq[1]} is "
+                            f"reserved for {RESERVED[seq[1]][0]}")
+                break
+        # an annotated capital the code never checks (it fires on the lowercase key)
+        seqs = key_seqs(e["keys"])
+        caps = {t for q in seqs for t in q if re.fullmatch(r"[A-Z]", t)}
+        if caps and e.get("path", "").endswith(".py"):
+            # Python tools compare key names as string literals: look through
+            # the whole package (keymaps often live in their own module).
+            body = ""
+            for f in Path(e["path"]).parent.glob("*.py"):
+                try:
+                    body += re.sub(r"#\s*keybind.*", "", f.read_text(errors="ignore"))
+                except OSError:
+                    pass
+            for c in sorted(caps):
+                if not re.search(rf"""['"]{c}['"]|\b{c}\b""", body) and re.search(rf"""['"]{c.lower()}['"]""", body):
+                    warn.append(f"{e['source']}/{e['scope']}: {e['keys']} is annotated as '{c}' (Shift+{c.lower()}) "
+                                f"but the code only checks '{c.lower()}' -- write the key as it fires")
+        # a lone key that does something you can't take back
+        if verb in IRREVERSIBLE and any(len(q) == 1 and len(q[0]) == 1 for q in seqs) \
+                and not re.search(r"ask|confirm|twice|y confirms|undo|countdown|character|letter|word|digit", e["desc"], re.I):
+            warn.append(f"{e['source']}/{e['scope']}: {e['keys']} '{e['desc']}' -- one key does something "
+                        f"irreversible: use dd / Space d … with a confirm")
+    # `g` bound beside `g g` in the same tool, view and mode
+    by = {}
+    for e in entries:
+        if e["origin"] != "script":
+            continue
+        by.setdefault((e["source"], e["scope"], e.get("mode")), []).append(e)
+    for (src, scope, mode), es in by.items():
+        seqs = [(q, e) for e in es for q in key_seqs(e["keys"])]
+        whole = {q for q, _ in seqs}
+        for q, _ in seqs:
+            for n in range(1, len(q)):
+                if q[:n] in whole and q[:n] != q:
+                    warn.append(f"{src}/{scope}{':' + mode if mode else ''}: {' '.join(q[:n])} is bound and also "
+                                f"starts {' '.join(q)} -- the longer one can never be typed")
+                    break
+    return sorted(set(warn))
 
 
 def run_check():
@@ -632,6 +903,12 @@ def run_check():
     for e in entries:
         counts[e["source"]] = counts.get(e["source"], 0) + 1
     summary = ", ".join(f"{s} {n}" for s, n in counts.items())
+    warnings = grammar_warnings(entries)
+    if STRICT:
+        problems += warnings
+    elif warnings:
+        print(f"keybind-search --check: {len(warnings)} Space-grammar warning(s) (failures with --strict):\n  "
+              + "\n  ".join(warnings))
     if problems:
         print("keybind-search --check: FAIL\n  " + "\n  ".join(problems))
         print(f"({summary})")
@@ -644,13 +921,25 @@ def main():
     if not args:
         run_panel()
     elif args[0] == "--tmux-fzf":
-        run_tmux_fzf()
+        run_tmux_fzf(args[1] if len(args) > 1 else None)
     elif args[0] == "--list":
-        run_list(args[1] if len(args) > 1 else None)
+        rest = args[1:]
+        keys = None
+        if "--keys" in rest:
+            i = rest.index("--keys")
+            keys = rest[i + 1] if i + 1 < len(rest) else ""
+            rest = rest[:i] + rest[i + 2:]
+        run_list(rest[0] if rest else None, keys)
+    elif args[0] == "--groups":
+        run_groups()
     elif args[0] == "--check":
-        global TMUX_CONF
-        if len(args) > 2 and args[1] == "--tmux-conf":
-            TMUX_CONF = os.path.expanduser(args[2])
+        global TMUX_CONF, STRICT
+        rest = args[1:]
+        if "--strict" in rest:
+            STRICT = True
+            rest.remove("--strict")
+        if len(rest) > 1 and rest[0] == "--tmux-conf":
+            TMUX_CONF = os.path.expanduser(rest[1])
         run_check()
     elif args[0] == "--json":
         json.dump(all_entries(), sys.stdout, indent=1)

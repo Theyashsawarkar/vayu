@@ -209,6 +209,13 @@ same change:
 | Kernel Magic SysRq | `system/etc/sysctl.d/99-sysrq.conf` (scanned at `/etc/sysctl.d`, so run `system/apply.sh` first) | `# keybind: Kernel \| <keys> \| <description>` |
 | dvarapala approval window (own repo) | `lib/dialog.py` in github.com/Theyashsawarkar/dvarapala (scanned at `/usr/local/lib/dvarapala`, installed by its `install.sh`) | `# keybind: Dvarapala/root approval \| <keys> \| <description>` in its docstring |
 
+   **Tools follow the Space grammar** (docs/KEYBINDINGS.md, "The Space
+   grammar"): Normal/Insert modes, Space as the leader, the reserved leader
+   groups meaning the same in every tool. Say a key's mode after its scope
+   (`# keybind: Vyom/ganit calculator:normal | Space y y | Copy the answer`)
+   and name each leader group (`# keybind-group: Vyom/ganit | Space y | Copy`).
+   `--check` warns when a key breaks the grammar; `--check --strict` fails.
+
    A new tool with its own keybinding config gets a parser in
    `keybind-search.py` (and a row here) rather than going unlisted.
 

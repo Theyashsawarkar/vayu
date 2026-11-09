@@ -15,7 +15,9 @@ repeated here; when a rule changes, change it in both files.
 - Any keybinding created, changed or removed must show up in the central
   keybinding search: describe it verb-first and annotate it as CLAUDE.md
   "Keybindings" says, then make `~/.local/bin/keybind-search.py --check`
-  pass.
+  pass. Tools follow the Space grammar (docs/KEYBINDINGS.md): Normal/Insert
+  modes, Space as the leader, reserved leader groups; annotate a key's mode
+  (`<Source>/<scope>:normal`) and each group (`# keybind-group:`).
 
 ## Hardware: detect it, never assume it
 

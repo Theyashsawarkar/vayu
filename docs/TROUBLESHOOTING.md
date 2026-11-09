@@ -393,6 +393,21 @@ further left than the program planned, leaving stray characters at the end of th
 - Another terminal than kitty may count differently again; the setting is safe to remove
   there.
 
+## tmux: Esc doesn't close the session picker or the key search any more
+
+The tmux pickers (`Ctrl+a s`, `Ctrl+a ?`) have vim modes now: they open typing
+(INSERT, shown in the box's label), the first `Esc` goes to NORMAL, where `j`/`k` move
+and `q` closes, and the second `Esc` closes. So closing takes `Esc Esc` (or `Esc q`).
+In NORMAL, letters are commands and typing does nothing: press `i`, `a` or `/` to
+type again.
+
+## tmux: `Ctrl+a Space` opens a menu instead of changing the layout
+
+`Ctrl+a Space` is the launcher (every tool by group). The layouts are still on
+`Ctrl+a Alt+1` .. `Alt+7` (even horizontal, even vertical, main horizontal, main
+vertical, tiled...). If the launcher's menu doesn't appear, the client may still be in
+the launcher's key table: press `Esc`; and check `whichkey.sh` in `vayu-logs whichkey.sh`.
+
 ## A Vyom tool shows less than it should, or the bar's counts are wrong
 
 The keybinding search shows only Sway's keys, or a capsule disagrees with the

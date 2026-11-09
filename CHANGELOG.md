@@ -5,6 +5,65 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.24.0-nightly -- 2026-11-09
+
+## 2026-11-09 (Space leader in every tool: the tools' releases)
+
+- **Every Vayu tool is vim-driven, with the same Space letters** (the grammar in
+  `docs/KEYBINDINGS.md`, "The Space grammar"): NORMAL and INSERT modes, `Space` as the
+  leader with a which-key strip, `?` for every key, `Space Space` for a palette of every
+  action, and one confirm where only `y` says yes. `Space t` tabs, `u` toggles, `y` copy,
+  `f` find, `s` sort, `r` refresh, `a` add, `d` delete, `e` edit, `o` open outside,
+  `g` go to, `m` mark, `,` settings and `k` the AI mean the same in every tool.
+- Released together: Vyom 0.7.0 (the modal engine, `keys.py` 1.0.2) and its tools ganit
+  0.5.0, bhava 0.4.0, dvara 0.3.0, smriti 0.4.0, mudra 0.6.0, raga 0.3.0, akashvani 0.4.0,
+  patra 0.3.0, doot 0.3.0, setu 0.3.0, tarang 0.4.0, urja 0.3.0, vishram 0.3.0,
+  kendra 0.3.0; the new Go module vyakarana 0.1.0 under darshan 0.2.0, pattan 0.2.0,
+  nauka 0.2.0, vaikhari 0.5.0; sangam 2.5.0, vesha 0.4.0, nada 0.3.0, drishya 0.3.0,
+  vinyasa 0.2.0, dvarapala 1.7.0, pramana 0.3.0, and ekatva's desktop app.
+- **Safety:** the power menu no longer locks on `Space` or `l` and no longer reboots on
+  `r` (reboot is `b`; any key cancels a countdown); quick settings locks on `Space l`;
+  ekatva no longer rings the phone on a bare `r`; Ctrl+Backspace in a search box deletes
+  a word instead of dismissing every notification; sangam's PR actions work again.
+- Not yet: narada (its own redesign uses the same letters) and vishvakarma.
+- After `kosha update`: restart Vyom with `systemctl --user restart vyom` (not
+  `vyom reload`: a reload would load the new tools into the old core); reload tmux with
+  `prefix r`; dvarapala and pramana take effect after their `install.sh` (root).
+
+## 2026-11-08 (The Space grammar: a tmux launcher, vim modes in the pickers)
+
+- **`Ctrl+a Space` opens a launcher**: every tool by group, which-key style. `n m` mail,
+  `n c` chat, `x d` Docker, `v p` pull requests, `c a` Claude accounts, `t 3` window 3…
+  Type the letters straight through, or wait a quarter second for the menu. The old
+  direct keys (`Ctrl+a G`, `e`, `P`, `D`, `B`, `C`, `A`, `v`) all stay. tmux's own
+  `Ctrl+a Space` (next layout) is gone: layouts stay on `Ctrl+a Alt+1..7`.
+- **The tmux pickers have Normal and Insert modes** (`fzf-vim.sh`): they start typing as
+  before; `Esc` goes to Normal (`j`/`k`, `gg`/`G`, `Ctrl+d`/`u`, `q`), `Esc` again closes,
+  and `i`, `a` or `/` type again. In the session picker `dd` kills a session, and both
+  `dd` and `Ctrl+x` now ask first (`y` kills, any other key keeps it); before, `Ctrl+x`
+  killed at once.
+- **The keybinding search knows the grammar** (keybind-search.py): a key's vim mode
+  (`# keybind: <Source>/<scope>:normal | ...`), leader groups (`# keybind-group:`),
+  `--list --keys "space y"`, `--groups`, every tmux key table (the floating-pane `move`
+  table and the launcher), and `--check` warnings for keys that break the grammar
+  (failures with `--strict`). It no longer reads kosha's `*.kosha-release` copy of a
+  tmux plugin, which showed narada's old sandesh-era keys beside the new ones.
+- mudra (`Super+Shift+/`) shows the modes and leader keys (mudra, unreleased).
+- Fixed before release: in a picker's Normal mode, `:`, `;`, `=`, `$`, `[`, `<`, `|` and the
+  other punctuation keys still typed into the search (only letters, digits and `/ ? - . _`
+  were caught); now every printable key but `,` `(` `)` `'` is. `--check --strict` failed
+  on darshan's `N G` (a count, then `G`) as if `N` were the key beside darshan's own `N`;
+  a count placeholder is no longer read as a key. `--groups` listed two bogus groups from
+  vesha's and vinyasa's key-table generators (an f-string containing `# keybind-group:`);
+  only a line of its own counts now.
+- Also fixed before release: while a picker asks a question ("kill this session? y kills
+  it, any other key keeps it"), `Enter` switched to that session and `j`/`k`/`Ctrl+j`/`k`
+  moved off it; now every key but `y` just answers no. `Ctrl+a Space Space` (the
+  launcher's palette) and `Ctrl+a ?` took about 5 s to open: the key search read the
+  plugins' compiled programs in `bin/` whole, looking for annotations; it now skips any
+  file with a NUL byte near its start, and the launcher's palette reads only tmux's
+  tables (under a second).
+
 ## v1.23.0-nightly -- 2026-11-08
 
 ## 2026-11-08 (Vyom's keys grouped per tool; no numbers on tabs)

@@ -14,6 +14,30 @@ hand-written overview of the main ones.
 
 `Super` is the Windows/Cmd key (sway's `$mod`).
 
+## The Space grammar (every tool)
+
+Every tool we make is moving to the same vim-style keys (the plan:
+`~/Documents/mockups/vim-keys-roadmap.html`). **Normal** mode is where keys are
+commands and typing changes nothing; **Insert** is where typing goes into a field
+(search boxes, editors); <kbd>Esc</kbd> goes from Insert to Normal, and in Normal
+backs out step by step until the tool closes. In Normal, <kbd>Space</kbd> is the
+**leader**: after it, a letter names a group that means the same in every tool,
+and a menu of the next keys (which-key) appears if you wait.
+
+- Direct keys: <kbd>j</kbd>/<kbd>k</kbd> move (counts: <kbd>5j</kbd>), <kbd>H</kbd>/<kbd>L</kbd> previous / next tab, <kbd>g</kbd><kbd>g</kbd>/<kbd>G</kbd> first / last, <kbd>Ctrl</kbd>+<kbd>d</kbd>/<kbd>u</kbd> half a page, <kbd>/</kbd> search, <kbd>Enter</kbd> the main action, <kbd>o</kbd> open, <kbd>i</kbd>/<kbd>a</kbd> type, <kbd>y</kbd><kbd>y</kbd> copy, <kbd>d</kbd><kbd>d</kbd> delete (asks: <kbd>y</kbd> yes, any other key no), <kbd>r</kbd> refresh, <kbd>q</kbd> back / close, <kbd>?</kbd> every key.
+- Reserved leader groups: <kbd>Space</kbd> <kbd>Space</kbd> palette · <kbd>?</kbd> every key · <kbd>q</kbd> close · <kbd>t</kbd> tabs · <kbd>u</kbd> UI toggles (<kbd>u</kbd> <kbd>f</kbd> fullscreen) · <kbd>y</kbd> copy · <kbd>f</kbd> find / filter · <kbd>s</kbd> sort · <kbd>r</kbd> refresh · <kbd>a</kbd> add / new · <kbd>d</kbd> delete · <kbd>e</kbd> edit · <kbd>o</kbd> open outside · <kbd>g</kbd> go to · <kbd>m</kbd> mark · <kbd>,</kbd> settings · <kbd>k</kbd> ask the AI. The other letters (b c h i j l n p v w x z) are each tool's own nouns.
+- Space never toggles or plays anything in Normal mode, and no single key does something you can't take back.
+
+How a tool says it (`# keybind:` lines, see `CLAUDE.md`): the mode after the scope,
+`# keybind: Vyom/ganit calculator:normal | Space y y | Copy the answer`, and a group's
+name in `# keybind-group: Vyom/ganit | Space y | Copy`. `keybind-search.py --list
+--keys "space y"` lists one group; `--groups` every group; `--check` warns when a
+tool breaks the grammar (a reserved group used for something else, `g` beside
+`g g` in one mode, a capital in the notes that the code never checks, one key
+that deletes or locks), and fails on it with `--strict`. mudra
+(<kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>/</kbd>) shows the mode and leader chips,
+finds `space y` as a sequence, and has a Leader tab with every tool's tree.
+
 ## Sway
 
 ### Popups & pickers (Vyom)
@@ -118,9 +142,10 @@ including every stock default and the vi copy-mode keys) is `Ctrl+a ?` or `Super
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>c</kbd> — New window, in the current pane's directory
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>&lt;</kbd>/<kbd>&gt;</kbd> — Swap window left/right
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>r</kbd> — Reload tmux config (mako notification only)
-- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>?</kbd> — Search tmux keybindings; <kbd>Enter</kbd> runs the picked one
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Space</kbd> — The launcher: every tool by group, which-key style (type the letters straight through, or wait 0.25 s for the menu). <kbd>g</kbd> go to (<kbd>s</kbd> sessions, <kbd>l</kbd> last session, <kbd>w</kbd> tree, <kbd>c</kbd> waiting Claude), <kbd>c</kbd> Claude (<kbd>a</kbd> accounts, <kbd>s</kbd> skills, <kbd>w</kbd> waiting), <kbd>v</kbd> version control (<kbd>g</kbd> lazygit, <kbd>p</kbd> pull requests), <kbd>n</kbd> messages (<kbd>m</kbd> mail, <kbd>c</kbd> chat, <kbd>w</kbd> WhatsApp, <kbd>p</kbd> posts), <kbd>x</kbd> system (<kbd>p</kbd> ports, <kbd>d</kbd> Docker, <kbd>t</kbd> btop), <kbd>o</kbd> open (<kbd>t</kbd> scratch shell, <kbd>v</kbd> darshan, <kbd>e</kbd> editor), <kbd>u</kbd> toggles (<kbd>z</kbd> zoom, <kbd>s</kbd> sync panes), <kbd>t</kbd> windows (<kbd>n</kbd> new, <kbd>r</kbd> rename, <kbd>1</kbd>–<kbd>9</kbd>), <kbd>r</kbd> reload, <kbd>q</kbd> kill pane, <kbd>Space</kbd> search these keys. Every direct key below still works; tmux's old <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Space</kbd> (next layout) is gone, layouts stay on <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>Alt</kbd>+<kbd>1</kbd>..<kbd>7</kbd>
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>?</kbd> — Search tmux keybindings; <kbd>Enter</kbd> runs the picked one (starts typing; <kbd>Esc</kbd> to Normal: <kbd>j</kbd>/<kbd>k</kbd>, <kbd>g</kbd><kbd>g</kbd>/<kbd>G</kbd>, <kbd>q</kbd>; <kbd>Esc</kbd> again closes)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>:</kbd> — Floating command prompt (runs in the real client, never nests)
-- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>s</kbd> — Session picker with live previews (<kbd>Enter</kbd> switches, <kbd>Ctrl</kbd>+<kbd>x</kbd> kills, <kbd>Ctrl</kbd>+<kbd>n</kbd> or a new name + <kbd>Enter</kbd> creates, <kbd>Esc</kbd> closes)
+- <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>s</kbd> — Session picker with live previews (<kbd>Enter</kbd> switches, <kbd>Ctrl</kbd>+<kbd>n</kbd> or a new name + <kbd>Enter</kbd> creates; <kbd>Esc</kbd> to Normal, where <kbd>d</kbd><kbd>d</kbd> kills, and <kbd>Esc</kbd> again closes; <kbd>Ctrl</kbd>+<kbd>x</kbd> kills too; both ask first, <kbd>y</kbd> kills)
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>w</kbd> — Classic session/window tree
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>b</kbd> — Last session
 - <kbd>Ctrl</kbd>+<kbd>a</kbd> <kbd>,</kbd> / <kbd>R</kbd> — Rename window (floating input, prefilled)
