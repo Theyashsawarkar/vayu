@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Reports current light/dark mode for waybar (see theme-toggle.sh). Reads
 # dconf directly rather than a separate state file -- dconf already
-# persists on its own across reboots, unlike swayidle's caffeine-mode
+# persists on its own across reboots, unlike swayidle's jyoti
 # state (which needs one, since that service itself gets reset on every
 # login regardless of what was chosen before); a second copy of the same
 # state here would just be one more thing that could drift from the

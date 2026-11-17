@@ -5,12 +5,12 @@ Systemd user unit bar-events.service, started by sway after waybar.
 
   capsule     waybar signal   event
   bell        8               org.freedesktop.Notifications NotificationClosed
-                              (mako's history only grows when one closes;
-                              mode changes signal from notification-mode.sh)
+                              (the history grows when one closes), and
+                              akashvani's dev.vayu.Akashvani Changed (modes:
+                              do not disturb from the panel, a timer, a key)
   theme       11              GSettings color-scheme changed (dconf)
-  caffeine    12              swayidle.service ActiveState (user systemd)
-  phone       13              KDE Connect device/battery/daemon signals, and
-                              kdeconnectd appearing on / leaving the bus
+  jyoti     12              swayidle.service ActiveState (user systemd)
+  ekatva      13              ekatva.service ActiveState (user systemd)
   docker      14              docker.service ActiveState (system systemd),
                               then `docker events` start/die while it runs
   hotspot     15              NetworkManager's ActiveConnections, and
@@ -35,13 +35,14 @@ Caps Lock / Num Lock (9, 10) are signalled by sway's --release binds and
 keylock-toggle.sh. Everything else on the bar is waybar-internal.
 
 Each capsule's own script still builds its text; this only says "now".
-Bursts (a phone connecting sends reachableChanged then battery refreshed;
-compose starts several containers) collapse into one refresh 0.3 s after
+Bursts (compose starts several containers) collapse into one refresh 0.3 s after
 the last event.
 
 `bar-events.py --tmux-docker` sets tmux's @docker_count once and exits
 (tmux.conf runs it on load, since tmux can start after this daemon);
-`--tmux-narada` the same for @narada_mail and @narada_chat.
+`--tmux-narada` the same for @narada_mail and @narada_chat, and
+`--tmux-claude` for @claude_limit (`vesha waybar` only prints on a change,
+so a tmux started after this daemon would otherwise never get it).
 """
 import os
 import signal
@@ -50,18 +51,9 @@ import sys
 
 from gi.repository import Gio, GLib
 
-WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "caffeine": 12, "phone": 13, "docker": 14, "hotspot": 15}
+WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "jyoti": 12, "ekatva": 13, "docker": 14, "hotspot": 15}
 NM = "org.freedesktop.NetworkManager"
 iw_events = None  # the running `iw event` Gio.Subprocess
-KDECONNECT = "org.kde.kdeconnect"
-PHONE_SIGNALS = [  # (interface, member)
-    (f"{KDECONNECT}.device", "reachableChanged"),
-    (f"{KDECONNECT}.device", "pairStateChanged"),
-    (f"{KDECONNECT}.device", "nameChanged"),
-    (f"{KDECONNECT}.device.battery", "refreshed"),
-    (f"{KDECONNECT}.daemon", "pairingRequestsChanged"),
-    (f"{KDECONNECT}.daemon", "deviceListChanged"),
-]
 SD = "org.freedesktop.systemd1"
 
 pending = {}          # capsule -> GLib source id of its scheduled refresh
@@ -267,6 +259,7 @@ def watch_gh_account():
 
 NARADA = os.path.expanduser("~/.local/bin/narada")
 narada_monitor = None  # kept alive, like gh_monitors
+narada_last = {}       # tmux option -> the count last set (skip unchanged)
 
 
 def set_narada(out):
@@ -281,13 +274,18 @@ def set_narada(out):
     except (ValueError, TypeError, AttributeError):
         for opt in ("@narada_mail", "@narada_chat", "@narada_whatsapp"):
             tmux("set", "-gu", opt)
+        narada_last.clear()
         return
-    tmux("set", "-g", "@narada_mail", str(mail))
-    tmux("set", "-g", "@narada_chat", str(chat))
-    if wa < 0:
-        tmux("set", "-gu", "@narada_whatsapp")
-    else:
-        tmux("set", "-g", "@narada_whatsapp", str(wa))
+    # Only what changed: this runs every few seconds while WhatsApp syncs,
+    # and three tmux processes each time were most of this unit's CPU.
+    for opt, val in (("@narada_mail", mail), ("@narada_chat", chat), ("@narada_whatsapp", wa)):
+        if narada_last.get(opt) == val:
+            continue
+        narada_last[opt] = val
+        if val < 0:
+            tmux("set", "-gu", opt)
+        else:
+            tmux("set", "-g", opt, str(val))
 
 
 def tmux_narada():
@@ -333,7 +331,11 @@ def watch_narada():
         log(f"can't watch {data}, the mail capsule updates every 2 minutes only:", e.message)
         return
     narada_monitor.set_rate_limit(1000)
-    narada_monitor.connect("changed", lambda *a: debounce("narada", tmux_narada, 1000))
+    # Throttled, not debounced: WhatsApp's sync writes about every second,
+    # so a 1 s debounce fired every 1.4 s (8% of a core at idle) and a
+    # longer one would never fire while it syncs. At most one check every
+    # 3 s, and always one after the last change.
+    narada_monitor.connect("changed", lambda *a: throttle("narada", tmux_narada, 3000))
 
 
 def debounce(key, fn, ms=500):
@@ -344,22 +346,21 @@ def debounce(key, fn, ms=500):
     pending[key] = GLib.timeout_add(ms, lambda: (pending.pop(key, None), fn(), False)[2])
 
 
+def throttle(key, fn, ms):
+    """Runs fn ms after the first call with this key; calls in between
+    join that run (so it sees them all) instead of pushing it back."""
+    if key not in pending:
+        pending[key] = GLib.timeout_add(ms, lambda: (pending.pop(key, None), fn(), False)[2])
+
+
 def dev_ports():
     """dev-ports sets tmux's @dev_ports."""
     return run_once("dev-ports", "--set-tmux")
 
 
-def claude_limit_line(stream, result, proc):
-    """One line from `vesha waybar`: the active account and its 5-hour usage."""
+def set_claude_limit(line):
+    """@claude_limit from one `vesha waybar` line (JSON)."""
     import json
-    try:
-        line, _ = stream.read_line_finish_utf8(result)
-    except GLib.Error:
-        line = None
-    if line is None:   # vesha stopped (or isn't installed): hide the capsule, retry later
-        tmux("set", "-gu", "@claude_limit")
-        GLib.timeout_add_seconds(300, watch_claude_limit)
-        return
     try:
         d = json.loads(line)
         text, cls = d.get("text", ""), d.get("class", "")
@@ -371,6 +372,19 @@ def claude_limit_line(stream, result, proc):
     else:   # one account, or usage unknown: nothing worth a capsule
         tmux("set", "-gu", "@claude_limit")
     tmux("refresh-client", "-S")
+
+
+def claude_limit_line(stream, result, proc):
+    """One line from `vesha waybar`: the active account and its 5-hour usage."""
+    try:
+        line, _ = stream.read_line_finish_utf8(result)
+    except GLib.Error:
+        line = None
+    if line is None:   # vesha stopped (or isn't installed): hide the capsule, retry later
+        tmux("set", "-gu", "@claude_limit")
+        GLib.timeout_add_seconds(300, watch_claude_limit)
+        return
+    set_claude_limit(line)
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, claude_limit_line, proc)
 
 
@@ -425,6 +439,15 @@ def main():
         except (OSError, subprocess.TimeoutExpired) as e:
             log("narada status:", e)
         return
+    if sys.argv[1:] == ["--tmux-claude"]:
+        try:
+            r = subprocess.run([os.path.expanduser("~/.local/bin/vesha"), "waybar", "--once"], check=False,
+                               capture_output=True, text=True, timeout=30)
+            if r.returncode == 0 and r.stdout.strip():
+                set_claude_limit(r.stdout.strip().splitlines()[-1])
+        except (OSError, subprocess.TimeoutExpired) as e:
+            log("vesha waybar --once:", e)
+        return
     if sys.argv[1:] == ["--tmux-docker"]:
         docker_active = subprocess.run(["systemctl", "is-active", "--quiet", "docker.service"]).returncode == 0
         tmux_docker()
@@ -435,19 +458,16 @@ def main():
 
     session.signal_subscribe(None, "org.freedesktop.Notifications", "NotificationClosed", None,
                              None, Gio.DBusSignalFlags.NONE, lambda *a: refresh("bell"))
+    session.signal_subscribe(None, "dev.vayu.Akashvani", "Changed", None,
+                             None, Gio.DBusSignalFlags.NONE, lambda *a: refresh("bell"))
 
     settings = Gio.Settings.new("org.gnome.desktop.interface")
     settings.connect("changed::color-scheme", lambda *a: refresh("theme"))
 
     watch_unit(session, "swayidle.service",
-               lambda s: s in ("active", "inactive", "failed") and refresh("caffeine"))
-
-    for iface, member in PHONE_SIGNALS:
-        session.signal_subscribe(None, iface, member, None, None, Gio.DBusSignalFlags.NONE,
-                                 lambda *a: refresh("phone"))
-    # Appeared/vanished also fire once now, which covers the startup refresh.
-    Gio.bus_watch_name_on_connection(session, KDECONNECT, Gio.BusNameWatcherFlags.NONE,
-                                     lambda *a: refresh("phone"), lambda *a: refresh("phone"))
+               lambda s: s in ("active", "inactive", "failed") and refresh("jyoti"))
+    watch_unit(session, "ekatva.service",
+               lambda s: s in ("active", "inactive", "failed") and refresh("ekatva"))
 
     watch_unit(system, "docker.service", on_docker_state)
 

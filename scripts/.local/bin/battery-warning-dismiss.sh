@@ -38,14 +38,14 @@ udevadm monitor --udev --subsystem-match=power_supply | while read -r line; do
 
     ac_online || continue
 
-    id=$(makoctl list -j | python3 -c "
+    id=$(akashvani list -j | python3 -c "
 import json, sys
 for n in json.load(sys.stdin):
     if n.get('app_name') == 'batsignal':
         print(n['id'])
         break
 ")
-    [ -n "$id" ] && makoctl dismiss -n "$id"
+    [ -n "$id" ] && akashvani dismiss -n "$id"
 done
 
 # udevadm monitor ended (it never should): fail, so systemd restarts this

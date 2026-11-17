@@ -2,6 +2,12 @@
    by name (@accent, @base, @red...), written on every `varna apply`. */
 @import "varna.css";
 
+/* Jyoti's two lit levels, the same colours as ekatva's phone app and popup,
+   so the bar, the phone and the laptop agree at a glance: Akhaṇḍa (the diya)
+   is blue, Nandādīpa (the samai: keeps running with the lid closed) ember. */
+@define-color jyoti-akhanda #86aee0;
+@define-color jyoti-nanda #e58b52;
+
 * {
     font-family: "JetBrainsMono Nerd Font", "Noto Color Emoji", "sans-serif";
     font-size: 12px;
@@ -35,8 +41,9 @@ window#waybar {
 #backlight,
 #bluetooth,
 #custom-hotspot,
-#custom-phone,
-#custom-caffeine,
+#custom-jyoti,
+#custom-ekatva,
+#custom-call,
 #custom-recording,
 #pulseaudio,
 #battery,
@@ -58,7 +65,7 @@ window#waybar {
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-#clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #custom-hotspot, #bluetooth, #custom-phone, #backlight, #pulseaudio, #battery, #custom-power {
+#clock, #custom-capslock, #custom-numlock, #custom-theme, #custom-notifications, #custom-wallpaper, #custom-docker, #network, #custom-hotspot, #bluetooth, #backlight, #pulseaudio, #battery, #custom-power {
     padding: 0 12px;
 }
 
@@ -72,9 +79,16 @@ window#waybar {
    bearing than its right in this font -- symmetric CSS padding was
    never going to look symmetric on screen with this specific glyph.
    9px left / 19px right measured out to an 11px/12px visual gap. */
-#custom-caffeine {
-    padding: 0 19px 0 12px; /* re-measured 2026-09-29: 12/12 visible gap (9px left gave 9/12) */
+/* Jyoti's lamp is a picture, not a glyph: the diya (Akhaṇḍa) or the samai
+   (Nandādīpa), in its level's colour, the same drawings as ekatva's phone
+   app and popup. The module's text is two en spaces for it to sit in. */
+#custom-jyoti {
+    padding: 0 11px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 18px 18px;
 }
+/* (The pictures themselves: the end of this file.) */
 
 /* Theme toggle: light/dark mode for every app that reads the standard
    dconf gtk-theme/color-scheme/icon-theme keys (see theme-toggle.sh for
@@ -82,7 +96,7 @@ window#waybar {
    Catppuccin Mocha regardless of the toggle, by design). Sun/moon
    convention: warm Yellow for the sun (light mode active), cool Sapphire
    for the moon (dark mode active) -- same warm/cool pairing logic as
-   caffeine's off/on colors elsewhere in this file, just flipped since
+   jyoti's off/on colors elsewhere in this file, just flipped since
    here *dark* is the expected default rather than the exception. */
 #custom-theme.dark {
     color: @sapphire; /* Sapphire */
@@ -100,7 +114,7 @@ window#waybar {
 #custom-wallpaper {
     color: @rosewater; /* Rosewater */
     /* fa-image's own glyph has more built-in left-side bearing than
-       right -- same class of issue the caffeine icon has (see its own
+       right -- same class of issue the jyoti icon has (see its own
        padding comment above). Measured directly: at the shared 12px/12px
        padding every module gets by default, the actual ink sat with a
        12px gap on the left but only 7px on the right (pixel-sampled the
@@ -129,7 +143,7 @@ window#waybar {
 /* --- Three parts, one gap ---
    Left:   [workspaces][bluetooth][network][network#speed]
    Center: [notifications][time][date]
-   Right:  [caps/num lock][theme][wallpaper][docker][phone][caffeine][backlight][pulseaudio][battery][power]
+   Right:  [caps/num lock][theme][wallpaper][docker][jyoti][backlight][pulseaudio][battery][power]
    Indicators/status on the left, the clock centred, everything you
    click/toggle on the right. Inside each part every capsule is 8px from
    the next (config "spacing", no per-capsule margins), and the bar ends
@@ -230,7 +244,7 @@ window#waybar {
    informational, matches the same "everything's fine" role Lavender
    already plays elsewhere in this bar), dim gray for silent (a quieted,
    not-fully-off state -- same tone as every other "off"/idle state in
-   this bar, caffeine.inactive etc.), Red for dnd -- the one state here
+   this bar, jyoti.inactive etc.), Red for dnd -- the one state here
    that's a deliberate, active choice to suppress *everything*, worth a
    real attention color so it's obvious at a glance you're in it, not
    just half of a two-tone toggle. */
@@ -299,7 +313,7 @@ window#waybar {
 
 /* Docker: Blue when containers are actually running (matches Docker's
    own brand blue, reads as "infrastructure active"), dim gray when idle
-   -- same "off" language as bluetooth.disabled/caffeine.inactive rather
+   -- same "off" language as bluetooth.disabled/jyoti.inactive rather
    than a second distinct "nothing running" color. */
 /* Icon and count are now colored independently via inline Pango spans in
    docker-status.sh itself (Blue icon always, Green/gray count), so the
@@ -328,7 +342,7 @@ window#waybar {
 }
 
 #network.disabled {
-    color: @overlay0; /* Dim gray — matches every other "off" state (bluetooth.disabled, caffeine.inactive) */
+    color: @overlay0; /* Dim gray — matches every other "off" state (bluetooth.disabled, jyoti.inactive) */
     border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
 }
 
@@ -520,18 +534,6 @@ window#waybar {
 /* Connected: the icon is in the theme's accent (config), the capsule
    the same as every other. */
 
-/* Phone (KDE Connect), between docker and caffeine in the device-controls
-   cluster: same status language as bluetooth -- green border
-   while the paired phone is reachable, no border when it isn't (the glyph
-   itself is already dimmed by phone-status.sh). */
-#custom-phone.connected {
-    border-color: alpha(@green, 0.4);
-}
-
-#custom-phone.disconnected {
-    border-color: alpha(@overlay2, 0.6); /* dim gray: off, but still a capsule */
-}
-
 /* Hotspot (vayu-hotspot), right after the network capsule and only while
    it's on: Teal, so "this laptop is sharing" reads apart from the green
    "connected" borders. */
@@ -540,15 +542,11 @@ window#waybar {
     border-color: alpha(@teal, 0.55);
 }
 
-/* A phone is asking to pair: Yellow, like a pending decision */
-#custom-phone.request {
-    border-color: alpha(@yellow, 0.6);
-}
 
-/* CAFFEINE — dim gray when off (matches every other "off" state above),
+/* JYOTI — dim gray when off (matches every other "off" state above),
    peach when on so it's impossible to miss that the screen won't sleep
    right now. No glow (removed 2026-10-27): the border colour is enough. */
-#custom-caffeine.inactive {
+#custom-jyoti.inactive {
     color: @overlay0;
 }
 
@@ -558,9 +556,16 @@ window#waybar {
     border-color: alpha(@red, 0.45);
 }
 
-#custom-caffeine.active {
+#custom-jyoti.active {
     color: @peach;
     border-color: alpha(@peach, 0.45);
+}
+
+/* ekatva (the phone link): shown only while it's on, green like a link
+   that's up. Hidden when off: quick settings has the switch. */
+#custom-ekatva.active {
+    color: @green;
+    border-color: alpha(@green, 0.45);
 }
 
 /* BATTERY STATES -- colored by actual charge status now, not just the
@@ -621,7 +626,7 @@ tooltip label {
    the icon or text off-centre by up to 2px. These even out the visible
    gap (ink to capsule edge) on both sides, measured on a solid
    background: power 12/8, bell 12/9, bluetooth 12/11, theme 12/11, time
-   13/12 and battery 13/12 before; 12/12 on every one after. Caffeine
+   13/12 and battery 13/12 before; 12/12 on every one after. Jyoti
    and wallpaper are set in their own rules
    above. Capsules whose text changes width (network speed, brightness,
    volume) are centred by GTK inside their min-width, so they can be at
@@ -640,8 +645,8 @@ tooltip label {
    accent (Mauve) for "you're pointing at something", power keeps red. */
 #workspaces:hover, #clock:hover, #custom-docker:hover, #custom-capslock:hover,
 #custom-numlock:hover, #custom-theme:hover, #custom-notifications:hover,
-#custom-wallpaper:hover, #network:hover, #custom-hotspot:hover, #bluetooth:hover, #custom-phone:hover,
-#custom-caffeine:hover, #custom-recording:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
+#custom-wallpaper:hover, #network:hover, #custom-hotspot:hover, #bluetooth:hover,
+#custom-jyoti:hover, #custom-ekatva:hover, #custom-recording:hover, #backlight:hover, #pulseaudio:hover, #battery:hover {
     border-color: @accent;
     box-shadow: 0 0 6px alpha(@accent, 0.35);
 }
@@ -753,10 +758,10 @@ tooltip label {
    only where they carry meaning: red for disconnected / muted / critical
    battery, peach for a battery running low.
    =================================================================== */
-#pulseaudio, #backlight, #battery, #custom-docker, #custom-phone,
+#pulseaudio, #backlight, #battery, #custom-docker,
 #system #pulseaudio, #system #backlight, #system #battery,
 #clockbox #clock.time { color: @text; }
-#custom-caffeine.active, #custom-hotspot.on, #custom-quick,
+#custom-jyoti.active, #custom-hotspot.on, #custom-quick,
 #clockbox #custom-notifications, #custom-notifications.normal { color: @accent; }
 #custom-hotspot.on { border-color: alpha(@accent, 0.6); }
 #custom-notifications.dnd, #clockbox #custom-notifications.dnd { color: @red; }
@@ -770,12 +775,12 @@ tooltip label {
    follows the theme's main colour (@accent); every other colour here is
    fixed and means one thing, in every theme:
      clock blue · network teal · system peach · quick settings pink
-     docker sky · phone green · caffeine peach · bluetooth blue
+     docker sky · jyoti peach · ekatva green · bluetooth blue
      hotspot teal · recording red · caps lock yellow · music pink
    Last in the file: it overrides the one-accent rules above.
    =================================================================== */
 #workspaces, #clockbox, #connectivity, #system, #custom-nada, #custom-quick,
-#custom-docker, #custom-phone, #custom-caffeine, #bluetooth, #custom-hotspot,
+#custom-docker, #custom-jyoti, #custom-ekatva, #bluetooth, #custom-hotspot,
 #custom-recording, #custom-capslock, #custom-numlock, #custom-notifications, #custom-power {
     background-color: alpha(@crust, 0.88);
     border: 1px solid alpha(@surface1, 0.9);
@@ -789,9 +794,10 @@ tooltip label {
 #custom-quick     { border-color: alpha(@pink, 0.75);  box-shadow: 0 0 8px alpha(@pink, 0.35); color: @pink; }
 #custom-nada      { border-color: alpha(@pink, 0.6);   box-shadow: 0 0 8px alpha(@pink, 0.25); }
 #custom-docker    { border-color: alpha(@sky, 0.7);    box-shadow: 0 0 8px alpha(@sky, 0.3); }
-#custom-phone     { border-color: alpha(@green, 0.7);  box-shadow: 0 0 8px alpha(@green, 0.3); }
-#custom-caffeine  { border-color: alpha(@peach, 0.7);  box-shadow: 0 0 8px alpha(@peach, 0.3); }
-#custom-caffeine.active { color: @peach; }
+#custom-jyoti  { border-color: alpha(@peach, 0.7);  box-shadow: 0 0 8px alpha(@peach, 0.3); }
+#custom-jyoti.active { color: @peach; }
+#custom-ekatva    { border-color: alpha(@green, 0.7);  box-shadow: 0 0 8px alpha(@green, 0.3); }
+#custom-ekatva.active { color: @green; }
 #bluetooth        { border-color: alpha(@blue, 0.7);   box-shadow: 0 0 8px alpha(@blue, 0.3); }
 #custom-hotspot, #custom-hotspot.on { border-color: alpha(@teal, 0.7); box-shadow: 0 0 8px alpha(@teal, 0.3); color: @teal; }
 #custom-recording { border-color: alpha(@red, 0.8);    box-shadow: 0 0 10px alpha(@red, 0.45); }
@@ -806,8 +812,8 @@ tooltip label {
 #system:hover       { border-color: @peach; box-shadow: 0 0 12px alpha(@peach, 0.55); }
 #custom-quick:hover, #custom-nada:hover { border-color: @pink; box-shadow: 0 0 12px alpha(@pink, 0.55); }
 #custom-docker:hover    { border-color: @sky;   box-shadow: 0 0 12px alpha(@sky, 0.5); }
-#custom-phone:hover     { border-color: @green; box-shadow: 0 0 12px alpha(@green, 0.5); }
-#custom-caffeine:hover  { border-color: @peach; box-shadow: 0 0 12px alpha(@peach, 0.5); }
+#custom-jyoti:hover  { border-color: @peach; box-shadow: 0 0 12px alpha(@peach, 0.5); }
+#custom-ekatva:hover    { border-color: @green; box-shadow: 0 0 12px alpha(@green, 0.5); }
 #bluetooth:hover        { border-color: @blue;  box-shadow: 0 0 12px alpha(@blue, 0.5); }
 #custom-hotspot:hover   { border-color: @teal;  box-shadow: 0 0 12px alpha(@teal, 0.5); }
 #workspaces:hover       { border-color: @surface2; box-shadow: none; }
@@ -837,11 +843,9 @@ tooltip { border: 1px solid alpha(@surface2, 0.8); }
 /* State classes above set their own borders; in Neon edge each capsule keeps
    its colour whatever its state, and "off" is shown by a dimmed icon. */
 #custom-docker.running, #custom-docker.idle { border-color: alpha(@sky, 0.7); }
-#custom-phone.connected, #custom-phone.disconnected { border-color: alpha(@green, 0.7); }
-#custom-phone.request { border-color: @yellow; box-shadow: 0 0 10px alpha(@yellow, 0.45); } /* a request waiting on you */
-#custom-caffeine.active, #custom-caffeine.inactive { border-color: alpha(@peach, 0.7); }
+#custom-jyoti.active, #custom-jyoti.inactive { border-color: alpha(@peach, 0.7); }
 #bluetooth.on, #bluetooth.off, #bluetooth.disabled, #bluetooth.connected { border-color: alpha(@blue, 0.7); }
-/* Every capsule glows in its own colour, like docker, caffeine and system:
+/* Every capsule glows in its own colour, like docker, jyoti and system:
    workspaces flamingo (the active one alone is in the theme's colour),
    caps and num lock yellow (brighter while locked), power red. */
 #workspaces { border-color: alpha(@flamingo, 0.7); box-shadow: 0 0 8px alpha(@flamingo, 0.3); }
@@ -851,9 +855,8 @@ tooltip { border: 1px solid alpha(@surface2, 0.8); }
 #custom-power { border-color: alpha(@red, 0.7); box-shadow: 0 0 8px alpha(@red, 0.3); }
 #custom-recording, #custom-recording.active { border-color: alpha(@red, 0.8); box-shadow: 0 0 10px alpha(@red, 0.45); }
 #custom-hotspot, #custom-hotspot.on { box-shadow: 0 0 8px alpha(@teal, 0.35); }
-#custom-phone.connected, #custom-phone.disconnected { box-shadow: 0 0 8px alpha(@green, 0.3); }
 #custom-docker.running, #custom-docker.idle { box-shadow: 0 0 8px alpha(@sky, 0.3); }
-#custom-caffeine.active, #custom-caffeine.inactive { box-shadow: 0 0 8px alpha(@peach, 0.3); }
+#custom-jyoti.active, #custom-jyoti.inactive { box-shadow: 0 0 8px alpha(@peach, 0.3); }
 #bluetooth.on, #bluetooth.off, #bluetooth.disabled, #bluetooth.connected { box-shadow: 0 0 8px alpha(@blue, 0.3); }
 /* The clock capsule glows in its bell's yellow; the workspaces capsule in the
    theme's colour, the same as the active workspace's underline (the only
@@ -864,3 +867,34 @@ tooltip { border: 1px solid alpha(@surface2, 0.8); }
 #workspaces { border-color: alpha(@accent, 0.75); box-shadow: 0 0 8px alpha(@accent, 0.35); }
 #workspaces:hover { border-color: @accent; box-shadow: 0 0 12px alpha(@accent, 0.55); }
 #clockbox #clock:not(.time) { color: @text; font-weight: 600; }
+
+/* JYOTI, by level (last: overrides the peach rules above). On blue,
+   Strong ember with a brighter glow, as in ekatva's phone app. */
+#custom-jyoti.active { color: @jyoti-akhanda; border-color: alpha(@jyoti-akhanda, 0.7); box-shadow: 0 0 8px alpha(@jyoti-akhanda, 0.35); }
+#custom-jyoti.active:hover { border-color: @jyoti-akhanda; box-shadow: 0 0 12px alpha(@jyoti-akhanda, 0.55); }
+#custom-jyoti.strong { color: @jyoti-nanda; border-color: alpha(@jyoti-nanda, 0.85); box-shadow: 0 0 12px alpha(@jyoti-nanda, 0.55); }
+#custom-jyoti.strong:hover { border-color: @jyoti-nanda; box-shadow: 0 0 16px alpha(@jyoti-nanda, 0.7); }
+
+/* JYOTI's lamps (last, so nothing above can reset them). */
+/* Each SVG is drawn at exactly the size it's shown (18 px; the @2 one, 36 px,
+   for a screen at scale 2), so the lamp is never scaled: sharp, not soft. */
+#custom-jyoti.active { background-image: -gtk-scaled(url("jyoti-akhanda.svg"), url("jyoti-akhanda@2.svg")); }
+#custom-jyoti.strong { background-image: -gtk-scaled(url("jyoti-nandadipa.svg"), url("jyoti-nandadipa@2.svg")); }
+
+/* CALL — the phone's call in progress (ekatva), left of the bell: who and for
+   how long. Green while you're on it (it's live), yellow and breathing while
+   it rings (it waits on you). Hidden when there's no call. */
+#custom-call { padding: 2px 14px 2px 12px; font-weight: 600; }
+#custom-call.active {
+    color: @green; border-color: alpha(@green, 0.75); box-shadow: 0 0 10px alpha(@green, 0.35);
+}
+#custom-call.ringing {
+    color: @yellow; border-color: alpha(@yellow, 0.85); box-shadow: 0 0 12px alpha(@yellow, 0.5);
+    animation: call-ring 1.4s ease-in-out infinite;
+}
+#custom-call:hover { box-shadow: 0 0 14px alpha(@green, 0.55); }
+@keyframes call-ring {
+    0% { box-shadow: 0 0 6px alpha(@yellow, 0.25); }
+    50% { box-shadow: 0 0 16px alpha(@yellow, 0.65); }
+    100% { box-shadow: 0 0 6px alpha(@yellow, 0.25); }
+}

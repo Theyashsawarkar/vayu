@@ -132,7 +132,7 @@ they want without the rest of vayu.
   [`vyom`](https://github.com/Theyashsawarkar/vyom), the launcher/panels
   runtime that replaced wofi and nwg-bar, and its tools, each its own
   repo: dvara (apps), ganit (calculator), smriti (clipboard), bhava (emoji),
-  tarang (Wi-Fi + hotspot), setu (Bluetooth), doot (phone), patra (Docker),
+  tarang (Wi-Fi + hotspot), setu (Bluetooth), patra (Docker),
   akashvani (notifications), raga (YouTube), mudra (keybindings), urja
   (battery), vishram (power menu), kendra (quick settings). `install.sh`
   clones Vyom to `~/.local/share/vyom/core` and the tools

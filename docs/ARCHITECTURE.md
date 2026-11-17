@@ -81,7 +81,7 @@ Verified without ever touching the real `~/dotfiles` checkout's git state: clone
 
 Asked directly for a waybar battery-icon click to offer a charge-limit picker (70% suggested) for better long-term battery health. Checked the actual hardware first rather than assuming a `charge_control_end_threshold`-style sysfs knob exists: this laptop (Acer Aspire A315-23) has none, and the only Linux workaround -- a community `acer-wmi-battery` kernel module -- is untested on this exact model (its own `MODELS.md` lists several other A315 variants working/not-working, this one's in neither list) and only offers a fixed 80% toggle regardless. Acer's own Community forum also has another A315-23 owner reporting a charger-plug-in boot crash after enabling the equivalent feature in Acer's *own official Windows software*, on this same model -- a strong signal the EC-level feature itself is unreliable here regardless of OS. See the changelog's full entry for the sourcing. Landed on a software-only reminder instead of either silently building a fake control or silently dropping the request.
 
-`battery-limit-picker.py`: wofi popup, same style as `docker-picker.py`/the other pickers (Sky = selectable option, Red = Off, Green = whatever's currently set). Writes a plain percentage or `off` to `~/.local/state/battery-limit/threshold` -- the same `~/.local/state/<feature>/` convention `caffeine-toggle.sh`/`notification-mode.sh` already use, not a new pattern.
+`battery-limit-picker.py`: wofi popup, same style as `docker-picker.py`/the other pickers (Sky = selectable option, Red = Off, Green = whatever's currently set). Writes a plain percentage or `off` to `~/.local/state/battery-limit/threshold` -- the same `~/.local/state/<feature>/` convention `jyoti-toggle.sh`/`notification-mode.sh` already use, not a new pattern.
 
 `battery-limit-watch.sh` (`battery-limit-watch.service`, `WantedBy=default.target`, added to `install.sh`'s enable list): reacts to real `power_supply` uevents (same `udevadm monitor` pattern as `battery-warning-dismiss.service`) plus a 60 s tick, so a plug/unplug during suspend is still caught after resume. Nudges once per situation: **plug in while already at/above the limit** ("charging isn't needed, unplug" -- the preventive case), **crossing the limit while charging**, and **reaching 100% after being nudged**. Silent when the reminder is off, on battery, plugging in below the limit, or when the service/boot starts with the charger already in. Changing the limit re-arms it (`.notified` stores the limit it fired for); the picker itself announces "already past this limit" immediately if you set it while plugged and above. Power-supply devices are found by their `type` (Battery / anything else with `online`), not hardcoded `BAT1`/`ACAD`. The chosen limit persists in `~/.local/state/battery-limit/threshold` across reboots.
 
@@ -337,7 +337,7 @@ waits on sway's `shutdown` IPC event, stops the target, and unsets
 
 Why it matters: the user manager lingers (`Linger=yes`), so it outlives a logout.
 Before this, `PartOf=graphical-session.target` did nothing: swayidle,
-swaylock-on-sleep, sway-audio-idle-inhibit, bar-events, kdeconnect, phone-events and
+swaylock-on-sleep, sway-audio-idle-inhibit, bar-events, KDE Connect (since removed) and
 the portals kept running after sway exited. They crash-looped against the dead
 compositor (kdeconnect dumped core every 2 s, and xdg-desktop-portal-luminous hit
 its start limit and stayed failed into the next login). A new Wayland-client user
@@ -351,15 +351,16 @@ queued, which is how the portals outlived a logout in 2026-10.
 
 ### Every long-running piece is a user unit, logging to the journal
 
-`sway-session.sh` starts, after the import: mako, waybar, vyom (panels), nada
-(music), bar-events, kdeconnect + phone-events, sway-audio-idle-inhibit,
-swaylock-on-sleep, batsignal, cliphist@text and cliphist@image; then restores
-the notification mode and starts swayidle unless caffeine mode is on. Each:
+`sway-session.sh` starts, after the import: waybar, vyom (panels, and
+notifications: akashvani, the notification server, lives in the Vyom daemon
+since 2026-11-17), nada (music), bar-events, ekatva (phone),
+sway-audio-idle-inhibit, swaylock-on-sleep, batsignal, cliphist@text and
+cliphist@image; then starts swayidle unless jyoti is on. Each:
 
 - **restarts on a crash** with backoff (`Restart=`, `RestartSteps=5`,
   `RestartMaxDelaySec=60`, `StartLimitIntervalSec=0`): a quick repeated failure
-  used to hit the start limit and stay dead for the session. waybar and mako
-  are their packages' units with a drop-in (`*.service.d/vayu.conf`: run
+  used to hit the start limit and stay dead for the session. waybar is its
+  package's unit with a drop-in (`*.service.d/vayu.conf`: run
   `vayu-theme-ensure` first). A drop-in folder must be a real directory
   (`STOW_REAL_DIRS`): systemd ignores a `*.service.d` that is a symlink, which
   is what stow makes, and mpd's drop-in silently never applied.
@@ -403,36 +404,36 @@ follows it:
 The settings that tie them together live in varna: `ui.glass`, the
 palette, the fonts. Change them there, never per tool.
 
-## Idle management: swayidle as a systemd user service, plus caffeine mode
+## Idle management: swayidle as a systemd user service, plus jyoti
 
 `swayidle` (screen dimming, lock, suspend timeouts — `sway/.config/sway/idle/config`)
 runs as a systemd user service, `systemd/.config/systemd/user/swayidle.service`, not a
 raw `exec` line. `sway/config` starts it with `exec ~/.local/bin/swayidle-startup.sh`
 rather than launching the process directly.
 
-This exists specifically so caffeine mode — the coffee-cup icon in waybar,
-`custom/caffeine` — can be trivial and reliable: on is `systemctl --user stop
+This exists specifically so jyoti — the coffee-cup icon in waybar,
+`custom/jyoti` — can be trivial and reliable: on is `systemctl --user stop
 swayidle.service`, off is `systemctl --user start swayidle.service`. No PID files, no
 state tracking for the *live* state; systemd's own active/inactive state *is* the
-caffeine state, which `caffeine-status.sh` just reads back for the waybar icon.
+jyoti state, which `jyoti-status.sh` just reads back for the waybar icon.
 Stopping the whole service (rather than e.g. a `systemd-inhibit` suspend lock) is
 deliberate — an inhibitor wouldn't stop swayidle's own `timeout 600 swaymsg output *
 dpms off` line, since that never goes through logind at all. Only actually stopping
 swayidle keeps the screen on.
 
-### Caffeine mode surviving a reboot
+### Jyoti surviving a reboot
 
-Caffeine mode used to silently reset to off on every reboot, no matter what it was
+Jyoti used to silently reset to off on every reboot, no matter what it was
 left at. Root cause: `swayidle.service` is `enabled` (`WantedBy=default.target` --
 confirmed via `systemctl --user is-enabled swayidle.service`), so systemd's user
 manager auto-starts it at *every* login on its own, completely independent of
 sway -- the plain `exec systemctl --user restart swayidle.service` line that used
-to be here was reasserting "start" regardless of what caffeine mode had last been
+to be here was reasserting "start" regardless of what jyoti had last been
 set to, since it had no way to know.
 
-Fixed with a tiny persisted-state file, `~/.local/state/caffeine/enabled` (present
-= caffeine on, absent = off -- a marker file, not a content-parsing exercise).
-`caffeine-toggle.sh` now writes/removes it alongside stopping/starting the service.
+Fixed with a tiny persisted-state file, `~/.local/state/jyoti/enabled` (present
+= jyoti on, absent = off -- a marker file, not a content-parsing exercise).
+`jyoti-toggle.sh` now writes/removes it alongside stopping/starting the service.
 `scripts/.local/bin/swayidle-startup.sh` (what sway's `exec` line actually calls
 now) is the single source of truth for swayidle's state at startup: if the marker
 is present, it explicitly stops the service systemd's `default.target` just
@@ -441,13 +442,13 @@ did (still needed for the `dbus-update-activation-environment` ordering reason
 documented right above this `exec` line -- swayidle started by systemd at login
 can predate that).
 
-Verified the actual failure mode, not just the fix: toggled caffeine on (marker
+Verified the actual failure mode, not just the fix: toggled jyoti on (marker
 created, service stopped), manually re-triggered the auto-start systemd would do
 at the next login (`systemctl --user start swayidle.service`), confirmed the
 service was back to active exactly as it would incorrectly be pre-fix, then ran
 `swayidle-startup.sh` the way sway's `exec` line would and confirmed it correctly
 stopped the service again. Also verified the off case (no marker -> normal
-restart, stays active) and that `caffeine-status.sh` reports the right state
+restart, stays active) and that `jyoti-status.sh` reports the right state
 through a full toggle sequence. Couldn't trigger a literal reboot to verify this
 against a real fresh sway startup without disrupting the live session, so this
 rests on an exact functional simulation of the real startup sequence rather than
@@ -485,7 +486,7 @@ writing the fix, not just assumed it: reproduced the dead state, ran
 no-op theory), then `reset-failed` immediately followed by `restart` (came up
 active in under a second) -- isolated proof before touching the real script.
 Verified the actual fixed script afterward too: ran it live in both of its own
-branches (caffeine-on -> correctly stops a freshly-reset unit; caffeine-off ->
+branches (jyoti-on -> correctly stops a freshly-reset unit; jyoti-off ->
 correctly restarts and stays active), and relaunched rmpc from cold afterward to
 confirm the reboot hadn't quietly broken anything else in the same session
 (config/theme loaded correctly, `cache_dir` resolved, zero errors -- see the rmpc
@@ -495,7 +496,7 @@ theme entries above).
 `swayidle.service`, `swaylock-on-sleep.service` and `sway-audio-idle-inhibit.service`
 now have no `[Install]` section (like `bar-events.service`): nothing starts them
 before sway exists, sway's config starts them after `dbus-update-activation-environment`,
-and `swayidle-startup.sh` is just "start unless the caffeine marker exists". The
+and `swayidle-startup.sh` is just "start unless the jyoti marker exists". The
 `reset-failed` workaround is gone. Don't re-enable them; a Wayland client can't run
 from `default.target`.
 
@@ -505,21 +506,21 @@ this reboot), but confirmed currently healthy and running since this exact boot
 with no crash -- not chased further here since it isn't reproducing right now,
 noted for awareness rather than fixed blind.
 
-### Caffeine mode was silently disabling the lock-before-sleep security hook
+### Jyoti was silently disabling the lock-before-sleep security hook
 
 Real bug, found while investigating the lid-close/hibernate incident below:
 closed and reopened the lid, the system suspended and resumed fine, but
 `swaylock` never ran -- straight back to a logged-in session, no lock
-screen at all. Root cause: `~/.local/state/caffeine/enabled` had been
+screen at all. Root cause: `~/.local/state/jyoti/enabled` had been
 stuck present since two days earlier (a forgotten toggle, not a crash),
-and per the "Caffeine mode surviving a reboot" section above,
+and per the "Jyoti surviving a reboot" section above,
 `swayidle-startup.sh` stops `swayidle.service` *entirely* whenever that
 marker exists -- which also took the `before-sleep 'swaylock ...'` hook
 in `sway/idle/config` down with it. Confirmed directly:
 `systemctl --user status swayidle.service` showed `inactive (dead)` the
 whole time, so `before-sleep` never had a service to fire from.
 
-This is a real design gap, not just a stale-flag accident: caffeine
+This is a real design gap, not just a stale-flag accident: jyoti
 mode's whole point is "don't lock/dim/suspend on idle while I'm using
 this," and that should have nothing to do with "lock the screen before
 the lid physically closes" -- those are different triggers with
@@ -529,16 +530,16 @@ into its own file, `sway/idle/lock-on-sleep`, run by a second, separate
 systemd user service, `swaylock-on-sleep.service` -- always
 started unconditionally from `sway/config` right alongside
 `sway-audio-idle-inhibit.service`, and never touched by
-`caffeine-toggle.sh`/`swayidle-startup.sh`. Caffeine mode still stops
+`jyoti-toggle.sh`/`swayidle-startup.sh`. Jyoti still stops
 the idle-timeout instance (dim/lock-on-idle/auto-suspend) exactly as
-before; lid-close now locks every time regardless of caffeine state.
+before; lid-close now locks every time regardless of jyoti state.
 
 Verified live across several real lid close/open cycles after the fix
 (see the hibernate incident below for the first one, which is what
 originally surfaced this): the lock screen came up correctly, and
 `swaylock-on-sleep.service` stayed `active (running)` throughout,
 untouched while `swayidle.service` was separately toggled on and off
-via caffeine mode.
+via jyoti.
 
 ## Lid-close, suspend vs hibernate: a real hibernate/amdgpu resume crash
 
@@ -837,7 +838,7 @@ nor `tooltip` anywhere in its config schema (confirmed: `man
 waybar-keyboard-state` lists every option it accepts, click/tooltip
 aren't among them), so no amount of CSS or config could make it
 clickable. A custom module can do both, same `{text,class,tooltip}` JSON
-pattern already used for `custom/caffeine`/`custom/docker`.
+pattern already used for `custom/jyoti`/`custom/docker`.
 
 **Reading state** (`keylock-status.sh capslock|numlock`): reads
 `/sys/class/leds/*::capslock/brightness` / `*::numlock/brightness`
@@ -893,7 +894,7 @@ Keycodes: `58` (capslock), `69` (numlock) -- Linux's standard
 **Cursor**: no explicit CSS needed -- waybar shows a pointer cursor
 automatically for any module with an `on-click` handler (standard GTK
 `EventBox` behavior), same as every other already-clickable pill in this
-bar (docker, caffeine, network, pulseaudio, bluetooth). This is a
+bar (docker, jyoti, network, pulseaudio, bluetooth). This is a
 different code path entirely from the wofi popups' cursor limitation
 documented elsewhere in this file -- that one is wofi's own dmenu list
 never requesting a cursor-shape change at all, which is unrelated to how
@@ -921,7 +922,7 @@ official light/dark variant pair -- one theme name
 (`gtk-icon-theme-name=candy-icons` in `gtk/.config/gtk-{3,4}.0/
 settings.ini`) covers both palettes, and its symbolic icons already carry
 real fills rather than Papirus's `fill:currentColor` convention. It also
-has real coverage gaps Papirus didn't (no `dialog-*`/weather/caffeine/
+has real coverage gaps Papirus didn't (no `dialog-*`/weather/jyoti/
 brightness icons at all) -- every script that needed one of those now
 falls back to `AdwaitaLegacy` (`adwaita-icon-theme-legacy`, real-fill,
 non-symbolic PNGs) or the closest real candy-icons concept instead; see
@@ -936,7 +937,7 @@ package -- unrelated to the icon theme itself, still needed so
 **The toggle**: `scripts/.local/bin/theme-status.sh` (waybar `custom/
 theme` module, positioned left of the wallpaper button in
 `modules-right`) + `theme-toggle.sh` (its `on-click`). Pure `dconf`
-reads/writes -- no state file, unlike `caffeine-toggle.sh`'s pattern,
+reads/writes -- no state file, unlike `jyoti-toggle.sh`'s pattern,
 deliberately: dconf already persists across reboots on its own (it's a
 real database), so a second copy of "which mode is active" here would
 just be one more thing that could silently drift from the truth, the
@@ -1966,7 +1967,7 @@ repo -- `~/.config/termusic/` also holds `data.db`/`library2.db`/
 configuration) and termusic's own 213 other bundled theme files, all
 deliberately left as real local files, not symlinked in, the same
 config-vs-state boundary already established for
-`~/.local/state/notification-mode/` and `~/.local/state/caffeine/`.
+`~/.local/state/notification-mode/` and `~/.local/state/jyoti/`.
 This works cleanly because `~/.config/termusic/` already existed as a
 real directory (termusic creates it itself on first run) *before* this
 package was ever stowed -- confirmed with `stow -n -v` first that GNU
@@ -2761,7 +2762,7 @@ plausible-sounding assumption:**
    restarting mako mid-test and checking `makoctl mode` immediately
    after. Without a fix, choosing `dnd` once would silently drop back to
    full popups-and-sound on every login with no indication anything
-   changed. Fixed the same way `caffeine-toggle.sh`'s own state survives
+   changed. Fixed the same way `jyoti-toggle.sh`'s own state survives
    a reboot elsewhere in this repo: a persisted state file
    (`~/.local/state/notification-mode/current`) plus a startup script
    (`notification-mode-restore.sh`, run right after `exec mako` in
@@ -3031,6 +3032,12 @@ limitation rather than something silently assumed to carry over.
 restart to actually take effect, not applied automatically here since
 restarting someone's browser out from under their open tabs isn't this
 repo's call to make.
+
+**Since 2026-11-14**, Vayu does manage browser prefs, without stowing a profile:
+`browser-perf-prefs` finds every Zen and Firefox profile through `profiles.ini`
+and keeps a marked block in its `user.js` (GPU video decoding, AV1 off on GPUs
+that can't decode it, a slower session save), leaving the rest of the file alone.
+`install.sh` and every login run it.
 
 ## A real incident: stow symlinks silently broken across the whole desktop
 

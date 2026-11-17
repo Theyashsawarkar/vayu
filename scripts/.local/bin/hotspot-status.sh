@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hotspot segment for waybar (custom/hotspot), JSON like phone-status.sh.
+# Hotspot segment for waybar (custom/hotspot), JSON like docker-status.sh.
 #   on:  access-point glyph + how many devices are connected, teal border;
 #        the tooltip has the name, password, devices and internet source
 #   off: nothing (waybar hides an empty module)

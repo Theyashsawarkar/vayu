@@ -65,12 +65,12 @@ log "restowed: ${PKGS[*]}"
 # Told explicitly below instead: log out/reboot for those to actually
 # take effect, same as any other systemd unit-file edit on this system.
 swaymsg reload >/dev/null 2>&1 || true
-makoctl reload >/dev/null 2>&1 || true
+akashvani reload >/dev/null 2>&1 || true
 systemctl --user daemon-reload >/dev/null 2>&1 || true
 
 log "update applied successfully on $BRANCH"
 notify-send -u normal -i "$ICON_OK" "Desktop updated" \
-    "Pulled and restowed the latest $BRANCH. Sway/mako reloaded live -- log out or reboot if any systemd service definitions changed."
+    "Pulled and restowed the latest $BRANCH. Sway and the notification popups reloaded live -- log out or reboot if any systemd service definitions changed."
 # greeter/ is system files (needs sudo), so a restow doesn't install it.
 if ! git diff --quiet "$OLD_HEAD" HEAD -- greeter/; then
     log "greeter/ changed: run greeter/apply.sh"

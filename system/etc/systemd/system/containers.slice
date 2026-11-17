@@ -1,0 +1,11 @@
+# Vayu: every Docker container runs here (docker/daemon.json cgroup-parent),
+# at a third of the CPU and disk share the desktop has (weight 30 vs 100):
+# a dev stack (postgres, an antivirus scanner, object storage) yields to the
+# apps you're using, and gets the whole machine when you aren't. Not a cap.
+[Unit]
+Description=Docker containers (lower CPU and I/O weight than the desktop)
+Before=slices.target
+
+[Slice]
+CPUWeight=30
+IOWeight=30

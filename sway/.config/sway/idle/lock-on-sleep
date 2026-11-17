@@ -1,8 +1,8 @@
 # Security: lock the screen immediately before the system enters sleep/
 # suspend, unconditionally -- deliberately its own swayidle instance
-# (run by swaylock-on-sleep.service) so caffeine mode stopping the main
+# (run by swaylock-on-sleep.service) so jyoti stopping the main
 # idle-timeout instance (see ~/.config/sway/idle/config) never disables
-# this too. Lid-close should lock every time, caffeine or not.
+# this too. Lid-close should lock every time, jyoti or not.
 # -f: swaylock forks once the screen is locked. Without it, swayidle -w
 # blocked until unlock, so it missed logind's 5s sleep delay and queued
 # the next PrepareForSleep: a night of lid wake/re-suspend cycles came

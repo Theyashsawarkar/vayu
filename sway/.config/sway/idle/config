@@ -1,6 +1,6 @@
 # Lock the screen after 15 minutes of no input (same wallpaper as the
 # desktop, via lockconfig's image=) -- was 5. Only reachable at all with
-# caffeine mode off (caffeine-toggle.sh stops this whole service rather
+# jyoti off (jyoti-toggle.sh stops this whole service rather
 # than inhibiting suspend, see its own comments) and with nothing holding
 # the wayland idle-inhibit lock: sway-audio-idle-inhibit.service holds it
 # for as long as literally anything is outputting or receiving audio
@@ -24,8 +24,8 @@ timeout 1200 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"'
 timeout 2400 'systemctl suspend'
 
 # Lock-before-sleep used to live here as a `before-sleep` hook, but that
-# meant caffeine mode (which stops this whole swayidle instance) also
+# meant jyoti (which stops this whole swayidle instance) also
 # disabled the lid-close lock -- confirmed live: suspend fired fine but
 # swaylock never ran. Moved to its own always-on instance instead:
 # ~/.config/sway/idle/lock-on-sleep, run by swaylock-on-sleep.service,
-# which caffeine-toggle.sh never touches.
+# which jyoti-toggle.sh never touches.

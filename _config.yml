@@ -75,7 +75,6 @@ defaults:
 exclude:
   - gtk/
   - kitty/
-  - mako/
   - mpd/
   - nvim/
   - packages/

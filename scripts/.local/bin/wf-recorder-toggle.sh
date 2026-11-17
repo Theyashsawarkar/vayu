@@ -105,5 +105,10 @@ else
 fi
 printf '%s\n%s\n%s\n' "$pid" "$OUTFILE" "$(date +%s)" >"$PIDFILE"
 waybar-signal "$BAR_SIGNAL"
+# The REC timer ticks only while recording: the bar no longer runs its
+# status script every second all day. Ends with wf-recorder, however it ends.
+( while kill -0 "$pid" 2>/dev/null; do sleep 1; waybar-signal "$BAR_SIGNAL"; done
+  waybar-signal "$BAR_SIGNAL" ) </dev/null >/dev/null 2>&1 &
+disown
 sound=${audio:+with sound}
 notify-send -i "$ICON_RECORD" -u low "Recording started" "${sound:-no sound}, $encoder encoding. Same key (or the bar's REC) stops."

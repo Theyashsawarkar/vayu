@@ -7,19 +7,19 @@
 	// Left: where you are (workspaces with their apps, what's playing).
 	// Middle: when (one capsule: notifications, time, date).
 	// Right: the machine, from temporary to permanent: indicators that only
-	// show while something is on (caps lock, hotspot, containers, phone,
-	// caffeine), then connectivity, then system, then quick settings (which
+	// show while something is on (caps lock, hotspot, containers,
+	// ekatva, jyoti), then connectivity, then system, then quick settings (which
 	// also has the power menu and lock). Rare toggles (theme, wallpaper, DND, power profile...) live in
 	// quick settings (vyom quick), not on the bar.
 	"modules-left": ["sway/workspaces", "custom/nada"],
-	"modules-center": ["group/clockbox"],
+	"modules-center": ["custom/call", "group/clockbox"],
 	"modules-right": [
 		"custom/recording",
 		"custom/capslock",
 		"custom/hotspot",
 		"custom/docker",
-		"custom/phone",
-		"custom/caffeine",
+		"custom/ekatva",
+		"custom/jyoti",
 		"bluetooth",
 		"group/connectivity",
 		"group/system",
@@ -49,7 +49,6 @@
 			"class<discord|vesktop|Slack|slack>": "  󰭹",
 			"class<Spotify|spotify|mpv|rmpc>": "  󰝚",
 			"class<jetbrains-studio|android-studio>": "  󰀲",
-			"class<org.kde.kdeconnect.*>": "  󰄜",
 			"class<libreoffice.*|soffice>": "  󰈙",
 			"class<pavucontrol|org.pulseaudio.pavucontrol>": "  󰕾"
 		},
@@ -95,6 +94,17 @@
 	// network/network#speed.
 	"format": "{:%a %d %b}",
 	"tooltip-format": "<tt><small>{calendar}</small></tt>"
+	},
+
+	// The phone's call in progress (ekatva), left of the bell: who, and for
+	// how long (1h 20m). Hidden with no call. Click opens ekatva on Calls,
+	// right click hangs up. One long-running watch, no polling.
+	"custom/call": {
+		"exec": "$HOME/.local/bin/ekatva call --waybar",
+		"return-type": "json",
+		"restart-interval": 5,
+		"on-click": "$HOME/.local/bin/ekatva-open.sh calls",
+		"on-click-right": "$HOME/.local/bin/ekatva call hangup"
 	},
 
 	"custom/notifications": {
@@ -172,26 +182,31 @@
 		"on-click": "$HOME/.local/bin/vyom setu"
 	},
 
-	"custom/phone": {
-		"exec": "$HOME/.local/bin/phone-status.sh",
-		"interval": "once",
-		"signal": 13,
-		"return-type": "json",
-		"on-click": "$HOME/.local/bin/vyom doot"
-	},
-
 	// Shown only while recording (wf-recorder-toggle.sh); a click stops it.
+	// Not polled: the toggle signals it every second while it records.
 	"custom/recording": {
 		"exec": "~/.local/bin/wf-recorder-status.sh",
 		"on-click": "~/.local/bin/wf-recorder-toggle.sh",
-		"interval": 1,
+		"interval": "once",
 		"signal": 16,
 		"return-type": "json"
 	},
 
-	"custom/caffeine": {
-		"exec": "~/.local/bin/caffeine-status.sh",
-		"on-click": "~/.local/bin/caffeine-toggle.sh",
+	// Shown only while ekatva (the phone link) is on: off by default, and the
+	// on/off is remembered across reboots (ekatva-toggle.sh). Click opens it,
+	// right click turns it off; quick settings has the switch.
+	"custom/ekatva": {
+		"exec": "$HOME/.local/bin/ekatva-status.sh",
+		"interval": "once",
+		"signal": 13,
+		"return-type": "json",
+		"on-click": "$HOME/.local/bin/ekatva-open.sh",
+		"on-click-right": "$HOME/.local/bin/ekatva-toggle.sh off"
+	},
+
+	"custom/jyoti": {
+		"exec": "~/.local/bin/jyoti-status.sh",
+		"on-click": "~/.local/bin/jyoti-toggle.sh",
 		"interval": "once",
 		"signal": 12,
 		"return-type": "json"
@@ -277,7 +292,7 @@
 		"on-scroll-up": "$HOME/.local/bin/nada ctl seek +10",
 		"on-scroll-down": "$HOME/.local/bin/nada ctl seek -10"
 	},
-	// Quick settings (Vyom): Wi-Fi, Bluetooth, hotspot, DND, caffeine,
+	// Quick settings (Vyom): Wi-Fi, Bluetooth, hotspot, DND, jyoti,
 	// theme, wallpaper, power profile, volume, brightness, lock, power.
 	"custom/quick": {
 		"format": "󰒓",

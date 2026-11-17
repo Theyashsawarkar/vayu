@@ -79,7 +79,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 * 🖥️ Sway window manager
 * 📊 Waybar status bar
 * 🚀 [Vyom](https://github.com/Theyashsawarkar/vyom): launcher and system panels (apps, calculator, clipboard, emoji, Wi‑Fi, Bluetooth, phone, Docker, notifications, keybindings, battery, power, quick settings), each tool its own repo
-* 🔔 Mako notifications
+* 🔔 Notifications by [akashvani](https://github.com/Theyashsawarkar/akashvani): its own notification server, popups in the theme, rules, history, do not disturb
 * 🐱 Kitty terminal
 * 📝 Neovim development environment
 * 🔀 Tmux session management
@@ -97,7 +97,7 @@ to `$HOME`, what `install.sh` does step by step, and what's deliberately exclude
 | Window Manager       | Sway     |
 | Status Bar           | Waybar   |
 | Application Launcher | Vyom (dvara) |
-| Notifications        | Mako     |
+| Notifications        | akashvani (in Vyom) |
 | Lock Screen          | swaylock |
 | Wallpaper            | swaybg   |
 
@@ -134,7 +134,6 @@ Each directory represents an independent package managed by GNU Stow.
 ├── splash/          # Plymouth boot splash (the animated logo), splash/apply.sh; not stowed
 ├── gtk/             # GTK 3/4 settings.ini (Catppuccin Mocha theme)
 ├── kitty/
-├── mako/
 ├── mpd/             # MPD daemon config (music_directory, auto_update)
 ├── nvim/
 ├── scripts/         # ~/.local/bin utilities used by sway keybindings
@@ -187,7 +186,7 @@ Install individual packages:
 
 ```bash
 stow kitty tmux nvim zed zsh scripts systemd gtk xdg
-stow sway waybar mako vyom
+stow sway waybar vyom
 stow mpd
 ```
 

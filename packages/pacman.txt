@@ -40,7 +40,6 @@ inxi
 iw
 iwd
 jq
-kdeconnect
 kitty
 lazygit
 less
@@ -51,7 +50,6 @@ libqalculate
 libsecret
 linux
 linux-firmware
-mako
 mesa-utils
 mpd
 mpv

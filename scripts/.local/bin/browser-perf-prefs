@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# browser-perf-prefs [--check]: writes Vayu's performance prefs into every
+# Zen and Firefox profile's user.js, between marker lines (the rest of the
+# file is left alone). Profiles are found through each browser's
+# profiles.ini: their folder names are random per install, so this can't
+# be a stow package. user.js is read when the browser starts: restart it.
+#
+#   - Video is decoded by the GPU (VA-API), not the CPU.
+#   - AV1 is turned off on a GPU that can't decode it (detected: vainfo
+#     when installed, else the CPU generation: Intel before 11th gen, AMD
+#     before RDNA 2). YouTube then sends VP9 or H.264, which such GPUs
+#     decode; AV1 in software took most of a 2-core CPU.
+#   - The open tabs are saved every 60 s instead of every 15 s.
+#
+# --check lists the profiles whose block differs, exit 1 if any.
+set -euo pipefail
+check=false; [ "${1:-}" = "--check" ] && check=true
+BEGIN="// >>> vayu: browser-perf-prefs (generated; edits between these lines are replaced)"
+END="// <<< vayu: browser-perf-prefs"
+
+# Can the GPU decode AV1? yes / no / unknown.
+av1_decode() {
+    if command -v vainfo >/dev/null 2>&1; then
+        vainfo 2>/dev/null | grep -q 'VAProfileAV1.*VAEntrypointVLD' && echo yes || echo no
+        return
+    fi
+    local model; model=$(grep -m1 '^model name' /proc/cpuinfo 2>/dev/null | cut -d: -f2-)
+    # Intel Core iN-NNNN(U/H...): generation from the model number.
+    # 4 digits: 2nd-9th gen (2xxx..9xxx); 5 digits: 10th gen and later.
+    if [[ $model =~ i[3579]-([0-9]{4,5})[A-Z]* ]]; then
+        local num=${BASH_REMATCH[1]} gen
+        if [ ${#num} -eq 5 ]; then gen=${num:0:2}; else gen=${num:0:1}; fi
+        [ "$gen" -ge 11 ] && echo yes || echo no
+        return
+    fi
+    # Intel Core Ultra (Meteor Lake and later) decode AV1.
+    [[ $model == *"Core(TM) Ultra"* ]] && { echo yes; return; }
+    # AMD APUs: Ryzen 6000 mobile (RDNA 2) and later decode AV1; Raven,
+    # Renoir, Cezanne (Vega) don't. Desktop CPUs: the GPU is elsewhere.
+    if [[ $model =~ Ryzen\ [3579]\ ([0-9])[0-9]{3}[UHS] ]]; then
+        [ "${BASH_REMATCH[1]}" -ge 6 ] && echo yes || echo no
+        return
+    fi
+    echo unknown
+}
+
+block() {
+    echo "$BEGIN"
+    echo 'user_pref("media.hardware-video-decoding.enabled", true);'
+    echo 'user_pref("media.hardware-video-decoding.force-enabled", true);'
+    echo 'user_pref("media.ffmpeg.vaapi.enabled", true);'
+    if [ "$(av1_decode)" = no ]; then
+        echo '// This GPU has no AV1 decoder: ask sites for VP9 / H.264 instead.'
+        echo 'user_pref("media.av1.enabled", false);'
+    fi
+    echo 'user_pref("browser.sessionstore.interval", 60000);'
+    echo "$END"
+}
+
+want=$(block)
+differs=0
+for ini in "$HOME/.config/zen/profiles.ini" "$HOME/.zen/profiles.ini" \
+           "$HOME/.mozilla/firefox/profiles.ini" "$HOME/.config/mozilla/firefox/profiles.ini"; do
+    [ -f "$ini" ] || continue
+    base=$(dirname "$ini")
+    while IFS= read -r path; do
+        [ -n "$path" ] || continue
+        dir=$path; [[ $dir == /* ]] || dir="$base/$path"
+        [ -f "$dir/prefs.js" ] || continue   # never-used profile
+        file="$dir/user.js"
+        current=""
+        [ -f "$file" ] && current=$(sed -n "\|^$BEGIN\$|,\|^$END\$|p" "$file")
+        [ "$current" = "$want" ] && continue
+        differs=1
+        if $check; then
+            echo "differs: $file"
+            continue
+        fi
+        rest=""
+        [ -f "$file" ] && rest=$(sed "\|^$BEGIN\$|,\|^$END\$|d" "$file")
+        { [ -n "$rest" ] && printf '%s\n' "$rest"; printf '%s\n' "$want"; } >"$file.tmp"
+        mv "$file.tmp" "$file"
+        echo "wrote $file (restart the browser to apply)"
+    done < <(sed -n 's/^Path=//p' "$ini")
+done
+$check && [ "$differs" -eq 1 ] && exit 1
+exit 0

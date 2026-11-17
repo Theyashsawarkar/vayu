@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Reports capslock/numlock state for waybar as JSON (same {text,class,tooltip}
-# pattern as caffeine-status.sh/docker-status.sh). Takes "capslock" or
+# pattern as jyoti-status.sh/docker-status.sh). Takes "capslock" or
 # "numlock" as $1 -- one script, two custom waybar modules, rather than
 # duplicating this per key.
 #

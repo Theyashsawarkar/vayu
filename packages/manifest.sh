@@ -69,8 +69,12 @@ STOW_REAL_DIRS=(
   .config .config/gtk-3.0 .config/gtk-4.0 .config/systemd .config/systemd/user
   # Drop-in dirs must be real: systemd ignores a *.service.d that is a symlink
   # (stow folds it into one), so mpd's prepare-dirs.conf never applied.
-  .config/systemd/user/mpd.service.d .config/systemd/user/mako.service.d
+  .config/systemd/user/mpd.service.d
   .config/systemd/user/waybar.service.d
+  # Background daemons from other repos, moved into background.slice.
+  .config/systemd/user/narada.service.d .config/systemd/user/vaikhari.service.d
+  .config/systemd/user/vesha.service.d .config/systemd/user/vishvakarma.service.d
+  .config/systemd/user/ekatva.service.d
   .local .local/bin .local/share .local/share/applications .local/state
   .tmux .tmux/scripts
 )
@@ -78,12 +82,12 @@ STOW_REAL_DIRS=(
 # Vayu's own tools, each its own repo (github.com/Theyashsawarkar/<name>),
 # installed and updated by kosha (install.sh setup_kosha; `kosha list`).
 # Vyom and its tools replace wofi and nwg-bar: apps, calculator, clipboard,
-# emoji, Wi-Fi + hotspot, Bluetooth, phone, Docker, notifications, YouTube,
+# emoji, Wi-Fi + hotspot, Bluetooth, Docker, notifications, YouTube,
 # keybindings, battery, power menu, quick settings. Then the music and video
 # players, approvals for AI agents (dvarapala) and the system's password
 # prompts (pramana), pull requests, mail and chat, ports, Docker.
 KOSHA_PACKAGES=(
-  vyom dvara ganit smriti bhava tarang setu doot patra akashvani raga mudra urja vishram kendra
+  vyom dvara ganit smriti bhava tarang setu patra akashvani raga mudra urja vishram kendra
   nada drishya dvarapala pramana sangam narada pattan nauka vaikhari darshan vesha varna vinyasa vishvakarma
 )
 
@@ -92,8 +96,9 @@ KOSHA_PACKAGES=(
 #   input   /dev/uinput, which ydotoold needs (ydotool's 80-uinput.rules)
 USER_GROUPS=(docker input)
 
-# Firewall: ufw denies incoming by default; KDE Connect needs these.
-UFW_ALLOW=(1714:1764/udp 1714:1764/tcp)
+# Firewall: ufw denies incoming by default; ports to open go here (none:
+# ekatva reaches the phone through its tunnel).
+UFW_ALLOW=()
 
 # Homebrew formulae (gh lives here rather than as github-cli).
 BREW_FORMULAE=(gh)
@@ -110,4 +115,7 @@ DCONF_SETTINGS=(
   "/org/gnome/desktop/interface/gtk-theme 'catppuccin-mocha-mauve-standard+default'"
   "/org/gnome/desktop/interface/color-scheme 'prefer-dark'"
   "/org/gnome/desktop/interface/icon-theme 'candy-icons'"
+  # The UI font every GTK app and the browsers' tabs, menus and toolbars use.
+  # Pinned so a settings tool can't leave it at another size (it was once 24).
+  "/org/gnome/desktop/interface/font-name 'Adwaita Sans 11'"
 )

@@ -1,0 +1,7 @@
+# I/O schedulers, chosen by the kind of disk (detected, not assumed):
+# - SATA/USB SSDs and spinning disks: bfq. It shares the disk per process,
+#   so a big write (docker pull, a build, pacman) can't starve the small
+#   reads of the app you're opening; mq-deadline let them queue behind it.
+# - NVMe: none. It has deep hardware queues; any scheduler only costs CPU.
+ACTION=="add|change", KERNEL=="sd[a-z]*|mmcblk[0-9]*", ATTR{queue/scheduler}="bfq"
+ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/scheduler}="none"

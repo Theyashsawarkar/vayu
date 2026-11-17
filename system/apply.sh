@@ -167,6 +167,42 @@ for kv in "AlwaysPairable = true" "FastConnectable = true"; do
   fi
 done
 
+# Boot menu: systemd-boot waited 3 s on its menu every boot ("loader" in
+# systemd-analyze). 0 skips it; holding a key (Space) while the machine
+# starts still shows it. Only systemd-boot's loader.conf, found by bootctl.
+loader_conf=""
+esp=$(bootctl --print-esp-path 2>/dev/null || true)
+[ -n "$esp" ] && [ -f "$esp/loader/loader.conf" ] && loader_conf="$esp/loader/loader.conf"
+if [ -n "$loader_conf" ] && ! grep -qE '^timeout[[:space:]]+0$' "$loader_conf"; then
+  changed+=("loader.conf timeout 0")
+  if $check; then
+    echo "differs: $loader_conf (boot menu timeout isn't 0)"
+  else
+    if grep -qE '^#?timeout' "$loader_conf"; then
+      sudo sed -i -E '0,/^#?timeout.*/s//timeout 0/' "$loader_conf"
+    else
+      echo "timeout 0" | sudo tee -a "$loader_conf" >/dev/null
+    fi
+    echo "set timeout 0 in $loader_conf (hold Space at boot for the menu)"
+  fi
+fi
+
+# btrfs mounts: noatime. relatime still writes a file's access time once a
+# day, and on btrfs that is a copy-on-write metadata write per file: the
+# first boot of the day paid one for every file it read. Nothing here uses
+# atime (no mutt-style mail spool). Remounted live below.
+fstab_atime=false
+if grep -qE '^[^#].*[[:space:]]btrfs[[:space:]]+[^[:space:]]*\brelatime\b' /etc/fstab; then
+  changed+=("fstab noatime")
+  if $check; then
+    echo "differs: /etc/fstab (btrfs mounts use relatime, not noatime)"
+  else
+    sudo sed -i -E '/^[^#].*[[:space:]]btrfs[[:space:]]/s/\brelatime\b/noatime/' /etc/fstab
+    echo "btrfs mounts in /etc/fstab: relatime -> noatime"
+    fstab_atime=true
+  fi
+fi
+
 if $check; then
   [ "${#changed[@]}" -eq 0 ] && echo "system files match the repo"
   [ "${#changed[@]}" -eq 0 ]
@@ -187,6 +223,16 @@ if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/logind.conf.d/'; then
 fi
 if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/journald.conf.d/'; then
   reload sudo systemctl restart systemd-journald.service
+fi
+if printf '%s\n' "${changed[@]}" | grep -q '^etc/udev/'; then
+  reload sudo udevadm control --reload
+  reload sudo udevadm trigger --subsystem-match=block --action=change
+fi
+if $fstab_atime; then
+  reload sudo systemctl daemon-reload
+  while read -r mnt; do
+    reload sudo mount -o remount,noatime "$mnt"
+  done < <(findmnt -rn -t btrfs -o TARGET)
 fi
 # Drops any connected Bluetooth device for a moment; it reconnects.
 $bt_restart && reload sudo systemctl restart bluetooth.service

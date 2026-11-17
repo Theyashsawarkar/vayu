@@ -38,25 +38,34 @@ bindsym $mod+Shift+w exec $vyom tarang
 #: Open Bluetooth panel (setu: devices, battery, pair, connect)
 bindsym $mod+Shift+b exec $vyom setu
 
-#: Open phone panel (doot, KDE Connect: send file, clipboard, ring, browse)
-bindsym $mod+Shift+o exec $vyom doot
-
-#: Open ekatva window (phone and laptop: phones, log, caffeine, phone)
-bindsym $mod+o exec ~/.local/bin/ekatva window
+# ekatva is off until switched on (quick settings, or the bar's capsule):
+# while it's off these say so instead of failing silently.
+#: Open ekatva popup (the phone at a glance, jyoti, messages, calls, files, log)
+bindsym $mod+o exec ~/.local/bin/ekatva-open.sh
 
 #: Open ekatva pairing (QR code to pair a phone, from any network)
-bindsym $mod+Ctrl+o exec ~/.local/bin/ekatva window pair
+bindsym $mod+Ctrl+o exec ~/.local/bin/ekatva-open.sh pair
 
-# Stops the laptop ringing (Find my device) if it is; otherwise, since
-# mako's left click only runs a notification's default action, this lists
-# all of them (Accept/Reject a pairing request, Undo a phone clipboard...).
-#: Stop phone ring, else pick an action on the current notification (Accept, Reject, Undo...)
+# A popup's buttons show its first three actions; this lists all of them
+# (Accept, Reject, Undo, Open...) from the keyboard.
+#: Pick an action on the current notification (Accept, Reject, Undo...)
 bindsym $mod+Ctrl+a exec ~/.local/bin/notification-actions.sh
 
-# KDE Connect's own windows (the presentation-remote pointer overlay, its
-# dialogs) float instead of tiling into the layout.
-for_window [app_id="org.kde.kdeconnect.daemon"] floating enable, border none, sticky enable
-for_window [app_id="kdeconnectd"] floating enable, border none, sticky enable
+# The newest popup has the focus (an accent outline, its buttons show their
+# keys): these act on it without the mouse. On a phone call (ekatva) Enter
+# answers and Backspace declines.
+#: Run the focused notification's main action (answers a call)
+bindsym $mod+Ctrl+Return exec ~/.local/bin/akashvani key enter
+#: Run the focused notification's button {}
+bindsym $mod+Ctrl+1 exec ~/.local/bin/akashvani key 1
+bindsym $mod+Ctrl+2 exec ~/.local/bin/akashvani key 2
+bindsym $mod+Ctrl+3 exec ~/.local/bin/akashvani key 3
+#: Close the focused notification (declines a call)
+bindsym $mod+Ctrl+BackSpace exec ~/.local/bin/akashvani key dismiss
+#: Focus the next notification
+bindsym $mod+Ctrl+Tab exec ~/.local/bin/akashvani key next
+#: Close all notifications
+bindsym $mod+Ctrl+Shift+BackSpace exec ~/.local/bin/akashvani key dismiss-all
 
 #: Open Docker panel (patra: containers, logs, restart, stop, shell)
 bindsym $mod+Shift+d exec $vyom patra
@@ -70,9 +79,9 @@ bindsym $mod+Shift+p exec $vyom vishram
 #: Open quick settings (kendra: Wi-Fi, Bluetooth, hotspot, DND, volume...)
 bindsym $mod+q exec $vyom kendra
 
-# Caffeine mode keyboard path -- was click-only via waybar's
-# custom/caffeine module (on-click in waybar/config) until now. Direct
-# exec straight to caffeine-toggle.sh, not toggle-popup.sh -- there's no
+# Jyoti keyboard path -- was click-only via waybar's
+# custom/jyoti module (on-click in waybar/config) until now. Direct
+# exec straight to jyoti-toggle.sh, not toggle-popup.sh -- there's no
 # picker window here to show/hide, just an instant on/off flip, same
 # shape as $mod+Shift+q/kill or $mod+Shift+c/reload above rather than the
 # wofi-popup bindings.
@@ -94,8 +103,8 @@ bindsym $mod+q exec $vyom kendra
 # keybind-search.py describes a binding by the `#:` line directly above
 # it (explicit, so an explanatory comment block like the one above can't
 # leak into the search as its description any more).
-#: Toggle caffeine mode: keep the screen awake, no auto-lock/suspend
-bindsym $mod+Shift+a exec ~/.local/bin/caffeine-toggle.sh
+#: Toggle jyoti: keep the laptop awake (Akhaṇḍa: no dimming, lock or sleep)
+bindsym $mod+Shift+a exec ~/.local/bin/jyoti-toggle.sh
 
 # Waybar's Caps/Num Lock capsules update on a signal instead of polling
 # every second. --release leaves the key itself alone: the lock still
@@ -112,8 +121,11 @@ bindsym --release Num_Lock exec ~/.local/bin/waybar-signal 10
 # synced lyrics, downloads, MPRIS. One resident process (`nada daemon`
 # below); the key only toggles its window, and hiding it never stops the
 # music. Floating and centred: a player you glance at, not a tile.
-#: Toggle music player window (nāda)
+#: Toggle music player window (nāda: open, hide, or bring it to this workspace)
 bindsym $mod+Shift+m exec ~/.local/bin/nada
+# Close is not hide: it quits nāda, like :q inside it (MPD finishes the queue).
+#: Close music player (nāda: quit it, like :q; MPD keeps playing)
+bindsym $mod+Control+m exec ~/.local/bin/nada quit
 #: Toggle music play / pause (nāda, without opening it)
 bindsym $mod+Mod1+space exec ~/.local/bin/nada ctl toggle
 #: Play next song (nāda)
@@ -166,10 +178,13 @@ for_window [app_id="^mpv$"] floating enable, resize set 66 ppt 66 ppt, move posi
 # videos and any stream link in one window; one resident process (the
 # drishya service), so the key opens it at once. Floating and centred like
 # nāda (f inside makes it fullscreen); its mini player (z) floats in the
-# bottom-right corner above everything. (Music search is nāda's own tab:
-# raga's Super+Shift+y is gone.)
-#: Toggle video player window (drishya)
+# bottom-right corner above everything.
+#: Toggle video player window (drishya: open, hide, or bring it to this workspace)
 bindsym $mod+y exec ~/.local/bin/drishya
+bindsym $mod+Shift+y exec ~/.local/bin/drishya
+# Close quits drishya, like :q inside it (it saves where you were first).
+#: Close video player (drishya: quit it, like :q)
+bindsym $mod+Control+y exec ~/.local/bin/drishya quit
 # Every drishya window floats at 80%; the mini player's rule comes after
 # and overrides size and place (sway runs matching rules in order).
 for_window [app_id="^dev\.vayu\.Drishya$"] floating enable, resize set 80 ppt 80 ppt, move position center, blur enable, corner_radius 20, shadows enable
@@ -247,48 +262,12 @@ layer_effects "vyom" {
     shadows enable
 }
 
-# History on this block: went blur+blur_xray+shadows -> reverted to
-# corner_radius-only (read as "a window into the wallpaper" without
-# wofi's supporting alpha/border tuning) -> back to blur+blur_xray now,
-# explicitly matching wofi's own working recipe above (same blur
-# mechanism, mako/config's background-color/border-color now at the same
-# 0.85/0.55 alpha wofi uses, not a from-scratch guess this time).
-#
-# shadows still left off, unlike wofi's block above -- that part's a
-# real, unrelated finding, not tuning to taste: with two notifications
-# stacked directly against each other (mako has no between-notification
-# gap setting), their individual soft shadows blend into one continuous
-# dark halo behind the whole stack, reported directly as "a translucent
-# container behind all the toasts". wofi only ever shows one window at a
-# time, so its own shadow never hits this. corner_radius alone still
-# gets real rounded corners with a clean edge, no shared halo.
-#
-# blur_xray dropped too -- ruled out by direct isolation testing as the
-# cause of a second real bug (a separate sharp-cornered rectangle
-# visible around the rounded card, reported as "the external
-# container"): removing it alone didn't change that artifact at all, so
-# it wasn't blur_xray specifically causing it (the real cause was
-# mako/config's own margin -- see that file's own comment). Left off
-# anyway now that it's not needed: plain `blur` already blurs whatever's
-# genuinely behind the notification, which is the more honest behavior
-# for a popup that can appear over any window, rather than blur_xray's
-# "always blur the true desktop wallpaper regardless of what's actually
-# behind" -- wofi wants that specifically since it's meant to look the
-# same regardless of context; a notification appearing over whatever
-# you're actually doing doesn't need that same guarantee.
-#
-# blur_ignore_transparent enable is the actual, complete fix for the
-# margin-bleed bug mako/config's own comment describes in full -- mako
-# leaves its margin area transparent (unfilled) in its own surface
-# buffer, but without this flag SwayFX blurred that transparent area
-# anyway, producing a visible sharp-cornered rectangle of blurred-but-
-# untreated background outside the rounded card. This tells it to skip
-# blurring transparent regions instead, so that area now shows the real,
-# untouched background straight through -- confirmed directly at 700%
-# zoom, at mako's original full 10/20 margin (restored from the smaller
-# values tried as a stopgap before this flag was found): the rounded
-# card's border is the true edge at any margin size, nothing bleeds past
-# it.
+# The notification popups: akashvani's (inside Vyom), one layer surface
+# named "notifications" holding every card with a gap between them.
+# blur_ignore_transparent blurs only the cards, not the transparent gaps
+# between and around them; corner_radius matches the cards' CSS
+# border-radius (the theme's radius, 12 px: varna's vyom.css). No shadows: a
+# surface's shadow would frame the whole stack, gaps included, as one box.
 layer_effects "notifications" {
     blur enable
     blur_ignore_transparent enable
@@ -578,11 +557,11 @@ exec ~/.local/bin/sway-session.sh
 # Everything that runs for the whole session is a systemd user unit that
 # sway-session.sh starts right after importing WAYLAND_DISPLAY (so none can
 # race that import), restarts on a crash, and logs to the journal under its
-# own name (`vayu-logs <name>`): waybar, mako, vyom (panels), nada (music),
-# bar-events (capsule refreshes), kdeconnect + phone-events, the audio idle
+# own name (`vayu-logs <name>`): waybar, vyom (panels and notifications), nada (music),
+# bar-events (capsule refreshes), ekatva (phone), the audio idle
 # inhibitor, lock-before-sleep, batsignal, and the clipboard history
 # (cliphist@text, cliphist@image). It then restores the notification mode
-# and starts swayidle (swayidle-startup.sh: unless caffeine mode is on).
+# and starts swayidle (swayidle-startup.sh: unless jyoti is on).
 # Unit files: systemd/.config/systemd/user/.
 
 # Prevent idle timeouts when watching fullscreen videos

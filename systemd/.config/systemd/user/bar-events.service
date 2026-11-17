@@ -14,5 +14,5 @@ RestartSec=2
 RestartSteps=5
 RestartMaxDelaySec=60
 
-# No [Install]: started from sway's config right after waybar, like
-# phone-events.service, so it lives and dies with the sway session.
+# No [Install]: started by sway-session.sh right after waybar, so it lives
+# and dies with the sway session.

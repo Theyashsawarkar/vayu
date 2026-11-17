@@ -24,13 +24,33 @@ hotspot_command = "~/.local/bin/vayu-hotspot"
 [plugin.patra]
 terminal = "kitty"
 
-# Vayu's three notification modes (normal / silent / dnd) live in
-# notification-mode.sh; the switch moves between normal and dnd.
+# akashvani is the notification server (it replaced mako): the popups,
+# their timing and sound, and rules. Its README has every setting. Modes
+# (normal / silent / dnd: notification-mode.sh, Super+n) are akashvani's own.
 [plugin.akashvani]
-dnd_status = "cat ~/.local/state/notification-mode/current"
-dnd_on_when = "^dnd$"
-dnd_on = "~/.local/bin/notification-mode.sh dnd"
-dnd_off = "~/.local/bin/notification-mode.sh normal"
+position = "top-center"         # notifications drop from the clock capsule
+osd_position = "top-right"     # volume / brightness sliders stay in the corner
+margin_x = 20                  # clear of the bar's pills
+margin_y = 10
+width = 420
+max_visible = 3
+timeout = 3000                 # normal; low and urgent below
+timeout_low = 2000
+timeout_critical = 6000
+timeout_actions = 6000         # one you can act on stays a little longer
+sound = "/usr/share/sounds/freedesktop/stereo/message.oga"
+
+# The battery warning stays till you plug in (battery-warning-dismiss.sh
+# dismisses it then).
+[[plugin.akashvani.rules]]
+app = "batsignal"
+timeout = 0
+
+# Switching the notification mode always says so, even into do not disturb.
+[[plugin.akashvani.rules]]
+app = "^akashvani$"
+summary = "^Notifications: "
+show_in_dnd = true
 
 [plugin.mudra]
 source_command = "~/.local/bin/keybind-search.py --json"
@@ -45,7 +65,7 @@ lock = "~/.local/bin/vayu-lock"
 logout = "swaymsg exit"
 
 [plugin.kendra]
-tiles = ["wifi", "bluetooth", "hotspot", "dnd", "caffeine", "theme", "wallpaper", "power-profile"]
+tiles = ["wifi", "bluetooth", "hotspot", "dnd", "jyoti", "ekatva", "theme", "wallpaper", "power-profile"]
 lock = "~/.local/bin/vayu-lock"
 power = "~/.local/bin/vyom vishram"
 
@@ -68,11 +88,25 @@ off = "~/.local/bin/notification-mode.sh normal"
 subtitle_on = "notifications held"
 subtitle_off = "off"
 
-[plugin.kendra.tile.caffeine]
-status = "~/.local/bin/caffeine-status.sh"
-on_when = '"class":"active"'
-toggle = "~/.local/bin/caffeine-toggle.sh"
-subtitle_on = "screen stays on"
+[plugin.kendra.tile.jyoti]
+status = "~/.local/bin/jyoti-status.sh"
+on_when = '"class":"(active|strong)"'
+toggle = "~/.local/bin/jyoti-toggle.sh"
+subtitle_on = "akhaṇḍa: stays awake"
+subtitle_off = "śānta: at rest"
+
+# ekatva, the phone link: off by default; the switch is remembered across
+# reboots (ekatva-toggle.sh, read by sway-session.sh at login).
+[plugin.kendra.tile.ekatva]
+title = "Phone link"
+icon = "\U000f011c"
+color = "green"
+status = "~/.local/bin/ekatva-status.sh"
+on_when = '"class":"(active|strong)"'
+on = "~/.local/bin/ekatva-toggle.sh on"
+off = "~/.local/bin/ekatva-toggle.sh off"
+open = "~/.local/bin/ekatva-open.sh"
+subtitle_on = "ekatva on"
 subtitle_off = "off"
 
 # theme-toggle.sh restyles waybar, mako and the rest too, not just GTK.

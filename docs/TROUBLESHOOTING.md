@@ -10,7 +10,7 @@ of how each one was found, follow the link to its `CHANGELOG.md` entry.
 vayu-verify                        # does this machine still match the repo? lists anything that differs
 vayu-logs                          # warnings and errors from every part of the desktop, this boot
 vayu-logs --list                   # which tools logged, how much, how many warnings
-vayu-logs vyom                     # one tool (vyom, nada, waybar, mako, bar-events, claude-tmux...)
+vayu-logs vyom                     # one tool (vyom, nada, waybar, bar-events, claude-tmux...)
 journalctl -b -1 -p 0..3 --no-pager  # errors from the previous boot (the one that went wrong)
 ```
 
@@ -294,6 +294,28 @@ tail -20 ~/.local/state/vyom/daemon.log    # errors from the panels
 - **The panel shows but looks like a flat box:** SwayFX's blur behind it
   comes from `layer_effects "vyom"` in sway's config; reload sway.
 
+## Notifications: none show, or they look like the old mako ones
+
+Notifications are akashvani's (inside Vyom; it replaced mako on 2026-11-17).
+Only one program can serve notifications, so if mako (or dunst) is running it
+holds the name and akashvani waits behind it: you see mako's popups, or none.
+
+```sh
+akashvani doctor                          # who serves notifications, and what's missing
+systemctl --user stop mako.service        # mako is still running: stop it, akashvani takes over at once
+akashvani status                          # on screen, held, history, modes
+akashvani mode -s normal                  # popups held? do not disturb was on (Super+Ctrl+n does the same)
+vayu-logs vyom                            # a traceback from the server or the popups
+```
+
+No popups but they're in `Super+Shift+n`: do not disturb is on (the bell in
+the bar is the sleeping one), or a rule in `~/.config/vyom/config.toml`
+(`[[plugin.akashvani.rules]]`) hides them. A notification sent while Vyom
+restarts (a few seconds) waits for it: D-Bus starts Vyom through
+`~/.local/share/dbus-1/services/org.freedesktop.Notifications.service`.
+To go back to mako for a while: `systemctl --user start mako.service` (if mako
+is still installed); akashvani waits behind it. See CHANGELOG.md, 2026-11-17.
+
 ## Lock: the screen locks again a minute after unlocking
 
 Fixed on 2026-10-24 (see `CHANGELOG.md`). It happened after the laptop woke
@@ -408,6 +430,66 @@ type again.
 vertical, tiled...). If the launcher's menu doesn't appear, the client may still be in
 the launcher's key table: press `Esc`; and check `whichkey.sh` in `vayu-logs whichkey.sh`.
 
+## Phone: Super+o says "ekatva is off", or the phone doesn't connect after a reboot
+
+ekatva is off by default and stays the way you left it: turn it on with the
+"Phone link" tile in quick settings (`Super+q`), or `ekatva-toggle.sh on`. While
+it's on, a green phone capsule is on the bar (right click turns it off). The
+switch is the file `~/.local/state/ekatva-switch/enabled` (there = on);
+`sway-session.sh` starts ekatva at login only when it exists.
+
+## Boot: I need the boot menu (another kernel, the firmware setup)
+
+The menu no longer waits 3 s on every boot (`timeout 0`). Hold Space while the
+machine starts and it shows. To have it every time again, set `timeout 3` in
+`/boot/loader/loader.conf`, and drop the `loader.conf` block in `system/apply.sh`,
+or the next run sets it back.
+
+## Video: a site won't play a video, or plays it in low quality
+
+Zen and Firefox have AV1 turned off on GPUs that can't decode it
+(`browser-perf-prefs`), so sites send VP9 or H.264, which the GPU decodes. A site
+that only offers AV1 (rare) then can't play. To allow it, set `media.av1.enabled`
+to true in `about:config` and delete that line from the marked block in the
+profile's `user.js` (`browser-perf-prefs` writes it back on the next login: remove
+the AV1 lines from the script too).
+
+## Docker: containers are slow while I work
+
+On purpose: containers run in `containers.slice` with a third of the desktop's
+CPU and disk weight, so they slow down only while you use the machine, and get
+all of it when you don't. For a benchmark, run it with the desktop idle, or
+remove `cgroup-parent` from `/etc/docker/daemon.json` (and `system/etc/docker/`)
+and restart Docker.
+
+## Performance: a background job (mail sync, an update check) runs slowly
+
+narada, vaikhari, vesha, vishvakarma, ekatva, update-check, tmux-autosave and
+the wallpaper fetcher run in systemd's `background.slice` (CPU weight 30, the
+apps and panels you use have 100), so they wait while something you use needs
+the CPU: a compile, a browser loading a page. That's on purpose: it is what keeps
+the launcher and windows quick on a 2-core laptop. Idle, they run at full speed.
+To give one its normal share back, delete its
+`~/.config/systemd/user/<unit>.service.d/background.conf` (in the repo:
+`systemd/.config/systemd/user/`), then `systemctl --user daemon-reload` and
+restart it. See which slice a unit is in with
+`systemctl --user show -p Slice <unit>`.
+
+## Performance: the bar's mail or WhatsApp count is a few seconds late
+
+bar-events asks narada for its unread counts at most every 3 seconds (it
+used to every second or so while WhatsApp synced, 8% of a core at idle), so a
+count can lag that long behind reading a message. It always catches up with
+the last change.
+
+## Panels: the launcher was slow the first time after a boot
+
+Vyom (0.7.4 and later) draws the launcher once off screen when it starts, so the
+first Super+d is as quick as the others. If you press it in the first second or
+two after login it can still wait for that to finish. `journalctl --user -u vyom`
+logs "first frame in N ms" for any opening over 150 ms. `[vyom] warm_up = false`
+in `~/.config/vyom/config.toml` turns the warm-up off.
+
 ## A Vyom tool shows less than it should, or the bar's counts are wrong
 
 The keybinding search shows only Sway's keys, or a capsule disagrees with the
@@ -469,6 +551,22 @@ by hand (e.g. `pacman -R`, `systemctl disable`). To stop agents using the
 tool: `~/.local/share/dvarapala/install.sh --uninstall`. (dvarapala was called
 vayu-elevate before 2026-10-21; that name is now a link to it.)
 
+## tmux bar: the Claude usage capsule is missing
+
+The capsule (`  ritesh 6%`) shows only with two accounts or more and
+known usage. See what vesha would show, and what tmux has:
+
+```
+vesha waybar --once
+tmux show -gv @claude_limit
+```
+
+If vesha prints a line but tmux has nothing, tmux missed it (it started
+after bar-events.py, or its server restarted): `bar-events.py --tmux-claude`
+sets it now, and tmux.conf runs that on every load. An empty `text` or class
+`unknown`/`error` means vesha couldn't read the usage: `vesha doctor`, and
+`~/.local/state/vesha/watch.log` for the watcher.
+
 ## tmux bar: the PR capsule shows the wrong account's PRs, or an old count
 
 The capsule (`  N` your open PRs, `󰊤 N` waiting for your review) counts
@@ -517,6 +615,22 @@ vishvakarma doctor
   opencode and Gemini CLI, found by their command or config folder; any
   other agent can read the skills in `~/.agents/skills`.
 - The login sync's output: `journalctl --user -u vishvakarma`.
+
+## Fonts: a browser's tabs, menus or address bar are too big (or too small)
+
+Chrome, Zen (Firefox) and other GTK apps take their interface font from GTK's
+`font-name` setting in dconf, not from the web pages' sizes. If another tool
+(nwg-look, a GNOME settings app) changes it, every browser's chrome looks out of
+proportion with the page. Check and reset it:
+
+```sh
+gsettings get org.gnome.desktop.interface font-name   # Vayu's: 'Adwaita Sans 11'
+gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans 11'
+```
+
+Then restart the browser. Page text is a separate setting: Chrome's
+`chrome://settings/fonts`, Zen's Settings > Fonts, and each site's zoom (`Ctrl+0`
+resets it).
 
 ## Keys: I don't know (or forgot) a keybinding
 

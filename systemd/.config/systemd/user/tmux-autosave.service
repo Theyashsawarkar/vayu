@@ -2,6 +2,9 @@
 Description=Save tmux sessions (tmux-resurrect)
 
 [Service]
+# Background work: CPU weight 30 next to 100 for what you use (background.slice),
+# so it never slows a launcher, a window or typing. Full speed when idle.
+Slice=background.slice
 Type=oneshot
 # Replaces tmux-continuum's auto-save, which ran as a #() job in the tmux
 # bar: 22 processes every 5 s status tick just to find that 15 minutes

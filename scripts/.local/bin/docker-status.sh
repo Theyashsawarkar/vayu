@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Reports the running-container count for waybar as JSON (same pattern as
-# caffeine-status.sh). Icon and count are colored independently via inline
+# jyoti-status.sh). Icon and count are colored independently via inline
 # Pango spans -- icon stays a constant Blue identity color, count switches
 # Green/gray depending on whether anything is actually running, so the
 # "class" field still drives a border-color tint on the pill itself

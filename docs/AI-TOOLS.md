@@ -114,7 +114,7 @@ the text first.
 | At a glance | |
 |---|---|
 | MCP | `ekatva mcp`; registered with `claude mcp add --scope user ekatva -e EKATVA_AGENT=claude -- ekatva mcp` |
-| Tools | `status`, `phone_status`, `phone_ring`, `phone_lock`, `sms_threads`, `sms_read`, `call_hang_up`, `phone_clipboard_get`/`_set`, `phone_files_list`/`_read`, `caffeine_set`, `log_recent`; asking first: `sms_send`, `call_dial` |
+| Tools | `status`, `phone_status`, `phone_ring`, `phone_lock`, `sms_threads`, `sms_read`, `call_hang_up`, `phone_clipboard_get`/`_set`, `phone_files_list`/`_read`, `jyoti_set`, `log_recent`; asking first: `sms_send`, `call_dial` |
 | Log | every call is in ekatva's action log as `yash via claude` (`EKATVA_AGENT`); `ekatva undo N` |
 | Service | `ekatva.service` (user unit, in `sway-session.sh`'s `UNITS`); the window is <kbd>Super</kbd>+<kbd>o</kbd> |
 | Docs | [For AI agents](https://theyashsawarkar.github.io/ekatva/guides/ai-agents/) |

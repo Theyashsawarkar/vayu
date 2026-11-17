@@ -10,6 +10,9 @@ After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
+# Background work: CPU weight 30 next to 100 for what you use (background.slice),
+# so it never slows a launcher, a window or typing. Full speed when idle.
+Slice=background.slice
 # exec, not oneshot: the check can wait for the network and then sit on
 # the prompt; nothing should wait for it to finish.
 Type=exec

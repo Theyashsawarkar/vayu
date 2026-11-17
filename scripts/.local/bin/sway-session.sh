@@ -6,7 +6,7 @@
 #    activation) environment, so user services can reach the compositor.
 # 2. Start sway-session.target, which binds graphical-session.target.
 # 3. On sway's shutdown event, stop it: every PartOf=graphical-session.target
-#    unit (idle units, bar-events, kdeconnect, portals...) stops with it.
+#    unit (idle units, bar-events, portals...) stops with it.
 #    Otherwise they outlive sway, since the user manager lingers across
 #    logout, and crash-loop with no compositor. Then unset the display
 #    variables so later D-Bus activations don't try to reach the dead
@@ -25,18 +25,25 @@ systemctl --user start sway-session.target || log "couldn't start sway-session.t
 # they raced this import, and one that won started without WAYLAND_DISPLAY
 # for good. Each is a unit, so a crash restarts it (with backoff) and its
 # output lands in the journal under its own name (vayu-logs <name>).
-UNITS="mako.service waybar.service vyom.service nada.service bar-events.service
-  kdeconnect.service phone-events.service sway-audio-idle-inhibit.service
+UNITS="waybar.service vyom.service nada.service bar-events.service
+  sway-audio-idle-inhibit.service
   swaylock-on-sleep.service batsignal.service cliphist@text.service cliphist@image.service
-  pramana.service drishya.service ekatva.service vishvakarma.service"
+  pramana.service drishya.service vishvakarma.service"
 # shellcheck disable=SC2086 # a list of unit names
 for u in $UNITS; do
   systemctl --user restart "$u" || log "couldn't start $u (journalctl --user -u $u)"
 done
-# Last chosen notification mode (mako resets it on start), and swayidle
-# unless caffeine mode was left on: both need mako / the compositor.
-"$HOME/.local/bin/notification-mode-restore.sh" &
+# ekatva (the phone link) only if it was left on: off by default, and the
+# switch (quick settings, ekatva-toggle.sh) is remembered across reboots.
+if [ -e "${XDG_STATE_HOME:-$HOME/.local/state}/ekatva-switch/enabled" ]; then
+  systemctl --user restart ekatva.service || log "couldn't start ekatva.service (journalctl --user -u ekatva)"
+fi
+# swayidle unless jyoti was left on. (Notifications are akashvani's,
+# inside vyom.service; it keeps the last notification mode itself.)
 "$HOME/.local/bin/swayidle-startup.sh" &
+# A browser profile made since the last login gets Vayu's video-decoding
+# and session prefs too (idempotent, a few ms; read when the browser starts).
+"$HOME/.local/bin/browser-perf-prefs" >/dev/null 2>&1 &
 log "session started (WAYLAND_DISPLAY=$WAYLAND_DISPLAY)"
 
 # Returns on the shutdown event, or with an error if sway dies without

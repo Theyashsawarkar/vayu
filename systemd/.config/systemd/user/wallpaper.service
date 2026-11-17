@@ -4,5 +4,8 @@ Description=Fetch and set daily wallpaper
 # fetch_wallpaper.sh waits for NetworkManager itself.)
 
 [Service]
+# Background work: CPU weight 30 next to 100 for what you use (background.slice),
+# so it never slows a launcher, a window or typing. Full speed when idle.
+Slice=background.slice
 Type=oneshot
 ExecStart=%h/.local/bin/fetch_wallpaper.sh

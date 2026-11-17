@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Waybar's custom/recording: a REC capsule with the elapsed time while
-# wf-recorder-toggle.sh records, hidden otherwise. Runs every second
-# (cheap: reads one file, no processes when idle); the toggle also
-# signals it (16) so it appears and goes the moment you press the key.
+# wf-recorder-toggle.sh records, hidden otherwise. Runs when waybar starts
+# and on signal 16, which the toggle sends on start and stop and every
+# second while it records (the timer); never polled.
 
 PIDFILE="${XDG_RUNTIME_DIR:-/tmp}/wf-recorder.pid"
 

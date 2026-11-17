@@ -1,6 +1,6 @@
 [Unit]
 StartLimitIntervalSec=0
-Description=Lock screen before sleep/suspend (always on, independent of caffeine mode)
+Description=Lock screen before sleep/suspend (always on, independent of jyoti)
 PartOf=graphical-session.target
 
 [Service]

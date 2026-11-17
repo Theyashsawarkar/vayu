@@ -3,7 +3,7 @@
 #
 #   vayu-logs                 warnings and errors from everything, this boot
 #   vayu-logs <name>...       everything one tool logged this boot
-#                             (vyom, nada, waybar, mako, bar-events, sway,
+#                             (vyom, nada, waybar, bar-events, sway,
 #                             claude-tmux, wf-recorder, a unit name...)
 #   vayu-logs --list          which tools logged this boot, and how much
 #   options: -f follow   -b N  that boot (0 this one, -1 the last)
@@ -12,7 +12,7 @@
 #
 # Every tool writes its diagnostics to stderr and whatever starts it sends
 # that to the journal under the tool's name: a systemd user unit (vyom,
-# nada, waybar, mako, bar-events...), `logger -t` (scripts tmux and waybar
+# nada, waybar, bar-events...), `logger -t` (scripts tmux and waybar
 # run), or sway's own stream (tag `sway`, for what sway starts directly).
 # So this is journalctl, matched on the tool's tag or its unit.
 set -uo pipefail

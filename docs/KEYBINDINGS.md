@@ -50,16 +50,17 @@ Every panel is a [Vyom](https://github.com/Theyashsawarkar/vyom) tool, each in i
 - <kbd>Super</kbd>+<kbd>.</kbd> — Emoji ([bhava](https://github.com/Theyashsawarkar/bhava)): <kbd>Enter</kbd> types it into the window you were in, <kbd>Ctrl</kbd>+<kbd>T</kbd> skin tone
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>w</kbd> — Wi‑Fi ([tarang](https://github.com/Theyashsawarkar/tarang)): connect (password typed inline), <kbd>Ctrl</kbd>+<kbd>D</kbd> disconnect, the Hotspot tab (<kbd>Ctrl</kbd>+<kbd>L</kbd>) with a QR code
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>b</kbd> — Bluetooth ([setu](https://github.com/Theyashsawarkar/setu)): devices with battery, <kbd>Enter</kbd> connects / pairs
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>o</kbd> — Phone ([doot](https://github.com/Theyashsawarkar/doot), KDE Connect): send clipboard or a file, ring, browse
-- <kbd>Super</kbd>+<kbd>o</kbd> — Phone and laptop ([ekatva](https://github.com/Theyashsawarkar/ekatva)): the window with your phones, the action log, caffeine (keys inside it: `?`)
+- <kbd>Super</kbd>+<kbd>o</kbd> — Phone and laptop ([ekatva](https://github.com/Theyashsawarkar/ekatva)): a Vyom popup that opens at once: the phone at a glance, jyoti, light and dark, its messages, calls and files, the action log, your devices (keys inside it: `?`). ekatva is off until you turn it on (quick settings' Phone link tile); while it's off this says so
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>o</kbd> — Pair a phone with ekatva (QR code, works from any network)
-- <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>a</kbd> — Stop the laptop ringing (phone's Find my device), otherwise pick an action on the current notification (Accept/Reject pairing, Undo phone clipboard, Show received file in folder)
+- <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>a</kbd> — Pick an action on the current notification (Accept, Reject, Undo, Show a file in its folder)
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>d</kbd> — Docker ([patra](https://github.com/Theyashsawarkar/patra)): <kbd>Enter</kbd> logs, <kbd>Ctrl</kbd>+<kbd>R</kbd> restart, <kbd>Ctrl</kbd>+<kbd>S</kbd> stop/start, <kbd>Ctrl</kbd>+<kbd>T</kbd> shell
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>n</kbd> — Notifications ([akashvani](https://github.com/Theyashsawarkar/akashvani)): what's on screen with its actions, the history, do not disturb
 - <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>p</kbd> — Power ([vishram](https://github.com/Theyashsawarkar/vishram)): <kbd>L</kbd> lock, <kbd>S</kbd> suspend, <kbd>E</kbd> log out, <kbd>R</kbd> reboot, <kbd>P</kbd> power off (5 s countdown, <kbd>Esc</kbd> cancels)
-- <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([kendra](https://github.com/Theyashsawarkar/kendra); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, caffeine, dark theme, wallpaper, power profile, volume and brightness, lock and power
-- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — [nāda](https://github.com/Theyashsawarkar/nada) (music player), toggle open/hidden
-- <kbd>Super</kbd>+<kbd>y</kbd> — [drishya](https://github.com/Theyashsawarkar/drishya) (video player: YouTube, your videos, any stream link), toggle open/hidden; inside, <kbd>?</kbd> lists its keys
+- <kbd>Super</kbd>+<kbd>q</kbd> — Quick settings ([kendra](https://github.com/Theyashsawarkar/kendra); also the ⚙ on the bar): Wi‑Fi, Bluetooth, hotspot, do not disturb, jyoti, dark theme, wallpaper, power profile, volume and brightness, lock and power
+- <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>m</kbd> — [nāda](https://github.com/Theyashsawarkar/nada) (music player), toggle open/hidden (open but on another workspace: brought here)
+- <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>m</kbd> — close nāda (quits it, like `:q` inside; MPD keeps playing)
+- <kbd>Super</kbd>+<kbd>y</kbd> or <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>y</kbd> — [drishya](https://github.com/Theyashsawarkar/drishya) (video player: YouTube, your videos, any stream link), toggle open/hidden; inside, <kbd>?</kbd> lists its keys
+- <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>y</kbd> — close drishya (quits it, like `:q` inside)
 - <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>Space</kbd> / <kbd>.</kbd> / <kbd>,</kbd> — music play/pause, next, previous (without opening nāda)
 - <kbd>Super</kbd>+<kbd>n</kbd> — Cycle notification mode (normal → silent → dnd)
 - <kbd>Super</kbd>+<kbd>Ctrl</kbd>+<kbd>n</kbd> / <kbd>s</kbd> / <kbd>d</kbd> — Jump directly to normal / silent / dnd

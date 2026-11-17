@@ -98,10 +98,6 @@ ANNOTATED_SCRIPT_DIRS = [
     HOME / ".local/share/vinyasa/vinyasa",
     # drishya, the video player (its own repo): its window's keys.
     HOME / ".local/share/drishya/drishya",
-    # ekatva, phone and laptop as one (its own repo): its desktop window's
-    # keys, found through the `ekatva` command's link into the repo.
-    *([Path(os.path.realpath(HOME / ".local/bin/ekatva")).parents[2] / "desktop/src/renderer/src"]
-      if (HOME / ".local/bin/ekatva").exists() else []),
     # Kernel Magic SysRq combos (system/etc/sysctl.d/99-sysrq.conf).
     Path("/etc/sysctl.d"),
     # dvarapala's approval window (own repo; installed root-owned).

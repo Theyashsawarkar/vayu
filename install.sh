@@ -624,6 +624,14 @@ setup_kosha() {
     "$HOME/.local/bin/varna" apply --no-reload >/dev/null || true
   fi
   "$HOME/.local/bin/vayu-theme-ensure" || true
+  # akashvani is the notification server (inside Vyom, which replaced mako):
+  # a notification sent before Vyom starts makes D-Bus start Vyom, not
+  # mako, through this file (found before /usr/share's mako one).
+  local akv="$HOME/.local/share/vyom/plugins/akashvani/dbus/org.freedesktop.Notifications.service"
+  if [ -f "$akv" ]; then
+    mkdir -p "$HOME/.local/share/dbus-1/services"
+    ln -sfn "$akv" "$HOME/.local/share/dbus-1/services/org.freedesktop.Notifications.service"
+  fi
   # vesha (Claude Code accounts): its `claude` wrapper and the watcher that
   # switches at the usage limit. Both are harmless with one account or none.
   if [ -x "$HOME/.local/bin/vesha" ]; then
@@ -820,5 +828,6 @@ run_step "Enabling system services, masks and firewall" setup_system_services
 run_step "Adding $USER to groups (${USER_GROUPS[*]})" setup_groups
 run_step "Enabling user services" setup_user_services
 run_step "Applying GTK theme (dconf)" apply_theme
+run_step "Browser performance prefs (GPU video decoding; Zen, Firefox)" "$DOTFILES_DIR/scripts/.local/bin/browser-perf-prefs"
 run_step "Fetching the first wallpaper" first_wallpaper
 run_step "Verifying the result (vayu-verify)" verify

@@ -10,6 +10,5 @@ opencode-bin
 sway-audio-idle-inhibit-git
 swayfx
 swaylock-effects
-xdg-desktop-portal-luminous
 yay
 zen-browser-bin

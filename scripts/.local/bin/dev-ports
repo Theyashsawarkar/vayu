@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Dev servers you're running: the TCP ports your own processes listen on
 from inside a project folder (a directory under $HOME, not $HOME itself),
-so daemons (KDE Connect, mpd, syncthing, the browser) don't show up.
+so daemons (mpd, syncthing, the browser) don't show up.
 
   dev-ports              the ports, one per line: "3000 node ~/code/app"
   dev-ports --set-tmux   sets tmux's @dev_ports ("3000 5173") and
@@ -41,7 +41,7 @@ def kind(name):
         if rx.match(name):
             return k, icon
     return "other", "󰒋"
-IGNORE = {"adb", "kdeconnectd", "mpd", "syncthing"}   # listen on ports, but aren't servers you'd open
+IGNORE = {"adb", "mpd", "syncthing"}   # listen on ports, but aren't servers you'd open
 
 
 def ports():

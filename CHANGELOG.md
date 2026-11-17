@@ -7,6 +7,203 @@ full branch/release process.
 
 ## v1.26.0-nightly -- 2026-11-09
 
+## 2026-11-17 (akashvani replaces mako: our own notification server)
+
+- **Notifications are Vayu's own now**: akashvani (the Vyom tool behind
+  `Super+Shift+n`) is the notification server itself, inside the Vyom daemon
+  (no extra process), and mako is gone. The popups are glass cards in the
+  theme's colours with the app's icon or the notification's picture, action
+  buttons right on the card, a bar for volume and brightness that moves in
+  place, a red frame for urgent ones, a slide in and out, hover to keep one,
+  and "+N more" past three. They hide while the notifications panel is open.
+- mako's settings moved to `[plugin.akashvani]` in `vyom/config.toml`
+  (top right, 420 px, 3 s / 2 s low / 6 s urgent and actionable, the message
+  sound, batsignal's warning staying till you plug in); every popup setting,
+  rule and CSS class is in akashvani's README.
+- Modes are akashvani's: `notification-mode.sh` sets them with `akashvani
+  mode`, and akashvani remembers them across restarts, so
+  `notification-mode-restore.sh` is gone. Switching into do not disturb still
+  shows its own notice (a `show_in_dnd` rule); urgent ones still show in dnd.
+- The bar's bell asks akashvani over D-Bus (busctl, no Python), and
+  bar-events.py also refreshes it when the mode changes from the panel or a
+  timer (akashvani's `Changed` signal), not only from `Super+n`.
+- Scripts use the `akashvani` command (makoctl's commands and JSON):
+  battery-warning-dismiss.sh, notification-actions.sh (`akashvani menu`),
+  update-apply.sh (`akashvani reload`).
+- `sway-session.sh` no longer starts mako; install.sh links akashvani's D-Bus
+  activation file, so a notification sent before Vyom starts starts Vyom,
+  not mako. mako's stow package, its unit drop-in and its pacman entry are
+  gone; sway's blur for the popups matches their 20 px corners.
+- Trade-off: notifications now live in the Vyom daemon; if it restarts, a
+  notification sent in those seconds waits for it (D-Bus starts it).
+  TROUBLESHOOTING.md, "Notifications: none show".
+
+## 2026-11-17 (the phone's call on the bar)
+
+- **A call in progress shows on the bar**, left of the bell: who, and for how
+  long ("Suhani Rawat · 1h 20m"), green while you're on it, yellow and
+  breathing while it rings. Click opens ekatva on Calls; right click hangs
+  up. It's `custom/call`, one long-running `ekatva call --waybar` (no
+  polling); hidden with no call.
+
+## 2026-11-17 (caffeine is now Jyoti)
+
+- **Caffeine is renamed Jyoti** (ज्योति, the flame), across Vayu, with named
+  levels: **Śānta** (शान्त, at rest: as usual), **Akhaṇḍa** (अखण्ड, the unbroken flame: no dimming, lock or sleep)
+  and **Nandādīpa** (नन्दादीप, the lamp kept burning day and night: also with
+  the lid closed). `jyoti-toggle.sh` / `jyoti-status.sh` (were caffeine-…),
+  the bar capsule `custom/jyoti`, kendra's `jyoti` tile, bar-events,
+  Super+Shift+a, and the state file `~/.local/state/jyoti/enabled` (moved
+  over).
+- **The capsule shows its level's lamp**, a plain line drawing instead of the
+  coffee-cup glyph: the diya in blue for Akhaṇḍa, the samai in ember for
+  Nandādīpa (`waybar/jyoti-*.svg`, CSS pictures drawn at exactly their 18 px,
+  with @2 versions for a scaled screen: sharp, the same drawings as ekatva's
+  phone app and popup). At Śānta the capsule is hidden.
+- **Fixed: turning it off with Super+Shift+a (or the bar, or quick settings)
+  left the laptop unable to sleep** when the phone had turned it on: the
+  toggle only restarted swayidle, and ekatva's sleep block stayed. With ekatva
+  running, the toggle now goes through `ekatva jyoti`, so off is off.
+
+## 2026-11-17 (ekatva opens as a Vyom popup)
+
+- **Super+o opens ekatva as a Vyom popup, at once**, instead of starting its
+  Electron window. `ekatva-open.sh` calls `vyom ekatva` (Super+Ctrl+o:
+  `vyom ekatva pair`); the floating-window rule for the old window is gone.
+  The popup is its own repo (ekatva-vyom), linked into Vyom's plugins.
+- **The Electron window is gone** (removed from ekatva): the keybinding search
+  no longer lists its 39 keys; the popup's keys show under Vyom.
+
+## 2026-11-16 (the Claude usage capsule survives a reboot)
+
+- **The Claude usage capsule (`work 72%`) no longer disappears after a reboot.**
+  bar-events.py started before tmux, so its one write of `@claude_limit` failed,
+  and `vesha waybar` only prints when something changes, so the capsule stayed
+  empty until the account or its usage moved. tmux.conf now runs
+  `bar-events.py --tmux-claude` on load (as it does for Docker and narada),
+  which asks `vesha waybar --once` (vesha v0.6.0).
+- **vesha v0.6.0**: when every Claude account is at its limit, the watcher
+  switches to the one whose limit resets first instead of staying put (vesha's
+  CHANGELOG and ADR 12 have the details).
+
+## 2026-11-16 (ekatva's window floats)
+
+- **The ekatva window (Super+o) floats**, centred at 1040×720 with Vayu's blur,
+  rounded corners and shadow, instead of tiling the whole workspace
+  (`for_window [app_id="^ekatva$"]` in sway/config; the window now sets that
+  app id). It also opens at once: closing it only hides it, and Super+o wakes the
+  hidden window instead of starting Electron again (it quits after 30 minutes
+  hidden, to free its memory).
+
+## 2026-11-15 (caffeine's Strong level on the bar)
+
+- **The caffeine capsule shows which level it's on**, in the same colours as
+  ekatva's phone app and window: **On** is blue (cup), **Strong** (ekatva's level
+  that keeps the laptop running with the lid closed) is ember with a brighter
+  glow (the same cup: the colour says the level). ekatva writes the level into `~/.local/state/caffeine/enabled`;
+  `caffeine-status.sh` reports class `strong` for it (`caffeine-toggle.sh` still
+  leaves the file empty, which reads as On). Quick settings' caffeine tile counts
+  both as on (`on_when` matches `active|strong`). The colours are
+  `@caf-on` / `@caf-strong` in waybar's style.css, fixed rather than from varna,
+  so the bar matches the phone in every theme. Waybar picks up the new style on
+  its next start.
+
+## 2026-11-14 (ekatva switch; boot, disk, browser and Docker tuning)
+
+- **ekatva has an on/off switch, off by default and remembered across reboots**
+  (like caffeine): quick settings' "Phone link" tile (`Super+q`) or
+  `ekatva-toggle.sh on|off|toggle`. Off stops `ekatva.service` (no daemon, no port).
+  `sway-session.sh` starts it at login only when it was left on
+  (`~/.local/state/ekatva-switch/enabled`). While it's on the bar shows a green
+  capsule (`custom/ekatva`, signal 13, followed by bar-events): click opens ekatva,
+  right click turns it off. `Super+o` / `Super+Ctrl+o` say "ekatva is off" instead
+  of failing silently (`ekatva-open.sh`), and never turn it on by themselves.
+- **Boot menu: no 3 s wait.** `system/apply.sh` sets systemd-boot's `timeout 0`;
+  hold Space while the machine starts for the menu.
+- **btrfs mounts are `noatime`** (were `relatime`, which still wrote every read
+  file's access time once a day: a copy-on-write metadata write per file on the
+  first boot of the day). `system/apply.sh` edits `/etc/fstab` and remounts.
+- **BFQ disk scheduler for SATA SSDs and hard disks** (`60-ioschedulers.rules`;
+  NVMe stays `none`): a big write (docker pull, a build, an update) can't make
+  the app you're opening wait behind it.
+- `vm.vfs_cache_pressure = 50`: directory and inode caches are kept longer, so
+  launching the same apps doesn't walk the disk again.
+- **Video is decoded by the GPU in Zen and Firefox, and YouTube no longer sends
+  AV1 to a GPU that can't decode it** (`browser-perf-prefs`: a marked block in every
+  profile's `user.js`, found through `profiles.ini`; run by `install.sh` and at
+  login). This laptop's Kaby Lake GPU decodes VP9 and H.264, not AV1, so every
+  YouTube video was decoded by the CPU. Tabs are saved every 60 s, not 15 s.
+  Restart the browser once to apply.
+- **Docker containers run in `containers.slice`** (CPU and I/O weight 30 against
+  the desktop's 100; `system/etc/docker/daemon.json` `cgroup-parent`): a dev stack
+  yields to what you're using and gets the whole machine when you aren't. From
+  Docker's next start.
+- mudra 0.6.1: the keybinding search no longer reads every config when Vyom starts
+  (1.6 s of CPU in the login rush); it loads the last read from disk and reads
+  again a minute later.
+
+## 2026-11-14 (Faster after a boot; KDE Connect removed)
+
+- **KDE Connect is gone; ekatva is the phone link.** Removed: `kdeconnect.service`,
+  `phone-events.service` and `phone-events.py` (ring, received files, pairing
+  prompts), the waybar phone capsule (`phone-status.sh`, bar-events' KDE Connect
+  signals), the `kdeconnect/` stow package, its hidden `.desktop` overrides, its mako
+  rule and sway window rules, the `kdeconnect` package and its firewall ports
+  (`UFW_ALLOW` is empty), and the Vyom phone panel **doot** (`Super+Shift+o`, it only
+  spoke KDE Connect; not in `KOSHA_PACKAGES` any more). `xdg-desktop-portal-luminous`
+  went with it: it served only KDE Connect's remote input (RemoteDesktop), and was the
+  slowest portal at login. `Super+Ctrl+a` only picks a notification action now
+  (stopping a KDE Connect ring was the other half). The phone: `Super+o` (ekatva).
+- **The first Super+d after a boot is instant** (Vyom 0.7.4, dvara 0.3.1): Vyom
+  draws the launcher once off screen when it starts, so the first opening doesn't pay
+  GTK's one-time work (0.6 s on an idle machine, seconds during the login burst; now
+  ~20 ms, like every later one), and dvara loads its app list and icons then.
+- **Apps opened from the launcher run in their own scope**, not inside `vyom.service`:
+  Zen was in Vyom's cgroup (1.2 GB "Vyom"), and stopping or restarting Vyom would have
+  closed the browser.
+- **Background daemons yield to what you use:** narada, vaikhari, vesha, vishvakarma,
+  ekatva, update-check, tmux-autosave and the wallpaper fetcher run in systemd's
+  `background.slice` (CPU weight 30 against 100), through drop-ins
+  (`<unit>.service.d/background.conf`, in `STOW_REAL_DIRS`) or their own unit. On a
+  2-core laptop the burst of ~20 services at login is what made the first launcher and
+  browser slow; now panels, the bar and apps go first. Idle, nothing changes.
+- **bar-events used 8.7% of a core at idle**: while WhatsApp syncs, narada's database
+  changes about every second, and the 1 s debounce ran `narada status` and three
+  `tmux set` every 1.4 s. It is throttled to one check every 3 s (the last change is
+  always seen), and only sets the tmux options that changed: 1.5% now.
+- **The REC capsule isn't polled:** waybar ran `wf-recorder-status.sh` every second,
+  all day. It runs on signal 16 now, which `wf-recorder-toggle.sh` sends every second
+  only while it records.
+
+## 2026-11-13 (nāda and drishya: a close key, and :q closes)
+
+- `Super+Ctrl+m` closes nāda and `Super+Ctrl+y` closes drishya: they quit the
+  player, as `:q` inside it now does (`:hide` hides). `Super+Shift+m` and
+  `Super+y` / `Super+Shift+y` stay toggles; a toggle on a window that's open on
+  another workspace brings it here, focused, instead of doing nothing visible.
+  Both players also quit cleanly on `systemctl --user stop` and at logout.
+
+## 2026-11-12 (Browsers' tabs, menus and toolbars are a normal size again)
+
+- Chrome and Zen drew their tabs, address bar and menus far too big next to the
+  pages: GTK's interface font in dconf (`font-name`) was `Adwaita Sans 24`, set by
+  something outside the repo, and both browsers take their own UI font from it.
+  It is `Adwaita Sans 11` (GNOME's default) again, and is now pinned in
+  `DCONF_SETTINGS` (written by `install.sh`) and in `gtk-3.0` / `gtk-4.0`
+  `settings.ini`, so it can't drift silently. See Troubleshooting, "Fonts:".
+
+## 2026-11-10 (Super+Shift+y opens the video player too)
+
+- `Super+Shift+y` toggles drishya, as `Super+y` does.
+
+## 2026-11-09 (MPD's socket exists now)
+
+- nāda said "MPD isn't running" and rmpc couldn't connect while MPD was running:
+  nothing created `$XDG_RUNTIME_DIR/mpd`, so MPD couldn't bind the socket that
+  `MPD_HOST` points at, and since `localhost` bound fine it carried on without saying
+  so. The `mpd.service` drop-in now has `RuntimeDirectory=mpd`. MPD was already enabled
+  at login; `mpd.socket` stays off, as it would listen on every interface.
+
 ## 2026-11-09 (Vyom panels: a compact kendra, tarang's live dashboard, buds battery per part)
 
 - **Vyom 0.7.1 / 0.7.2**: the footer's key hints never widen a card any more (kendra was
