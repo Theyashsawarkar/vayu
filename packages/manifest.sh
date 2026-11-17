@@ -87,7 +87,7 @@ STOW_REAL_DIRS=(
 # players, approvals for AI agents (dvarapala) and the system's password
 # prompts (pramana), pull requests, mail and chat, ports, Docker.
 KOSHA_PACKAGES=(
-  vyom dvara ganit smriti bhava tarang setu patra akashvani raga mudra urja vishram kendra
+  vyom dvara ganit smriti bhava tarang setu patra akashvani raga mudra urja vishram kendra darpana
   nada drishya dvarapala pramana sangam narada pattan nauka vaikhari darshan vesha varna vinyasa vishvakarma
 )
 

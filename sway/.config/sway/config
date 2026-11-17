@@ -40,7 +40,7 @@ bindsym $mod+Shift+b exec $vyom setu
 
 # ekatva is off until switched on (quick settings, or the bar's capsule):
 # while it's off these say so instead of failing silently.
-#: Open ekatva popup (the phone at a glance, jyoti, messages, calls, files, log)
+#: Open Darpaṇa, ekatva's window (the phone at a glance, jyoti, messages, calls, files, log)
 bindsym $mod+o exec ~/.local/bin/ekatva-open.sh
 
 #: Open ekatva pairing (QR code to pair a phone, from any network)

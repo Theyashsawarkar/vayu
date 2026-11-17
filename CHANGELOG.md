@@ -5,6 +5,26 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## v1.27.0-nightly -- 2026-11-17
+
+## 2026-11-17 (nightly: your phone on the laptop, Jyoti, notifications of our own)
+
+- **akashvani 0.6.0**: phone calls from ekatva as call cards (Answer left, Reject
+  right, a camera for video calls), one standard card size with long text cut
+  with "…", no timer bar; only an incoming call stays up, everything else hides
+  after a few seconds; one card per missed call, with Call back and Dismiss.
+- **Darpaṇa 0.1.0** (new): ekatva's window in Vyom, `Super+o`. Home, messages
+  and calls with search, a new Files page with its own send picker.
+- **ekatva 0.1.0** (first release): calls reach the laptop with the phone away
+  (WhatsApp voice and video too), the call on the bar, lock and sleep from the
+  phone fixed, caffeine is **Jyoti** (Śānta, Akhaṇḍa, Nandādīpa).
+- **Vyom 0.8.0**: a hand pointer over what's clickable, one ring in text boxes.
+- **kendra 0.4.0**: the caffeine tile is Jyoti, with its lamp.
+- **varna 0.1.13**: akashvani's cards follow the theme. **kosha 0.5.3**: darpana
+  in the registry.
+- After updating: `kosha update`, `kosha install darpana`, then
+  `systemctl --user restart vyom`; on the phone, ekatva's latest build.
+
 ## v1.26.0-nightly -- 2026-11-09
 
 ## 2026-11-17 (akashvani replaces mako: our own notification server)
@@ -37,6 +57,12 @@ full branch/release process.
 - Trade-off: notifications now live in the Vyom daemon; if it restarts, a
   notification sent in those seconds waits for it (D-Bus starts it).
   TROUBLESHOOTING.md, "Notifications: none show".
+
+## 2026-11-17 (Darpaṇa: ekatva's window has its own name)
+
+- **ekatva's laptop popup is Darpaṇa** (दर्पण, the mirror), its own Vayu tool
+  (it was ekatva-vyom): Super+o opens `vyom darpana`; it's in the install
+  manifest (kosha's registry) like every Vyom tool.
 
 ## 2026-11-17 (the phone's call on the bar)
 

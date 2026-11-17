@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Super+o: opens ekatva, a Vyom popup (instant: Vyom is already running).
+# Super+o: opens ekatva's window, Darpaṇa (a Vyom popup; instant: Vyom is already running).
 # Super+Ctrl+o passes "pair". When ekatva is off it says so instead of
 # failing silently, and opening never turns it on by itself (that is the
 # switch's job: quick settings, or ekatva-toggle.sh on).
@@ -11,6 +11,6 @@ fi
 vyom=$HOME/.local/bin/vyom
 command -v "$vyom" >/dev/null 2>&1 || vyom=$(command -v vyom)
 if [ -n "$vyom" ]; then
-    exec "$vyom" ekatva "$@"
+    exec "$vyom" darpana "$@"
 fi
 exec "$HOME/.local/bin/ekatva" window "$@"
