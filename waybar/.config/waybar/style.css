@@ -893,6 +893,15 @@ tooltip { border: 1px solid alpha(@surface2, 0.8); }
     animation: call-ring 1.4s ease-in-out infinite;
 }
 #custom-call:hover { box-shadow: 0 0 14px alpha(@green, 0.55); }
+/* A video call: the camera facing right (video-call-symbolic.svg, the same
+   drawing as the notifications'), in the capsule's own colour. */
+#custom-call.video {
+    padding-left: 34px;
+    background-image: -gtk-recolor(url("video-call-symbolic.svg"));
+    background-repeat: no-repeat;
+    background-position: 13px center;
+    background-size: 15px 15px;
+}
 @keyframes call-ring {
     0% { box-shadow: 0 0 6px alpha(@yellow, 0.25); }
     50% { box-shadow: 0 0 16px alpha(@yellow, 0.65); }

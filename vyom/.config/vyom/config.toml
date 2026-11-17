@@ -37,6 +37,8 @@ max_visible = 3
 timeout = 3000                 # normal; low and urgent below
 timeout_low = 2000
 timeout_critical = 6000
+timeout_missed = 8000           # a missed call hides too (it stays in the bell's list)
+ignore_timeout = true          # an app can't pin a card: only a ringing call stays
 timeout_actions = 6000         # one you can act on stays a little longer
 sound = "/usr/share/sounds/freedesktop/stereo/message.oga"
 

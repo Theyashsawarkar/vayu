@@ -44,7 +44,9 @@ full branch/release process.
   long ("Suhani Rawat · 1h 20m"), green while you're on it, yellow and
   breathing while it rings. Click opens ekatva on Calls; right click hangs
   up. It's `custom/call`, one long-running `ekatva call --waybar` (no
-  polling); hidden with no call.
+  polling); hidden with no call. A video call shows a video camera facing
+  right (`video-call-symbolic.svg`, recoloured to the capsule's colour), the
+  same drawing as the notification's.
 
 ## 2026-11-17 (caffeine is now Jyoti)
 
