@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Every git hook, for every repo (core.hooksPath = ~/.config/git/hooks):
+# pre-commit and pre-push first run secret-scan, so no secret is committed or
+# pushed; then each hook runs the repo's own (.git/hooks/<name>: git-lfs,
+# linters), which a global hooksPath would otherwise skip. Repos that set their
+# own core.hooksPath (husky) use theirs instead of these.
+name=$1
+shift
+scan=${SECRET_SCAN:-$HOME/.local/bin/secret-scan}
+input=""
+case "$name" in
+  pre-commit)
+    "$scan" staged || exit 1
+    ;;
+  pre-push)
+    input=$(cat)
+    zero=0000000000000000000000000000000000000000
+    while read -r _ local_sha _ remote_sha; do
+      [ -n "${local_sha:-}" ] || continue
+      [ "$local_sha" = "$zero" ] && continue # a deletion sends nothing
+      if [ "$remote_sha" = "$zero" ]; then
+        "$scan" range "$local_sha" --not --remotes="$1" || exit 1 # a new branch: what the remote hasn't got
+      else
+        "$scan" range "$remote_sha..$local_sha" || exit 1
+      fi
+    done <<<"$input"
+    ;;
+esac
+own="$(git rev-parse --git-common-dir 2>/dev/null)/hooks/$name"
+if [ -x "$own" ]; then
+  if [ "$name" = pre-push ]; then printf '%s\n' "$input" | "$own" "$@"; else exec "$own" "$@"; fi
+fi

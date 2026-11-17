@@ -484,6 +484,24 @@ install_aur() {
   [ "${#avail[@]}" -eq "${#want[@]}" ] && [ "${#failed[@]}" -eq 0 ]
 }
 
+# Every repo's commits and pushes go through secret-scan (git/ package, CLAUDE.md
+# "Secrets"). Leaves a hooksPath the user set to something else alone.
+setup_git_hooks() {
+  local hooks_dir="$HOME/.config/git/hooks" current
+  current=$(git config --global --get core.hooksPath || true)
+  if [ -n "$current" ] && [ "$current" != "$hooks_dir" ]; then
+    note_failure "git core.hooksPath is $current, not $hooks_dir: secret-scan won't run (set it by hand to use it)"
+    return 0
+  fi
+  git config --global core.hooksPath "$hooks_dir"
+  local patterns="$HOME/.config/git/private-patterns"
+  if [ ! -e "$patterns" ]; then
+    mkdir -p "${patterns%/*}"
+    (umask 077; printf '%s\n' "# Your private strings that must never reach a git repo (phone numbers," \
+      "# addresses...): one extended regex per line. This file stays on this machine." > "$patterns")
+  fi
+}
+
 stow_all() {
   cd "$DOTFILES_DIR"
   local pkgs=() out targets f backup n=0
@@ -817,6 +835,7 @@ run_step "Installing AUR packages (packages/aur.txt)" install_aur
 run_step --critical "Stowing configs into ~ (conflicts backed up to $BACKUP_DIR)" stow_all
 run_step "Installing the login screen (greetd + tuigreet, greeter/)" apply_greeter
 run_step "Installing the boot splash (Plymouth, splash/)" apply_splash
+run_step "Guarding git against secrets (hooks, gitleaks)" setup_git_hooks
 run_step "Setting up zsh (default shell, oh-my-zsh, theme, plugins)" setup_shell
 run_step "Setting up tmux plugins (TPM)" setup_tmux
 run_step "Installing Vayu's tools with kosha (${#KOSHA_PACKAGES[@]} packages)" setup_kosha

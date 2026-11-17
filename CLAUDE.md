@@ -14,6 +14,30 @@ rules): use `dvarapala` (github.com/Theyashsawarkar/dvarapala, docs/AI-TOOLS.md)
 `AGENTS.md` holds the same rules for other agents (Codex, Aider...): a
 change to a rule here goes there too.
 
+## Secrets: none ever leaves this machine
+
+No key, token, password, keystore, `.env`, private key or private data of
+the user's (phone numbers, addresses, real names or messages) goes into any
+repo, here or in a tool's. Configs read secrets from outside the repo (the
+keyring, `~/.config/<tool>`, the environment); tests, fixtures and
+screenshots use made-up data.
+
+- **The guard:** `core.hooksPath` points every repo at the `git` package's
+  hooks (`~/.config/git/hooks`, set by `install.sh`). Before each commit and
+  each push they run `scripts/.local/bin/secret-scan`: gitleaks, files that
+  are secrets by their kind, and the user's private strings in
+  `~/.config/git/private-patterns` (on this machine only, 0600; never copy it
+  into a repo). Then they run the repo's own `.git/hooks/<name>`. A repo with
+  its own `core.hooksPath` (husky) keeps its own hooks instead.
+- **On GitHub:** every public repo under Theyashsawarkar has secret
+  scanning and push protection on; a new repo gets them when it's created.
+- **When the guard stops you:** remove the secret. A false alarm gets a
+  `gitleaks:allow` comment or a fingerprint in the repo's `.gitleaksignore`,
+  with a line saying why. Never `--no-verify`, never loosen the scan.
+- **If one ever got out:** tell the user, revoke or rotate it first, then
+  rewrite the history (`git filter-repo --replace-text`) and force-push only
+  with their OK; GitHub Support purges what's cached.
+
 ## Hardware: detect it, never assume it
 
 Vayu runs on more than the laptop it was built on (different CPUs, GPUs,

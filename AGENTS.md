@@ -9,6 +9,10 @@ repeated here; when a rule changes, change it in both files.
   here, never a copy in `~`.
 - Day-to-day work on `development`; every change gets a dated
   `CHANGELOG.md` entry (`docs/VERSIONING.md`).
+- No secrets in any repo, ever: keys, tokens, passwords, keystores, `.env`,
+  private keys, or the user's private data (use made-up data in tests and
+  screenshots). Every commit and push runs `secret-scan` (CLAUDE.md
+  "Secrets"); when it stops one, remove the secret. Never `--no-verify`.
 - Commands that need root, or that you can't run yourself (sandbox,
   permission rules), go through `dvarapala` (github.com/Theyashsawarkar/dvarapala,
   docs/AI-TOOLS.md), `"as": "root"` or `"as": "user"`, never pasted commands.

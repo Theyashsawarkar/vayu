@@ -220,6 +220,30 @@ re-login/reboot, so the installer now grants your user an ACL on
 `/dev/uinput` for the current boot. If either still fails:
 `systemctl --user status mpd ydotool` and `getfacl /dev/uinput`.
 
+## Git: a commit or push is refused with "secret-scan"
+
+**What you see:** `git commit` or `git push` stops with red `secret-scan:`
+lines: gitleaks found a secret (shown redacted), a file is a secret by its
+kind (`.env`, a key, a keystore), or a line holds one of your private strings.
+Nothing was committed or pushed.
+
+**Why:** every repo's hooks (`~/.config/git/hooks`, `core.hooksPath`) run
+`secret-scan` first, so no secret reaches GitHub (CLAUDE.md, "Secrets").
+
+**What to do:**
+
+- A real secret: take it out (an env var, a file outside the repo; add the
+  file to `.gitignore`), then commit again. If it's already in a commit,
+  `git reset --soft HEAD~1`, fix, commit again.
+- A false alarm from gitleaks: put `gitleaks:allow` in a comment on that
+  line, or its fingerprint (`gitleaks git --redact -v`) in the repo's
+  `.gitleaksignore`, with a line saying why.
+- `gitleaks isn't installed`: `sudo pacman -S gitleaks`.
+- A repo using husky (its own `core.hooksPath`) doesn't get this scan: its
+  own hooks run instead.
+- Your private strings: `~/.config/git/private-patterns`, one extended
+  regex per line; it never goes into a repo.
+
 ## Hardware: a different laptop than the one this was built on
 
 Hardware-specific parts are detected, not hardcoded:

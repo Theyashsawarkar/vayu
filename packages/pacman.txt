@@ -27,6 +27,8 @@ file
 firefox
 fzf
 git
+git-filter-repo
+gitleaks
 gnome-keyring
 greetd
 greetd-tuigreet

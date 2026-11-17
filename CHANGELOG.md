@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-18 (no secret leaves this machine through git)
+
+- **Every commit and push is checked for secrets**, in every repo:
+  `core.hooksPath` points at the new `git` package's hooks, which run
+  `secret-scan` (gitleaks; files that are secrets by their kind, like `.env`,
+  keys and keystores; and your own private strings, such as phone numbers, kept
+  only in `~/.config/git/private-patterns`) and then the repo's own hooks. It
+  never prints a secret, only where it is. Why: a phone number reached
+  ekatva's public history in a test; the history was rewritten.
+- On GitHub, secret scanning and push protection are on for every public
+  repo, so a known kind of secret is refused there too.
+- `install.sh` installs `gitleaks` and `git-filter-repo` and sets the hooks up;
+  the rule is in CLAUDE.md / AGENTS.md ("Secrets") and the global agent
+  notes. A refused commit: TROUBLESHOOTING.md, "Git: a commit or push is
+  refused".
+
 ## v1.27.0-nightly -- 2026-11-17
 
 ## 2026-11-17 (nightly: your phone on the laptop, Jyoti, notifications of our own)

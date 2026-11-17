@@ -10,6 +10,17 @@
   current window" (users search action + object). Annotate it as
   `~/dotfiles/CLAUDE.md` describes, then run
   `~/.local/bin/keybind-search.py --check` and make it pass.
+- **No secrets ever reach GitHub, or any git remote** (a rule, no exceptions):
+  no keys, tokens, passwords, keystores, `.env` files, private keys, and none
+  of the user's private data (phone numbers, addresses, real people's names or
+  messages in tests, fixtures or screenshots: use made-up ones). Keys live
+  outside repos (`~/.config/<tool>`, the keyring) and code reads them from
+  there or the environment. Every commit and push here goes through
+  `secret-scan` (gitleaks, secret-type files, the user's private strings in
+  `~/.config/git/private-patterns`): when it stops one, remove the secret;
+  never `--no-verify`, never weaken the scan, never put a private string in a
+  repo to allow it. If a secret did go out: tell the user at once, rotate
+  it, then rewrite history only with their OK.
 - **Commands you can't run yourself** (need root, or blocked by your
   sandbox or a permission rule): don't ask the user to copy-paste them.
   Send them to `dvarapala` (JSON on stdin: `requester`, `reason`,
