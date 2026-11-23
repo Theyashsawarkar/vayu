@@ -619,7 +619,7 @@ setup_kosha() {
   # updated by kosha (github.com/Theyashsawarkar/kosha), the package manager
   # for them: Vyom and its tools, nāda, drishya, dvarapala and pramana (whose
   # installers ask for sudo: root-owned into /usr/local), sangam, narada,
-  # pattan, nauka, vaikhari, vesha, varna, vinyasa. KOSHA_PACKAGES is in
+  # pattan, nauka, vesha, varna, vinyasa, sutradhar. KOSHA_PACKAGES is in
   # packages/manifest.sh. kosha installs released versions and adopts what's
   # already there; re-running updates nothing (that's `kosha update`).
   local base="$HOME/.local/share/vyom"

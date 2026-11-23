@@ -488,7 +488,7 @@ and restart Docker.
 
 ## Performance: a background job (mail sync, an update check) runs slowly
 
-narada, vaikhari, vesha, vishvakarma, ekatva, update-check, tmux-autosave and
+narada, vesha, vishvakarma, ekatva, update-check, tmux-autosave and
 the wallpaper fetcher run in systemd's `background.slice` (CPU weight 30, the
 apps and panels you use have 100), so they wait while something you use needs
 the CPU: a compile, a browser loading a page. That's on purpose: it is what keeps

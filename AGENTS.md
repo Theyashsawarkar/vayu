@@ -122,10 +122,9 @@ they want without the rest of vayu.
   [`nauka`](https://github.com/Theyashsawarkar/nauka) (Docker: a Go
   command, the prefix D popup and the Docker capsule's click); both
   plugins build `bin/<name>` on first use when it isn't on PATH.
-  [`vaikhari`](https://github.com/Theyashsawarkar/vaikhari) (posts to X and
-  LinkedIn, free: LinkedIn through its API, X through its share page with
-  one click; a Go command, the prefix B popup, and `vaikhari mcp` for agents,
-  whose posts always wait for approval).
+  [`sutradhar`](https://github.com/Theyashsawarkar/sutradhar) (any agent in
+  your real browser: Chrome, Firefox, Zen; it also posts to X and LinkedIn;
+  payments, passwords and OTPs are handed to you).
   [`vishvakarma`](https://github.com/Theyashsawarkar/vishvakarma) (skills and
   MCP tools for every AI agent: Vayu's skills, like `dsr`, the Daily Status
   Report, live in its `skills/`, the user's in `~/.config/vishvakarma/skills`;

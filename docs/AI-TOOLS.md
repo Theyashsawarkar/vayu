@@ -15,7 +15,7 @@ charge: an agent can ask, only you can approve.
 | [dvarapala](#dvarapala) | Runs the commands an agent can't run itself, as root or as you, after you see each one and why (marked ROOT or YOU) and tick which to allow; your password once for the root ones. | `dvarapala` (JSON on stdin), or the MCP tool `request_commands` |
 | [vishvakarma](#vishvakarma) | Every skill and MCP tool of Vayu's, in every agent (Claude Code on every account, Codex, opencode, Gemini CLI), every session. | Nothing to do: it's already there |
 | [ekatva](#ekatva) | Your phone: status, ring, lock, SMS, calls, its clipboard and files; an SMS or a call only after you allow it. | `ekatva mcp` (MCP server), or the `ekatva` command |
-| [vaikhari](#vaikhari) | Posts to your X and LinkedIn: checks a text against each, drafts, and proposes posts; every one waits for your approval, X for your click. | `vaikhari mcp` (MCP server) |
+| [sutradhar](#sutradhar) | Your real browser (Chrome, Firefox, Zen): tabs, reading pages, clicking, typing, uploads, downloads, like you; payments, passwords and OTPs are always handed to you. | `sutradhar mcp` (MCP server), or `sutradhar call <tool> [json]` |
 | [sangam](#sangam) | Your GitHub pull requests: list, read, diff; comment, review and merge after you approve in a tmux popup. | `sangam mcp` (MCP server), or `sangam call <tool> [json]` |
 
 Each is its own repository (Vayu's plugin rule), cloned by `install.sh` and
@@ -58,25 +58,24 @@ Claude Code on this desktop is told to use it in the global
 `~/.claude/CLAUDE.md` (the stowed `claude/` package). Problems: the "AI
 tools" entries in [Troubleshooting](TROUBLESHOOTING.md).
 
-## vaikhari
+## sutradhar
 
-**Posts to X and LinkedIn, approved by you.** [vaikhari](https://github.com/Theyashsawarkar/vaikhari)
-(the `prefix B` popup) is also an MCP server: an agent can measure a text
-against X's 280 (and its thread split) and LinkedIn's 3000, save drafts, and
-propose posts, now or scheduled. Every proposed post waits for your
-approval in a popup on the agent's pane, where you can edit or decline it.
-LinkedIn then posts through its free API; X opens in your browser with the
-post filled in, the image goes on your clipboard, and you press Post (X's API
-isn't free). `vaikhari web` is the same in your browser, and its Settings tab sets
-up LinkedIn.
+**Your browser, for agents.** [sutradhar](https://github.com/Theyashsawarkar/sutradhar)
+is an extension for Chrome, Firefox and Zen plus a local daemon, in place of
+Claude in Chrome, for every agent. An agent opens tabs in its own tab group,
+reads pages as a tree of controls, and clicks, types, uploads and downloads as
+you would. Anything that is yours to do (a payment, a card number, a password,
+an OTP, a CAPTCHA) stops it: a notification goes out at once, the tab comes
+forward with a yellow **Your turn** card, you do it and press Done. Send,
+publish and delete wait for your Allow.
 
 | At a glance | |
 |---|---|
-| MCP | `vaikhari mcp`; given to every agent by vishvakarma |
-| Tools | `post_check`, `post_draft`, `post_list`, `post_accounts`; asking first: `post_publish` |
-| Approve | the popup (`vaikhari approve`), or Queue in vaikhari (`a` / `n`) |
-| Expires | the call waits 10 minutes; the post keeps waiting in Queue |
-| Docs | the [README](https://github.com/Theyashsawarkar/vaikhari#for-ai-agents-mcp) |
+| MCP | `sutradhar mcp --name <agent>` (vishvakarma gives it to every agent) |
+| Command | `sutradhar status`, `sutradhar call <tool> [json]`, `sutradhar log` |
+| Stop | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Delete</kbd>, the toolbar panel, or `sutradhar stop` |
+| Install the extension | `sutradhar install` prints the paths: Zen takes the `.xpi`, Chrome loads `dist/chrome` unpacked |
+| Docs | the [README](https://github.com/Theyashsawarkar/sutradhar#readme) |
 
 ## sangam
 

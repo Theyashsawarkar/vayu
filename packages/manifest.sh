@@ -72,7 +72,7 @@ STOW_REAL_DIRS=(
   .config/systemd/user/mpd.service.d
   .config/systemd/user/waybar.service.d
   # Background daemons from other repos, moved into background.slice.
-  .config/systemd/user/narada.service.d .config/systemd/user/vaikhari.service.d
+  .config/systemd/user/narada.service.d
   .config/systemd/user/vesha.service.d .config/systemd/user/vishvakarma.service.d
   .config/systemd/user/ekatva.service.d
   .local .local/bin .local/share .local/share/applications .local/state
@@ -88,7 +88,7 @@ STOW_REAL_DIRS=(
 # prompts (pramana), pull requests, mail and chat, ports, Docker.
 KOSHA_PACKAGES=(
   vyom dvara ganit smriti bhava tarang setu patra akashvani raga mudra urja vishram kendra darpana
-  nada drishya dvarapala pramana sangam narada pattan nauka vaikhari darshan vesha varna vinyasa vishvakarma
+  nada drishya dvarapala pramana sangam narada pattan nauka darshan vesha varna vinyasa vishvakarma sutradhar
 )
 
 # Supplementary groups for the installing user.

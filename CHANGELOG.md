@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-23 (sutradhar: agents in your browser)
+
+- **vaikhari is retired**: sutradhar posts to X and LinkedIn from your own
+  browser (the `post-about-tool` skill), so the prefix B popup, its plugin,
+  its scheduler service and its MCP server are gone. Its data stays in
+  `~/.local/share/vaikhari` and `~/.config/vaikhari` until you delete them.
+
+- **sutradhar** replaces Claude in Chrome for every agent: one extension for
+  Chrome, Firefox and Zen and a daemon (`sutradhar.service`, in the session's
+  units), installed by kosha and given to every agent by vishvakarma.
+  Payments, passwords and OTPs are always handed to you, with a notification.
+- **Super+Shift+Delete stops every browser agent** (`sutradhar stop`).
+  Not Super+Shift+Escape: Vayu's keymap turns Shift+Esc into `~`.
+
 ## 2026-11-18 (no secret leaves this machine through git)
 
 - **Every commit and push is checked for secrets**, in every repo:

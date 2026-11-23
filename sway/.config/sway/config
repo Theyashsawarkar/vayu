@@ -67,6 +67,9 @@ bindsym $mod+Ctrl+Tab exec ~/.local/bin/akashvani key next
 #: Close all notifications
 bindsym $mod+Ctrl+Shift+BackSpace exec ~/.local/bin/akashvani key dismiss-all
 
+#: Stop every browser agent (sutradhar: cancels what agents are doing in your browser)
+bindsym $mod+Shift+Delete exec ~/.local/bin/sutradhar stop
+
 #: Open Docker panel (patra: containers, logs, restart, stop, shell)
 bindsym $mod+Shift+d exec $vyom patra
 
