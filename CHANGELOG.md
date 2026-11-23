@@ -19,6 +19,14 @@ full branch/release process.
 - **Super+Shift+Delete stops every browser agent** (`sutradhar stop`).
   Not Super+Shift+Escape: Vayu's keymap turns Shift+Esc into `~`.
 
+## 2026-11-23 (Jyoti's flame)
+
+- **The bar's Jyoti icon is a flame now**: blue for Akhaṇḍa, bright red for
+  Nandādīpa (in place of the diya and the samai). A vector drawn at exactly
+  the 18 px the bar shows it at (36 px for 2×), so it's sharp. The same
+  flame as ekatva's phone app, Darpaṇa and kendra; the source is ekatva's
+  `jyoti-art.ts`.
+
 ## 2026-11-18 (no secret leaves this machine through git)
 
 - **Every commit and push is checked for secrets**, in every repo:

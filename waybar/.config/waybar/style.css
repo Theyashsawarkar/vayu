@@ -3,8 +3,8 @@
 @import "varna.css";
 
 /* Jyoti's two lit levels, the same colours as ekatva's phone app and popup,
-   so the bar, the phone and the laptop agree at a glance: Akhaṇḍa (the diya)
-   is blue, Nandādīpa (the samai: keeps running with the lid closed) ember. */
+   so the bar, the phone and the laptop agree at a glance: Akhaṇḍa is blue,
+   Nandādīpa (keeps running with the lid closed) ember. */
 @define-color jyoti-akhanda #86aee0;
 @define-color jyoti-nanda #e58b52;
 
@@ -79,9 +79,11 @@ window#waybar {
    bearing than its right in this font -- symmetric CSS padding was
    never going to look symmetric on screen with this specific glyph.
    9px left / 19px right measured out to an 11px/12px visual gap. */
-/* Jyoti's lamp is a picture, not a glyph: the diya (Akhaṇḍa) or the samai
-   (Nandādīpa), in its level's colour, the same drawings as ekatva's phone
-   app and popup. The module's text is two en spaces for it to sit in. */
+/* Jyoti's flame is a picture, not a glyph: blue for Akhaṇḍa, bright red for
+   Nandādīpa, a vector drawn at exactly 18 px (36 px at 2x), so it's sharp.
+   The same flame as ekatva's phone app and Darpaṇa (ekatva:
+   apps/mobile/src/ui/jyoti-art.ts, written out by scripts/jyoti-art.mjs).
+   The module's text is two en spaces for it to sit in. */
 #custom-jyoti {
     padding: 0 11px;
     background-repeat: no-repeat;
