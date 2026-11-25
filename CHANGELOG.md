@@ -5,6 +5,21 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-25 (the website is Spatial)
+
+- **vayu.theyashsawarkar.dev, redesigned**: graphite glass over the desktop's
+  own picture, a floating nav where the page you're on is the white pill, the
+  logo in white. The homepage starts with a tour of the real desktop,
+  switched by pills named after the keys that open each panel (quick
+  settings, apps, Wi-Fi, every key, notifications). Below it come every tool
+  made for Vayu with its logo and site, the install line with Stable and
+  Nightly, and the docs. The doc pages' "On this page" list is a glass panel
+  that shows where you are as a brighter pill.
+- New screenshots (`assets/shots/`), all from a private desktop with made-up
+  data: a made-up user, Wi-Fi networks, mail and notifications. The README
+  shows them too. The old Catppuccin-era pictures are gone; only the boot
+  splash shot stays.
+
 ## 2026-11-23 (sutradhar: agents in your browser)
 
 - **vaikhari is retired**: sutradhar posts to X and LinkedIn from your own

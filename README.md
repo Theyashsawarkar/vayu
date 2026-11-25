@@ -282,14 +282,14 @@ This setup prioritizes:
 
 ## 📸 Screenshots
 
-![Neovim, rmpc and btop tiled over the wallpaper, with compositor glass and the Catppuccin Mocha bar](assets/desktop.jpg)
+![Neovim and the narada mail client tiled under the glass bar](assets/shots/desktop.webp)
 
 | | |
 |---|---|
-| ![App launcher (before Vyom: wofi)](assets/wofi.jpg) | ![Keybinding search, filtered to window keys](assets/keybindsearch.jpg) |
-| App launcher (`Super+d`; screenshot from before [Vyom](https://github.com/Theyashsawarkar/vyom)) | Keybinding search (`Super+Shift+/`) |
-| ![Emoji picker searching for wind](assets/emoji.jpg) | ![Power menu](assets/powermenu.jpg) |
-| Emoji picker (`Super+.`) | Power menu (`Super+Shift+p`) |
+| ![Quick settings](assets/shots/panel-kendra.webp) | ![App launcher](assets/shots/panel-dvara.webp) |
+| Quick settings, kendra (`Super+q`) | Apps, dvara (`Super+d`) |
+| ![Wi-Fi panel](assets/shots/panel-tarang.webp) | ![Keybinding search](assets/shots/panel-mudra.webp) |
+| Wi-Fi, tarang (`Super+Shift+w`) | Keybinding search, mudra (`Super+Shift+/`) |
 
 ![The Vayu boot splash on black](assets/splash.jpg)
 

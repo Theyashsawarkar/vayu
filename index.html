@@ -3,179 +3,208 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vayu — a minimal, keyboard-driven Arch Linux desktop</title>
-<meta name="description" content="Vayu: a minimal, keyboard-driven Arch Linux desktop built around Wayland, Sway, and modern terminal-based development tools. Named after the Hindu god of wind.">
+<title>Vayu: a keyboard-driven Arch Linux desktop</title>
+<meta name="description" content="Vayu is a keyboard-driven Arch Linux desktop on Wayland and Sway, with its own panels, notifications, phone link and music player, in one graphite-glass look. Named after the Hindu god of wind.">
+<meta name="theme-color" content="#0e0f11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Tiro+Devanagari+Sanskrit&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 </head>
-<body>
+<body class="home">
+<div class="backdrop" aria-hidden="true"></div>
+
 <div class="topnav-wrap">
-<nav class="topnav">
-  <a class="brand" href="#" aria-label="Vayu home"><svg class="brand-logo" viewBox="-12 -8 318 126" width="76" height="30" aria-hidden="true" focusable="false"><defs><linearGradient id="vayu-nav-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0"><stop offset="0" stop-color="#cba6f7"/><stop offset="1" stop-color="#f5e0dc"/></linearGradient></defs><g fill="none" stroke="url(#vayu-nav-g)" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="7"><path d="M0 0 L22 52 L44 0"/><path d="M84 52 L106 0 L128 52"/><path d="M168 0 L190 27 L212 0 M190 27 V52"/><path d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/></g><path stroke-width="5.5" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/></g></svg><span class="sr-only">Vayu</span></a>
+<nav class="topnav" aria-label="Main">
+  <a class="brand" href="#" aria-label="Vayu home"><svg class="brand-logo" viewBox="-12 -8 318 126" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="8"><path d="M0 0 L22 52 L44 0"/><path d="M84 52 L106 0 L128 52"/><path d="M168 0 L190 27 L212 0 M190 27 V52"/><path d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/></g><path stroke-width="6.5" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/></g></svg><span class="sr-only">Vayu</span></a>
   <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navlinks"><span class="nav-toggle-bars" aria-hidden="true"></span></button>
   <div class="navlinks" id="navlinks">
-    <a href="#features">Features</a>
+    <a href="#tour">Tour</a>
+    <a href="#tools">Tools</a>
     <a href="#install">Install</a>
+    <a href="docs/KEYBINDINGS.html">Keys</a>
     <a href="docs/ARCHITECTURE.html">Architecture</a>
-    <a href="docs/KEYBINDINGS.html">Keybindings</a>
-    <a href="docs/AI-TOOLS.html">Tools</a>
-    <a href="docs/TROUBLESHOOTING.html">Troubleshooting</a>
     <a href="CHANGELOG.html">Changelog</a>
-    <a href="https://github.com/Theyashsawarkar/vayu">GitHub</a>
+    <a class="nav-gh" href="https://github.com/Theyashsawarkar/vayu">GitHub</a>
   </div>
 </nav>
 </div>
 
 <header class="hero">
-  <div class="hero-glow" aria-hidden="true"></div>
-  <div class="hero-card">
-    <div class="hero-text">
-      <h1><span class="sr-only">Vayu</span><svg class="vayu-logo" viewBox="-12 -8 318 126" aria-hidden="true" focusable="false">
-        <!-- The boot splash logo (splash/logo.svg), animated like
-             splash/make-frames.py: the letters write themselves, the wind
-             line sweeps out and curls, then a light runs along it. -->
-        <defs>
-          <linearGradient id="vayu-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0">
-            <stop offset="0" stop-color="#cba6f7"/><stop offset="1" stop-color="#f5e0dc"/>
-          </linearGradient>
-          <filter id="vayu-blur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
-        </defs>
-        <g fill="none" stroke="url(#vayu-g)" stroke-linecap="round" stroke-linejoin="round">
-          <path class="draw letter" style="--d:0s" pathLength="1" stroke-width="4" d="M0 0 L22 52 L44 0"/>
-          <path class="draw letter" style="--d:.15s" pathLength="1" stroke-width="4" d="M84 52 L106 0 L128 52"/>
-          <path class="draw y-arms" style="--d:.3s" pathLength="1" stroke-width="4" d="M168 0 L190 27 L212 0"/>
-          <path class="draw y-stem" style="--d:.9s" pathLength="1" stroke-width="4" d="M190 27 V52"/>
-          <path class="draw letter" style="--d:.45s" pathLength="1" stroke-width="4" d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/>
-          <path class="draw wind" pathLength="1" stroke-width="3" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/>
-        </g>
-        <path class="glow" pathLength="1" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" filter="url(#vayu-blur)" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/>
-      </svg><span class="version-badge" id="version-badge"></span></h1>
-      <figure class="shlok">
-        <blockquote lang="sa" title="Salutations to you, Vāyu. You alone are the visible Brahman. (Taittirīya Upaniṣad 1.1.1)">नमस्ते वायो । त्वमेव प्रत्यक्षं ब्रह्मासि ॥</blockquote>
-      </figure>
-      <p class="tagline">A minimal, keyboard-driven desktop, with aesthetics.</p>
-      <p class="eyebrow">Arch Linux • Wayland • Sway</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="#install">Get started</a>
-        <a class="btn btn-ghost" href="https://github.com/Theyashsawarkar/vayu">View on GitHub</a>
-      </div>
-    </div>
-    <div class="hero-image">
-      <div class="slide-stack" id="slide-stack">
-        <img class="slide-img" data-offset="0" src="assets/desktop.jpg" alt="Neovim, the rmpc music player and btop tiled over a desert-sunset wallpaper, with real compositor glass and the Catppuccin Mocha bar.">
-        <img class="slide-img" data-offset="1" src="assets/wofi.jpg" alt="The app launcher (shown here before it became Vyom's dvara).">
-        <img class="slide-img" data-offset="2" src="assets/keybindsearch.jpg" alt="Fuzzy keybinding search across Sway and Tmux, filtered to window keys.">
-        <img class="slide-img" data-offset="3" src="assets/emoji.jpg" alt="Emoji picker searching for wind (shown here before it became Vyom's bhava).">
-        <img class="slide-img" data-offset="4" src="assets/powermenu.jpg" alt="The power menu: lock, logout, suspend, reboot, power off.">
-        <img class="slide-img" data-offset="5" src="assets/splash.jpg" alt="The Vayu boot splash: the logo on black, shown on boot, reboot and power-off.">
-      </div>
-      <div class="slide-dots" id="slide-dots"></div>
-    </div>
+  <h1><span class="sr-only">Vayu</span><svg class="vayu-logo" viewBox="-12 -8 318 126" aria-hidden="true" focusable="false">
+    <!-- The boot splash logo (splash/logo.svg): the letters write
+         themselves, then the wind line sweeps out and curls. -->
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path class="draw" style="--d:0s" pathLength="1" stroke-width="4" d="M0 0 L22 52 L44 0"/>
+      <path class="draw" style="--d:.12s" pathLength="1" stroke-width="4" d="M84 52 L106 0 L128 52"/>
+      <path class="draw" style="--d:.24s" pathLength="1" stroke-width="4" d="M168 0 L190 27 L212 0"/>
+      <path class="draw" style="--d:.6s" pathLength="1" stroke-width="4" d="M190 27 V52"/>
+      <path class="draw" style="--d:.36s" pathLength="1" stroke-width="4" d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/>
+      <path class="draw wind" style="--d:.7s" pathLength="1" stroke-width="3" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/>
+    </g>
+  </svg></h1>
+
+  <figure class="shlok">
+    <blockquote lang="sa">नमस्ते वायो । त्वमेव प्रत्यक्षं ब्रह्मासि ॥</blockquote>
+    <figcaption>Salutations to you, Vāyu. You alone are the visible Brahman. <cite>Taittirīya Upaniṣad 1.1.1</cite></figcaption>
+  </figure>
+
+  <p class="lead">An Arch Linux desktop you drive from the keyboard. Sway tiles the windows; Vayu's own panels, notifications, phone link and music player sit on top, all in one graphite glass.</p>
+
+  <div class="cta-row">
+    <a class="btn btn-primary" href="#install">Install</a>
+    <a class="btn" href="https://github.com/Theyashsawarkar/vayu">Source on GitHub</a>
+    <span class="version-pill" id="version-badge-wrap" hidden>Latest <span id="version-badge"></span></span>
   </div>
 </header>
 
 <main>
-  <section id="features" class="features">
-    <h2>What's in it</h2>
-    <div class="feature-grid">
-      <div class="feature-card" style="--accent:#cba6f7">
-        <span class="feature-icon">🪟</span>
-        <h3>Sway</h3>
-        <p>Tiling Wayland compositor (SwayFX fork — real compositor blur, rounded corners, shadows). Keyboard-first, no mouse required.</p>
+  <section id="tour" class="tour" aria-label="A tour of the desktop">
+    <div class="tour-tabs" role="tablist" aria-label="What to show">
+      <button type="button" role="tab" class="tour-tab" aria-selected="true" data-shot="desktop">The desktop<span class="keys"><kbd>Super</kbd><kbd>↵</kbd></span></button>
+      <button type="button" role="tab" class="tour-tab" aria-selected="false" tabindex="-1" data-shot="panel-kendra">Quick settings<span class="keys"><kbd>Super</kbd><kbd>Q</kbd></span></button>
+      <button type="button" role="tab" class="tour-tab" aria-selected="false" tabindex="-1" data-shot="panel-dvara">Apps<span class="keys"><kbd>Super</kbd><kbd>D</kbd></span></button>
+      <button type="button" role="tab" class="tour-tab" aria-selected="false" tabindex="-1" data-shot="panel-tarang">Wi-Fi<span class="keys"><kbd>Super</kbd><kbd>⇧</kbd><kbd>W</kbd></span></button>
+      <button type="button" role="tab" class="tour-tab" aria-selected="false" tabindex="-1" data-shot="panel-mudra">Every key<span class="keys"><kbd>Super</kbd><kbd>⇧</kbd><kbd>/</kbd></span></button>
+      <button type="button" role="tab" class="tour-tab" aria-selected="false" tabindex="-1" data-shot="notifications">Notifications</button>
+    </div>
+    <figure class="screen">
+      <img id="tour-img" src="assets/shots/desktop.webp" width="1920" height="1080" alt="The Vayu desktop: Neovim and the narada mail client tiled side by side under the glass bar, over a forest wallpaper." fetchpriority="high">
+      <figcaption id="tour-caption">Two windows tiled, the bar above them. Every window and panel floats in its own glass.</figcaption>
+    </figure>
+  </section>
+
+  <section class="principles" aria-label="How it works">
+    <div class="principle">
+      <h2>Keys first</h2>
+      <p>Every panel opens on a key and is run from the keyboard. Inside every tool the same vim keys work: <kbd>j</kbd> <kbd>k</kbd> to move, <kbd>/</kbd> to search, <kbd>Space</kbd> for the menu, <kbd>?</kbd> for every key.</p>
+    </div>
+    <div class="principle">
+      <h2>One look</h2>
+      <p>The bar, the panels, the terminal, Neovim and tmux all take their colours from one theme. Change it once in <a href="https://varna.theyashsawarkar.dev/">varna</a> and every window follows, live.</p>
+    </div>
+    <div class="principle">
+      <h2>Yours to read</h2>
+      <p>Every config is a plain file in this repo, linked into place with GNU Stow. The tools are small, separate projects you can install, update or remove one at a time.</p>
+    </div>
+  </section>
+
+  <section id="tools" class="tools">
+    <div class="section-head">
+      <h2>Made for Vayu</h2>
+      <p>The desktop's own tools. Each is its own project with its own site, and works on other Wayland desktops too.</p>
+    </div>
+
+    <div class="tool-groups">
+      <div class="tool-group glass wide">
+        <h3>Panels <span>in <a href="https://vyom.theyashsawarkar.dev/">Vyom</a>, the panel runtime</span></h3>
+        <ul class="tool-list">
+          <li><a href="https://dvara.theyashsawarkar.dev/"><img src="assets/tools/dvara.svg" alt="" width="36" height="36"><b>dvara</b><span>Apps, their actions, open windows</span></a></li>
+          <li><a href="https://kendra.theyashsawarkar.dev/"><img src="assets/tools/kendra.svg" alt="" width="36" height="36"><b>kendra</b><span>Quick settings</span></a></li>
+          <li><a href="https://akashvani.theyashsawarkar.dev/"><img src="assets/tools/akashvani.svg" alt="" width="36" height="36"><b>akashvani</b><span>Notifications and their history</span></a></li>
+          <li><a href="https://tarang.theyashsawarkar.dev/"><img src="assets/tools/tarang.svg" alt="" width="36" height="36"><b>tarang</b><span>Wi-Fi and hotspot</span></a></li>
+          <li><a href="https://setu.theyashsawarkar.dev/"><img src="assets/tools/setu.svg" alt="" width="36" height="36"><b>setu</b><span>Bluetooth, with battery levels</span></a></li>
+          <li><a href="https://smriti.theyashsawarkar.dev/"><img src="assets/tools/smriti.svg" alt="" width="36" height="36"><b>smriti</b><span>Clipboard history</span></a></li>
+          <li><a href="https://bhava.theyashsawarkar.dev/"><img src="assets/tools/bhava.svg" alt="" width="36" height="36"><b>bhava</b><span>Emoji</span></a></li>
+          <li><a href="https://mudra.theyashsawarkar.dev/"><img src="assets/tools/mudra.svg" alt="" width="36" height="36"><b>mudra</b><span>Search every keybinding</span></a></li>
+          <li><a href="https://ganit.theyashsawarkar.dev/"><img src="assets/tools/ganit.svg" alt="" width="36" height="36"><b>ganit</b><span>Calculator and converter</span></a></li>
+          <li><a href="https://urja.theyashsawarkar.dev/"><img src="assets/tools/urja.svg" alt="" width="36" height="36"><b>urja</b><span>Battery and power</span></a></li>
+          <li><a href="https://patra.theyashsawarkar.dev/"><img src="assets/tools/patra.svg" alt="" width="36" height="36"><b>patra</b><span>Docker containers</span></a></li>
+          <li><a href="https://raga.theyashsawarkar.dev/"><img src="assets/tools/raga.svg" alt="" width="36" height="36"><b>raga</b><span>Search YouTube and play</span></a></li>
+          <li><a href="https://vishram.theyashsawarkar.dev/"><img src="assets/tools/vishram.svg" alt="" width="36" height="36"><b>vishram</b><span>Lock, sleep, restart</span></a></li>
+        </ul>
       </div>
-      <div class="feature-card" style="--accent:#89dceb">
-        <span class="feature-icon">📊</span>
-        <h3>Waybar</h3>
-        <p>Status bar with a fully custom Catppuccin Mocha palette — every module gets its own deliberate, distinct color.</p>
+
+      <div class="tool-group glass">
+        <h3>Apps</h3>
+        <ul class="tool-list">
+          <li><a href="https://ekatva.theyashsawarkar.dev/"><img src="assets/tools/ekatva.svg" alt="" width="36" height="36"><b>ekatva</b><span>Your phone and laptop as one: calls, messages, files</span></a></li>
+          <li><a href="https://nada.theyashsawarkar.dev/"><img src="assets/tools/nada.svg" alt="" width="36" height="36"><b>nāda</b><span>Music from your files and YouTube, with lyrics</span></a></li>
+          <li><a href="https://narada.theyashsawarkar.dev/"><img src="assets/tools/narada.svg" alt="" width="36" height="36"><b>narada</b><span>Gmail, Google Chat and WhatsApp in the terminal</span></a></li>
+          <li><a href="https://vinyasa.theyashsawarkar.dev/"><img src="assets/tools/vinyasa.svg" alt="" width="36" height="36"><b>vinyasa</b><span>Settings: themes, fonts, wallpaper</span></a></li>
+        </ul>
       </div>
-      <div class="feature-card" style="--accent:#eba0ac">
-        <span class="feature-icon">🎵</span>
-        <h3>MPD + nāda</h3>
-        <p>A real MPD daemon under nāda, Vayu's own music player: your files and YouTube in one queue, synced lyrics, autoplay like YouTube, downloads, vim keys.</p>
+
+      <div class="tool-group glass">
+        <h3>Underneath</h3>
+        <ul class="tool-list">
+          <li><a href="https://varna.theyashsawarkar.dev/"><img src="assets/tools/varna.svg" alt="" width="36" height="36"><b>varna</b><span>One theme for every tool, applied live</span></a></li>
+          <li><a href="https://kosha.theyashsawarkar.dev/"><img src="assets/tools/kosha.svg" alt="" width="36" height="36"><b>kosha</b><span>Installs and updates the tools</span></a></li>
+          <li><a href="https://dvarapala.theyashsawarkar.dev/"><img src="assets/tools/dvarapala.svg" alt="" width="36" height="36"><b>dvarapala</b><span>AI agents ask for root commands; you approve each</span></a></li>
+          <li><a href="https://sutradhar.theyashsawarkar.dev/"><img src="assets/tools/sutradhar.svg" alt="" width="36" height="36"><b>sutradhar</b><span>AI agents use your own browser</span></a></li>
+        </ul>
       </div>
-      <div class="feature-card" style="--accent:#fab387">
-        <span class="feature-icon">🖥️</span>
-        <h3>Kitty + Tmux</h3>
-        <p>GPU-accelerated terminal, real glass transparency, session persistence via tmux-resurrect/continuum.</p>
-      </div>
-      <div class="feature-card" style="--accent:#a6e3a1">
-        <span class="feature-icon">📝</span>
-        <h3>Neovim</h3>
-        <p>A from-scratch, minimal Neovim config — no bloated distro, every plugin a deliberate choice.</p>
-      </div>
-      <div class="feature-card" style="--accent:#b4befe">
-        <span class="feature-icon">🔗</span>
-        <h3>GNU Stow</h3>
-        <p>Every package here is a real, independent, symlinked stow package — reproducible, one command per tool, easy to audit.</p>
-      </div>
+    </div>
+
+    <div class="stack glass">
+      <h3>And the classics, set up with care</h3>
+      <dl>
+        <div><dt>Sway<small>SwayFX</small></dt><dd>Tiling, with real blur, rounded corners and shadows</dd></div>
+        <div><dt>Waybar</dt><dd>White icons; red only when something needs you</dd></div>
+        <div><dt>Kitty + tmux</dt><dd>Sessions that survive a reboot</dd></div>
+        <div><dt>Neovim</dt><dd>A small config of its own, no distro</dd></div>
+        <div><dt>Zsh</dt><dd>Powerlevel10k, completions, history search</dd></div>
+        <div><dt>MPD</dt><dd>The music library under nāda</dd></div>
+      </dl>
     </div>
   </section>
 
   <section id="install" class="install">
-    <h2>Install</h2>
-    <p>On a fresh Arch install, after <code>archinstall</code> finishes and you're logged
-    into a TTY as your normal user with networking up, pick a channel:</p>
-
-    <div class="channel-toggle" role="tablist" aria-label="Update channel">
-      <span class="channel-thumb" aria-hidden="true"></span>
-      <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true" tabindex="0">
-        <span class="channel-icon" aria-hidden="true">🛡️</span>
-        Stable <span class="channel-version" id="version-stable"></span>
-      </button>
-      <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false" tabindex="-1">
-        <span class="channel-icon" aria-hidden="true">🌙</span>
-        Nightly <span class="channel-version" id="version-nightly"></span>
-      </button>
+    <div class="section-head">
+      <h2>Install</h2>
+      <p>On a fresh Arch install: after <code>archinstall</code>, log in on the console as your own user, with the network up, and run one line.</p>
     </div>
 
-    <pre class="install-snippet"><code id="install-cmd">bash &lt;(curl -fsSL https://raw.githubusercontent.com/Theyashsawarkar/vayu/main/install.sh) stable</code></pre>
-    <p class="channel-desc" id="channel-desc">Stable tracks <code>main</code> — tagged releases only, the safest choice.</p>
+    <div class="install-panel glass">
+      <div class="channel-toggle" role="tablist" aria-label="Update channel">
+        <span class="channel-thumb" aria-hidden="true"></span>
+        <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true" tabindex="0">Stable <span class="channel-version" id="version-stable"></span></button>
+        <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false" tabindex="-1">Nightly <span class="channel-version" id="version-nightly"></span></button>
+      </div>
+      <p class="channel-desc" id="channel-desc">Stable follows <code>main</code>: tagged releases only, the safe choice.</p>
+      <pre class="install-snippet"><code id="install-cmd">bash &lt;(curl -fsSL https://raw.githubusercontent.com/Theyashsawarkar/vayu/main/install.sh) stable</code></pre>
 
-    <p>This installs every package, stows every config in this repo, sets up zsh/tmux/the
-    Nerd Font the status bars need, and enables the required services. It backs up any
-    pre-existing conflicting dotfiles first, and is safe to re-run. Not sure which channel to
-    pick? Stay on Stable — Nightly is for tracking day-to-day changes as they land, and can
-    break.</p>
-    <p>Full walkthrough, manual/step-by-step installation, and how to add your own
-    packages: see the <a href="https://github.com/Theyashsawarkar/vayu#readme">full README on GitHub</a>.
-    Something not working? <a href="docs/TROUBLESHOOTING.html">Troubleshooting</a> lists known problems and their fixes.</p>
+      <div class="install-notes">
+        <div>
+          <h3>What it does</h3>
+          <p>Installs every package, links every config into place, sets up zsh, tmux and Neovim, the login screen and the boot splash, and turns on the services. Files already in the way are backed up first. Safe to run again.</p>
+        </div>
+        <div>
+          <h3>What it needs</h3>
+          <ul>
+            <li>Your user can use <code>sudo</code></li>
+            <li>archlinux.org, github.com and the AUR can be reached</li>
+            <li>About 15 GB free in your home folder</li>
+          </ul>
+        </div>
+        <div>
+          <h3>If a step fails</h3>
+          <p>The rest still runs, and the summary says how to fix each failure. The full log is in <code>~/.local/state/vayu/install-logs/</code>. <a href="docs/TROUBLESHOOTING.html">Troubleshooting</a> lists known problems.</p>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <section class="docs-links">
-    <h2>Read more</h2>
-    <div class="docs-grid">
-      <a class="doc-card" href="docs/ARCHITECTURE.html">
-        <h3>Architecture</h3>
-        <p>How every package maps to <code>$HOME</code>, every real bug found and fixed, with the full reasoning — not a polished summary.</p>
-      </a>
-      <a class="doc-card" href="docs/KEYBINDINGS.html">
-        <h3>Keybindings</h3>
-        <p>Every Sway and Tmux keybinding, generated straight from the real configs — not a list to fall out of sync.</p>
-      </a>
-      <a class="doc-card" href="docs/AI-TOOLS.html">
-        <h3>Tools</h3>
-        <p>Tools the desktop provides, starting with AI tools — like dvarapala: an agent asks to run root commands, you approve exactly which, once.</p>
-      </a>
-      <a class="doc-card" href="docs/TROUBLESHOOTING.html">
-        <h3>Troubleshooting</h3>
-        <p>Known problems by symptom — a shutdown that hangs, text after the logo, a login that won't start — and the exact commands to fix each.</p>
-      </a>
-      <a class="doc-card" href="CHANGELOG.html">
-        <h3>Changelog</h3>
-        <p>Dated, detailed log of what changed and why, newest first — the real history, not rewritten.</p>
-      </a>
-      <a class="doc-card" href="docs/VERSIONING.html">
-        <h3>Versioning</h3>
-        <p>The <code>main</code>/<code>development</code> branch model, Stable/Nightly channels, and release process this repo actually follows.</p>
-      </a>
+  <section class="docs" aria-labelledby="docs-h">
+    <div class="section-head">
+      <h2 id="docs-h">Read more</h2>
     </div>
+    <nav class="doc-list glass" aria-labelledby="docs-h">
+      <a href="docs/KEYBINDINGS.html"><b>Keybindings</b><span>The main keys, and the Space grammar every tool shares</span></a>
+      <a href="docs/ARCHITECTURE.html"><b>Architecture</b><span>How the repo maps to your home folder, and why each choice was made</span></a>
+      <a href="docs/AI-TOOLS.html"><b>Tools for AI agents</b><span>dvarapala, sutradhar, sangam, ekatva and vishvakarma</span></a>
+      <a href="docs/TROUBLESHOOTING.html"><b>Troubleshooting</b><span>Known problems by what you see, and the fix for each</span></a>
+      <a href="docs/VERSIONING.html"><b>Versioning</b><span>Stable and Nightly, and how a release is made</span></a>
+      <a href="CHANGELOG.html"><b>Changelog</b><span>What changed and why, newest first</span></a>
+    </nav>
   </section>
 </main>
 
 <footer>
-  <p>Vayu · MIT License · <a href="https://github.com/Theyashsawarkar/vayu/tags">Latest release</a></p>
+  <p>Vayu is MIT licensed. <a href="https://github.com/Theyashsawarkar/vayu/tags">Releases</a> <a href="https://github.com/Theyashsawarkar/vayu/issues">Report a problem</a></p>
 </footer>
 <script src="assets/nav.js"></script>
-<script src="assets/carousel.js"></script>
+<script src="assets/tour.js"></script>
 <script src="assets/copy.js"></script>
 <script src="assets/version.js"></script>
 <script src="assets/channel.js"></script>

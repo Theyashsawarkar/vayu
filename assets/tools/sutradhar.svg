@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Sutradhar logo">
+  <title>sutradhar</title>
+  <!-- A puppeteer's control bar holding three strings that move a pointer: the sūtradhāra, holder of the strings. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="128" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b4befe"/><stop offset="1" stop-color="#cba6f7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="62" cy="70" r="62" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b4befe" stop-opacity=".22"/><stop offset="1" stop-color="#b4befe" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="30" fill="#1e1e2e" stroke="#b4befe" stroke-opacity=".28" stroke-width="2"/>
+  <rect x="2" y="2" width="124" height="124" rx="30" fill="url(#glow)"/>
+  <g fill="none" stroke="url(#g)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 32 H98" stroke-width="8"/>
+    <path d="M64 20 V32" stroke-width="7"/>
+    <path d="M36 32 L54 66 M64 32 L56 64 M92 32 L58 66" stroke-width="3" stroke-opacity=".85"/>
+  </g>
+  <path d="M55 66 V104 L64.5 95 L71 108.5 L78 105.3 L71.6 92 H84 Z" fill="url(#g)" stroke="#1e1e2e" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>

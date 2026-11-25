@@ -17,8 +17,8 @@
   // <code> tag (already styled globally, see style.css's own generic
   // `code` rule) rather than plain branch-name text.
   const DESCRIPTIONS = {
-    stable: "Stable tracks <code>main</code> — tagged releases only, the safest choice.",
-    nightly: "Nightly tracks <code>development</code> — day-to-day work, may break.",
+    stable: "Stable follows <code>main</code>: tagged releases only, the safe choice.",
+    nightly: "Nightly follows <code>development</code>: each day's work as it lands. It can break.",
   };
 
   const codeEl = document.getElementById("install-cmd");

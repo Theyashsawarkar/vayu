@@ -1,297 +1,220 @@
-/* Styling for the Jekyll-built doc pages (Architecture, Changelog,
-   Versioning) -- layered on top of assets/style.css's Catppuccin Mocha
-   variables so both the custom homepage and these pages share one
-   palette, not two different "dark themes". */
+/* The doc pages (Architecture, Keybindings, Tools, Troubleshooting,
+   Versioning, Changelog), on top of style.css. Spatial like the homepage:
+   the "On this page" list is a floating glass panel where the section
+   you're reading is the brighter pill; the article sits straight on the
+   graphite (no blur behind a page as long as the Changelog: it would cost
+   every scroll frame), with its code, tables and notes as quiet glass. */
 
-/* The site-wide width (--site-width, style.css) plus this layout's 2.5rem
-   side padding: the sidebar's left edge and the article's right edge line
-   up with the navbar and the homepage. On a 1920px screen the article gets
-   ~1150px, so tables and long commands fit; prose keeps a readable line
-   length via the 100ch cap below. */
 .docs-layout {
-  display: flex;
-  align-items: flex-start;
-  max-width: calc(var(--site-width) + 5rem);
-  margin: 0 auto;
-  padding: 2.5rem 2.5rem 4rem;
-  gap: 3rem;
-}
-
-.docs-sidebar {
-  flex: 0 0 240px;
-  position: sticky;
-  top: 5.5rem;
-  max-height: calc(100vh - 7rem);
-  overflow-y: auto;
-}
-.toc-label {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-  color: var(--subtext);
-  margin: 0 0 0.75rem;
-  font-weight: 600;
-}
-#toc-list ul { list-style: none; margin: 0; padding: 0; }
-#toc-list li { margin: 0.1rem 0; }
-#toc-list a {
-  display: block;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  color: var(--subtext);
-  font-size: 0.85rem;
-  border-left: 2px solid transparent;
-}
-#toc-list a:hover { color: var(--text); text-decoration: none; background: var(--mantle); }
-#toc-list a.active {
-  color: var(--mauve);
-  border-left-color: var(--mauve);
-  background: var(--mantle);
-}
-
-/* .docs-content is a <main>: undo the homepage's main {max-width, margin,
-   padding} so the article's right edge lines up with the navbar. */
-.docs-content { flex: 1 1 auto; min-width: 0; max-width: none; margin: 0; padding: 0; }
-
-/* Article typography -- #docs-article h1 is the page's own real title
-   (each source .md file's own leading "# ..." line), not a synthetic
-   one from the layout -- fixes a real duplicate-heading bug where the
-   layout used to render page.title AND the content's own h1 both. */
-#docs-article h1 {
-  font-size: 2.2rem;
-  margin: 0 0 1.5rem;
-  color: var(--text);
-}
-#docs-article h2 {
-  font-size: 1.4rem;
-  margin: 3rem 0 1rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--surface0);
-  color: var(--mauve);
-  scroll-margin-top: 5.5rem; /* so the sticky topnav doesn't cover the target when jumped to */
-}
-#docs-article h2:first-of-type { border-top: none; margin-top: 0; }
-#docs-article h3 { font-size: 1.15rem; color: var(--sky); margin: 2rem 0 0.75rem; scroll-margin-top: 5.5rem; }
-#docs-article p, #docs-article li { color: var(--text); font-size: 0.96rem; max-width: 100ch; }
-#docs-article a { word-break: break-word; }
-/* Long slash-joined runs (foreground/background/underline/...) and paths
-   break instead of pushing a phone-width page sideways. */
-#docs-article p, #docs-article li { overflow-wrap: anywhere; }
-#docs-article ul, #docs-article ol { padding-left: 1.4rem; }
-#docs-article pre {
-  background: var(--mantle);
-  border: 1px solid var(--surface0);
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
-}
-/* overflow-x on the code element, not pre -- see assets/style.css's
-   .install-snippet for the full reasoning (the copy button is an
-   absolutely-positioned child of pre and drags along with pre's own
-   horizontal scroll otherwise). */
-#docs-article pre code { display: block; overflow-x: auto; background: none; padding: 0; color: var(--green); }
-#docs-article blockquote {
-  border-left: 3px solid var(--mauve);
-  margin: 1rem 0;
-  padding: 0.25rem 1rem;
-  color: var(--subtext);
-}
-
-/* Package cards -- replaces what used to be a giant markdown table with
-   wildly uneven row lengths (some one-liners, some 1500+ word deep
-   dives). A responsive card grid + native <details> for the long ones
-   fits that content shape far better than a fixed-width table ever did. */
-.pkg-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
-  gap: 1rem;
-  margin: 1.5rem 0;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 56px;
+  max-width: var(--site-width);
+  margin: 0 auto;
+  padding: 48px var(--gutter) 0;
+  align-items: start;
 }
-.pkg-card {
-  background: var(--mantle);
-  border: 1px solid var(--surface0);
-  border-radius: 8px;
-  padding: 1.1rem 1.3rem;
-  grid-column: span 1;
-}
-/* Cards with a <details> (the genuinely long entries) get more breathing
-   room and span the full width -- their content doesn't fit a narrow
-   column any better than the old table did. */
-.pkg-card:has(details) { grid-column: 1 / -1; }
-.pkg-card h4 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-.pkg-card h4 code { color: var(--mauve); background: none; padding: 0; font-size: 1rem; }
-.pkg-path { font-size: 0.8rem; }
-.pkg-path code { color: var(--subtext); background: none; padding: 0; }
-.pkg-card p { margin: 0; font-size: 0.9rem; color: var(--subtext); max-width: none; }
-.pkg-card details { margin-top: 0.75rem; }
-.pkg-card summary {
-  cursor: pointer;
-  color: var(--peach);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-.pkg-card details[open] summary { margin-bottom: 0.75rem; }
-.pkg-card details p { color: var(--text); max-width: 100ch; }
 
-/* The sidebar label is a <button> (docs.js folds the list behind it on a
-   phone); on a wide screen it looks and acts like the plain label. */
+/* ------------------------------------------------------------ sidebar */
+.docs-sidebar {
+  position: sticky;
+  top: 92px;
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  padding: 14px 8px 10px;
+  border-radius: 24px;
+  background: rgba(30, 31, 35, 0.6);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--rim);
+  box-shadow: var(--lit), 0 24px 50px -24px rgba(0, 0, 0, 0.7);
+}
 button.toc-label {
   display: block;
   width: 100%;
   appearance: none;
   -webkit-appearance: none;
+  margin: 0 0 6px;
+  padding: 0 12px;
   background: none;
   border: none;
-  padding: 0;
-  font: inherit;
-  font-size: 0.75rem;
   text-align: left;
+  font: 600 13px var(--ui);
+  color: var(--ov1);
   cursor: default;
 }
-
-/* Phones: one column, 1rem gutters, the sidebar a folding "On this page"
-   card above the article (Changelog and Architecture have 50+ sections,
-   which used to push the article a few screens down). */
-@media (max-width: 900px) {
-  .docs-layout { flex-direction: column; align-items: stretch; padding: 1.25rem 1rem 3rem; gap: 1.25rem; }
-  .docs-sidebar {
-    position: static;
-    flex: none;
-    max-height: none;
-    width: 100%;
-    background: var(--mantle);
-    border: 1px solid var(--surface0);
-    border-radius: 12px;
-    padding: 0.35rem;
-  }
-  .docs-sidebar .toc-label { margin: 0; padding: 0.6rem 0.75rem; }
-  .docs-sidebar.collapsible .toc-label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    border-radius: 8px;
-  }
-  .docs-sidebar.collapsible .toc-label::after {
-    content: "";
-    width: 0.45rem;
-    height: 0.45rem;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: rotate(45deg) translateY(-2px);
-    transition: transform 0.2s ease;
-  }
-  .docs-sidebar.collapsible.open .toc-label::after { transform: rotate(-135deg) translateY(-2px); }
-  .docs-sidebar.collapsible .toc-label:focus-visible { outline: 2px solid var(--mauve); outline-offset: -2px; }
-  .docs-sidebar.collapsible:not(.open) #toc-list { display: none; }
-  #toc-list { max-height: 60vh; overflow-y: auto; padding: 0 0.25rem 0.4rem; }
-  #toc-list a { padding: 0.5rem 0.6rem; font-size: 0.9rem; }
-
-  #docs-article h1 { font-size: 1.7rem; margin-bottom: 1.1rem; overflow-wrap: anywhere; }
-  #docs-article h2 { font-size: 1.25rem; margin-top: 2.25rem; overflow-wrap: anywhere; }
-  #docs-article h3 { font-size: 1.05rem; }
-  #docs-article p, #docs-article li { font-size: 0.95rem; }
-  #docs-article ul, #docs-article ol { padding-left: 1.15rem; }
-  #docs-article pre { padding: 0.85rem 1rem; }
-  #docs-article pre code { font-size: 0.82rem; }
-  #docs-article code { overflow-wrap: anywhere; }
-  #docs-article table { font-size: 0.86rem; }
-  #docs-article thead th, #docs-article td { padding: 0.6rem 0.75rem; }
-  .pkg-card:has(details) { grid-column: auto; }
-  .pkg-card { padding: 1rem 1.1rem; }
+#toc-list ul { list-style: none; margin: 0; padding: 0; }
+#toc-list li { margin: 1px 0; }
+#toc-list a {
+  display: block;
+  padding: 6px 12px;
+  border-radius: 14px;
+  color: var(--sub0);
+  font-size: 13.5px;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
-@media (hover: none) {
-  #docs-article pre code { padding-right: 4rem; }
+#toc-list a:hover { color: var(--text); background: rgba(255, 255, 255, 0.06); }
+#toc-list a.active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
+#toc-list .toc-sub { margin: 1px 0 6px 12px; padding: 0; }
+#toc-list .toc-sub a { font-size: 12.5px; color: var(--ov1); padding: 4px 12px; }
+#toc-list .toc-sub a:hover, #toc-list .toc-sub a.active { color: var(--text); }
 
-/* Screenshots in the docs (e.g. the Tools page): fit the column, with the
-   same rounded, shadowed frame as the homepage slides. */
+/* ------------------------------------------------------------ article */
+.docs-content { min-width: 0; max-width: 820px; margin: 0; padding: 0; }
+#docs-article { font-size: 16px; line-height: 1.7; }
+#docs-article h1 {
+  margin: 8px 0 24px;
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 650;
+}
+#docs-article h2 {
+  margin: 64px 0 14px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 26px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 650;
+  scroll-margin-top: 96px;
+}
+#docs-article h1 + h2, #docs-article h2:first-of-type { border-top: none; padding-top: 0; }
+#docs-article h3 { margin: 36px 0 10px; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; scroll-margin-top: 96px; }
+#docs-article h4 { margin: 26px 0 8px; font-size: 16px; font-weight: 600; color: var(--sub1); }
+#docs-article p, #docs-article li { color: var(--sub1); overflow-wrap: anywhere; }
+#docs-article strong { color: var(--text); font-weight: 600; }
+#docs-article ul, #docs-article ol { padding-left: 1.3rem; }
+#docs-article li + li { margin-top: 4px; }
+#docs-article li::marker { color: var(--ov0); }
+#docs-article hr { border: none; border-top: 1px solid rgba(255, 255, 255, 0.08); margin: 40px 0; }
+
+#docs-article pre { margin: 16px 0 20px; position: relative; }
+#docs-article pre code { font-size: 13.5px; color: var(--sub1); }
+#docs-article blockquote {
+  margin: 18px 0;
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--sub0);
+}
+#docs-article blockquote p { margin: 0.3em 0; }
+
+/* Code colours: muted, so a long block still reads as text first. */
+.highlight .c, .highlight .c1, .highlight .cm, .highlight .ch { color: var(--ov1); font-style: italic; }
+.highlight .s, .highlight .s1, .highlight .s2, .highlight .sh, .highlight .sb { color: #c9dfb8; }
+.highlight .k, .highlight .kd, .highlight .kn, .highlight .nb { color: #c7c9f0; }
+.highlight .nv, .highlight .vg, .highlight .nt { color: #f0d9b5; }
+.highlight .m, .highlight .mi, .highlight .mf { color: #f3d4a8; }
+.highlight .o, .highlight .p { color: var(--sub0); }
+
+/* Screenshots: the same floating frame as on the homepage. */
 .docs-content img {
   display: block;
   max-width: 100%;
   height: auto;
-  margin: 1.25rem 0;
-  border-radius: 12px;
-  border: 1px solid rgba(203, 166, 247, 0.18);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  margin: 22px 0;
+  border-radius: 22px;
+  border: 1px solid var(--rim);
+  box-shadow: 0 30px 70px -28px rgba(0, 0, 0, 0.85);
 }
 
-/* Tables: a framed grid in the Mocha palette instead of bare columns.
-   display:block + overflow-x lets a wide table scroll on a phone instead
-   of pushing the page sideways. */
+/* Tables: a rounded glass frame; a wide one scrolls inside it on a phone. */
 #docs-article table {
   display: block;
   max-width: 100%;
   overflow-x: auto;
   border-collapse: separate;
   border-spacing: 0;
-  margin: 1.25rem 0 1.5rem;
-  border: 1px solid var(--surface0);
-  border-radius: 10px;
-  background: var(--mantle);
-  font-size: 0.92rem;
+  margin: 20px 0 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  font-size: 14.5px;
 }
 #docs-article thead th {
-  background: var(--surface0);
-  color: var(--subtext);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: 12px 16px;
   text-align: left;
-  padding: 0.7rem 1rem;
-  white-space: nowrap;
-}
-#docs-article td {
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--surface0);
-  vertical-align: top;
-  color: var(--text);
-}
-#docs-article tbody tr:first-child td { border-top: none; }
-#docs-article td code { overflow-wrap: anywhere; } /* long commands wrap instead of forcing a scroll */
-/* Two-column tables are label/value lists ("At a glance", keys): the
-   label column reads as a label. */
-#docs-article table:has(thead th:nth-child(2):last-child) td:first-child {
-  color: var(--subtext);
+  font-size: 13px;
   font-weight: 600;
+  color: var(--ov1);
   white-space: nowrap;
-  width: 1%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+#docs-article td { padding: 11px 16px; vertical-align: top; color: var(--sub1); border-top: 1px solid rgba(255, 255, 255, 0.05); }
+#docs-article tbody tr:first-child td { border-top: none; }
+#docs-article td code { overflow-wrap: anywhere; }
+#docs-article table:has(thead th:nth-child(2):last-child) td:first-child { color: var(--text); font-weight: 600; white-space: nowrap; width: 1%; }
 
-/* Rows that point at a section on this page (docs.js adds .row-link):
-   the whole row is the link. */
-#docs-article tr.row-link { cursor: pointer; transition: background 0.15s ease; }
-#docs-article tr.row-link:hover,
-#docs-article tr.row-link:focus-visible { background: rgba(203, 166, 247, 0.08); }
-#docs-article tr.row-link:focus-visible { outline: 2px solid var(--mauve); outline-offset: -2px; }
+/* Rows that point at a section on this page (docs.js adds .row-link). */
+#docs-article tr.row-link { cursor: pointer; transition: background-color 0.15s ease; }
+#docs-article tr.row-link:hover, #docs-article tr.row-link:focus-visible { background: rgba(255, 255, 255, 0.06); }
+#docs-article tr.row-link:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 #docs-article tr.row-link td:first-child { white-space: nowrap; }
-#docs-article tr.row-link td:first-child a { font-weight: 700; }
-#docs-article tr.row-link td:last-child::after {
-  content: "\2192";
-  float: right;
-  margin-left: 0.75rem;
-  color: var(--overlay1, #7f849c);
-  transition: transform 0.15s ease, color 0.15s ease;
-}
-#docs-article tr.row-link:hover td:last-child::after { color: var(--mauve); transform: translateX(3px); }
+#docs-article tr.row-link td:first-child a { font-weight: 600; }
 
-/* The heading a row (or any in-page link) jumped to glows briefly. */
-@keyframes heading-flash {
-  0% { background: rgba(203, 166, 247, 0.22); }
-  100% { background: transparent; }
+/* The heading a link jumped to lights up for a moment. */
+@keyframes heading-flash { from { background: rgba(255, 255, 255, 0.14); } to { background: transparent; } }
+#docs-article .flash { animation: heading-flash 1.6s ease-out; border-radius: 12px; }
+
+/* Package cards (Architecture). */
+.pkg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 12px; margin: 20px 0; }
+.pkg-card {
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
-#docs-article .flash { animation: heading-flash 1.6s ease-out; border-radius: 6px; }
+.pkg-card:has(details) { grid-column: 1 / -1; }
+.pkg-card h4 { margin: 0 0 6px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: 15.5px; color: var(--text); }
+.pkg-card h4 code { background: none; padding: 0; color: var(--text); font-size: 15px; }
+.pkg-path code { background: none; padding: 0; color: var(--ov1); font-size: 12.5px; }
+.pkg-card p { margin: 0; font-size: 14.5px; color: var(--sub0); }
+.pkg-card details { margin-top: 10px; }
+.pkg-card summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--sub1); border-radius: 8px; }
+.pkg-card summary:hover { color: var(--text); }
+.pkg-card details[open] summary { margin-bottom: 10px; }
+
+/* The Changelog's Stable / Nightly switch sits above the first entry. */
+#changelog-channel-toggle { margin-bottom: 4px; }
+#changelog-channel-desc { margin-bottom: 28px; }
+
+/* ------------------------------------------------------------- phones */
+@media (max-width: 900px) {
+  .docs-layout { grid-template-columns: 1fr; gap: 20px; padding-top: 24px; }
+  .docs-sidebar { position: static; max-height: none; padding: 6px; border-radius: 22px; }
+  button.toc-label { margin: 0; padding: 10px 14px; font-size: 14px; color: var(--sub1); }
+  .docs-sidebar.collapsible button.toc-label { display: flex; align-items: center; justify-content: space-between; cursor: pointer; border-radius: 16px; }
+  .docs-sidebar.collapsible button.toc-label::after {
+    content: ""; width: 7px; height: 7px;
+    border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px); transition: transform 0.2s ease;
+  }
+  .docs-sidebar.collapsible.open button.toc-label::after { transform: rotate(-135deg) translateY(-2px); }
+  .docs-sidebar.collapsible:not(.open) #toc-list { display: none; }
+  #toc-list { max-height: 60vh; overflow-y: auto; padding: 0 2px 6px; }
+  #toc-list a { padding: 9px 14px; font-size: 14.5px; }
+  #docs-article h2 { font-size: 22px; margin-top: 48px; overflow-wrap: anywhere; }
+  #docs-article h1 { overflow-wrap: anywhere; }
+  #docs-article pre code { font-size: 12.5px; }
+  #docs-article table { font-size: 13.5px; }
+  #docs-article thead th, #docs-article td { padding: 9px 12px; }
+  .pkg-card:has(details) { grid-column: auto; }
+}
+@media (hover: none) {
+  .copy-btn { opacity: 1; }
+  #docs-article pre code { padding-right: 84px; }
+}
 @media (prefers-reduced-motion: reduce) {
   #docs-article .flash { animation: none; }
 }
-
-/* Nested sidebar entries (h3s on short pages). */
-#toc-list .toc-sub { margin: 0.15rem 0 0.4rem; padding-left: 0.85rem; border-left: 1px solid var(--surface0); }
-#toc-list .toc-sub a { font-size: 0.82em; opacity: 0.85; }

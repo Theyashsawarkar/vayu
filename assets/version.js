@@ -28,7 +28,11 @@
           best = { name: t.name, parts };
         }
       }
-      if (best) el.textContent = best.name;
+      if (best) {
+        el.textContent = best.name;
+        const wrap = document.getElementById("version-badge-wrap");
+        if (wrap) wrap.hidden = false;
+      }
     })
     .catch(() => {
       // No network / rate-limited / offline -- leave the badge empty

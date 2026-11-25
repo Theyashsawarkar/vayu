@@ -4,23 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ page.title }} | Vayu</title>
+<meta name="theme-color" content="#0e0f11">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
 <link rel="stylesheet" href="{{ '/assets/docs.css' | relative_url }}">
 </head>
 <body class="docs-body">
+<div class="backdrop" aria-hidden="true"></div>
 <div class="topnav-wrap">
-<nav class="topnav">
-  <a class="brand" href="{{ '/' | relative_url }}" aria-label="Vayu home"><svg class="brand-logo" viewBox="-12 -8 318 126" width="76" height="30" aria-hidden="true" focusable="false"><defs><linearGradient id="vayu-nav-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0"><stop offset="0" stop-color="#cba6f7"/><stop offset="1" stop-color="#f5e0dc"/></linearGradient></defs><g fill="none" stroke="url(#vayu-nav-g)" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="7"><path d="M0 0 L22 52 L44 0"/><path d="M84 52 L106 0 L128 52"/><path d="M168 0 L190 27 L212 0 M190 27 V52"/><path d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/></g><path stroke-width="5.5" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/></g></svg><span class="sr-only">Vayu</span></a>
+<nav class="topnav" aria-label="Main">
+  <a class="brand" href="{{ '/' | relative_url }}" aria-label="Vayu home"><svg class="brand-logo" viewBox="-12 -8 318 126" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><g stroke-width="8"><path d="M0 0 L22 52 L44 0"/><path d="M84 52 L106 0 L128 52"/><path d="M168 0 L190 27 L212 0 M190 27 V52"/><path d="M252 0 V32 C252 45 262 52 274 52 C286 52 296 45 296 32 V0"/></g><path stroke-width="6.5" d="M-6 80 H262 C284 80 300 90 294 102 C289 111 276 109 277 99"/></g></svg><span class="sr-only">Vayu</span></a>
   <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navlinks"><span class="nav-toggle-bars" aria-hidden="true"></span></button>
   <div class="navlinks" id="navlinks">
-    <a href="{{ '/' | relative_url }}#features">Features</a>
     <a href="{{ '/' | relative_url }}#install">Install</a>
-    <a href="{{ '/docs/ARCHITECTURE.html' | relative_url }}">Architecture</a>
-    <a href="{{ '/docs/KEYBINDINGS.html' | relative_url }}">Keybindings</a>
-    <a href="{{ '/docs/AI-TOOLS.html' | relative_url }}">Tools</a>
-    <a href="{{ '/docs/TROUBLESHOOTING.html' | relative_url }}">Troubleshooting</a>
-    <a href="{{ '/CHANGELOG.html' | relative_url }}">Changelog</a>
-    <a href="https://github.com/Theyashsawarkar/vayu">GitHub</a>
+    <a href="{{ '/docs/KEYBINDINGS.html' | relative_url }}"{% if page.title == "Keybindings" %} aria-current="page"{% endif %}>Keys</a>
+    <a href="{{ '/docs/ARCHITECTURE.html' | relative_url }}"{% if page.title == "Architecture" %} aria-current="page"{% endif %}>Architecture</a>
+    <a href="{{ '/docs/AI-TOOLS.html' | relative_url }}"{% if page.title == "Tools" %} aria-current="page"{% endif %}>Tools</a>
+    <a href="{{ '/docs/TROUBLESHOOTING.html' | relative_url }}"{% if page.title == "Troubleshooting" %} aria-current="page"{% endif %}>Troubleshooting</a>
+    <a href="{{ '/CHANGELOG.html' | relative_url }}"{% if page.title == "Changelog" %} aria-current="page"{% endif %}>Changelog</a>
+    <a class="nav-gh" href="https://github.com/Theyashsawarkar/vayu">GitHub</a>
   </div>
 </nav>
 </div>
@@ -36,11 +40,9 @@
       <div class="channel-toggle" id="changelog-channel-toggle" role="tablist" aria-label="Changelog channel">
         <span class="channel-thumb" aria-hidden="true"></span>
         <button type="button" class="channel-btn active" data-channel="stable" role="tab" aria-selected="true" tabindex="0">
-          <span class="channel-icon" aria-hidden="true">🛡️</span>
           Stable
         </button>
         <button type="button" class="channel-btn" data-channel="nightly" role="tab" aria-selected="false" tabindex="-1">
-          <span class="channel-icon" aria-hidden="true">🌙</span>
           Nightly
         </button>
       </div>
@@ -52,7 +54,7 @@
 </div>
 
 <footer>
-  <p>Vayu · MIT License · <a href="https://github.com/Theyashsawarkar/vayu/tags">Latest release</a></p>
+  <p>Vayu is MIT licensed. <a href="https://github.com/Theyashsawarkar/vayu/tags">Releases</a> <a href="https://github.com/Theyashsawarkar/vayu/issues">Report a problem</a> <a href="https://github.com/Theyashsawarkar/vayu/blob/development/{{ page.path }}">This page on GitHub</a></p>
 </footer>
 
 <script src="{{ '/assets/nav.js' | relative_url }}"></script>
