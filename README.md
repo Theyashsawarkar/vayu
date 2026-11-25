@@ -2,7 +2,7 @@
 
 *Named after the Hindu god of wind -- Sway tiles and moves windows the same way air moves, and "sway" itself means exactly that.*
 
-🌐 **[Browse the full docs site →](https://theyashsawarkar.github.io/vayu/)**
+🌐 **[Browse the full docs site →](https://vayu.theyashsawarkar.dev/)**
 (this same README, plus [CHANGELOG.md](CHANGELOG.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md),
 and [docs/VERSIONING.md](docs/VERSIONING.md) -- built from this repo directly, not a separate
 copy to keep in sync.)
