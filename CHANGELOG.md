@@ -5,6 +5,18 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-26 (Bluetooth and Wi-Fi without reboots)
+
+- **Wi-Fi power saving is off** (`wifi-powersave-off.conf`): iwlwifi dozed
+  between beacons, missed them and dropped the link, sometimes until a reboot.
+- **The Bluetooth chip no longer autosuspends** (`btusb-no-autosuspend.conf`):
+  Intel's chip sometimes didn't wake from it.
+- **After every resume, `vayu-radios` checks both**: Bluetooth that doesn't
+  answer gets btusb reloaded and bluetoothd restarted; Wi-Fi stuck
+  "unavailable" gets its radio toggled. `system/apply.sh` applies all three
+  live without dropping the connection. setu and tarang also retry a failed
+  connect and offer Reset when a chip stops answering.
+
 ## 2026-11-26 (colour on the bar)
 
 - **The bar has colour where it says something**: the Docker whale in its

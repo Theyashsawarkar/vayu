@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Installed as /etc/systemd/system-sleep/vayu-radios by system/apply.sh.
+#
+# After a resume, check that Bluetooth and Wi-Fi really came back, and wake
+# them if not, so neither needs a reboot:
+#  - Bluetooth: the adapter must answer `bluetoothctl show` within 5 s.
+#    If it doesn't (Intel's chip sometimes fails its USB resume), reload
+#    btusb and restart bluetoothd, which brings it back powered as before.
+#  - Wi-Fi: if NetworkManager has Wi-Fi enabled but the device is stuck
+#    "unavailable", toggle the radio off and on.
+# A soft block (rfkill) is a choice someone made and is left alone; a
+# hard block (a switch) can't be changed from here anyway.
+[ "$1" = post ] || exit 0
+log() { logger -t vayu-radios "$*"; }
+(
+  sleep 4
+  if grep -qsx bluetooth /sys/class/rfkill/*/type; then
+    blocked=$(rfkill list bluetooth 2>/dev/null | grep -c "blocked: yes")
+    if [ "$blocked" = 0 ] && ! timeout 5 bluetoothctl show 2>/dev/null | grep -q '^Controller'; then
+      log "Bluetooth didn't answer after resume: reloading btusb and restarting bluetoothd"
+      modprobe -r btusb 2>/dev/null; sleep 1; modprobe btusb
+      sleep 2; systemctl restart bluetooth.service
+    fi
+  fi
+  if [ "$(nmcli -t -f WIFI general 2>/dev/null)" = enabled ] \
+     && nmcli -t -f TYPE,STATE device 2>/dev/null | grep -qx 'wifi:unavailable'; then
+    log "Wi-Fi was unavailable after resume: toggling the radio"
+    nmcli radio wifi off; sleep 2; nmcli radio wifi on
+  fi
+) &
+exit 0

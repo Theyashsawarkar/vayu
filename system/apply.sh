@@ -221,6 +221,14 @@ if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/logind.conf.d/'; then
   # HUP makes logind re-read its config without ending any session.
   reload sudo systemctl kill -s HUP systemd-logind.service
 fi
+if printf '%s\n' "${changed[@]}" | grep -q '^etc/default/earlyoom$' && systemctl is-active --quiet earlyoom.service; then
+  reload sudo systemctl restart earlyoom.service
+fi
+# The swapfile's size or script changed: make it so now, not at next boot.
+if printf '%s\n' "${changed[@]}" | grep -qE '^etc/(vayu/ensure-swapfile|systemd/system/vayu-swapfile\.service)$' \
+  && systemctl is-enabled --quiet vayu-swapfile.service; then
+  reload sudo systemctl restart vayu-swapfile.service
+fi
 if printf '%s\n' "${changed[@]}" | grep -q '^etc/systemd/journald.conf.d/'; then
   reload sudo systemctl restart systemd-journald.service
 fi
@@ -236,4 +244,18 @@ if $fstab_atime; then
 fi
 # Drops any connected Bluetooth device for a moment; it reconnects.
 $bt_restart && reload sudo systemctl restart bluetooth.service
+# Radios (vayu-radios, wifi-powersave-off.conf, btusb-no-autosuspend.conf):
+# applied live too, without dropping the connection: power save off on the
+# Wi-Fi device now, NetworkManager re-reads its config for the next
+# connection, and the Bluetooth chip stops autosuspending until btusb
+# next loads with the option.
+if printf '%s\n' "${changed[@]}" | grep -qE '^etc/(NetworkManager/conf.d/wifi-powersave|modprobe.d/btusb)'; then
+  reload sudo nmcli general reload conf
+  for dev in $(nmcli -t -f DEVICE,TYPE device 2>/dev/null | awk -F: '$2=="wifi"{print $1}'); do
+    reload sudo iw dev "$dev" set power_save off
+  done
+  for ctl in /sys/bus/usb/drivers/btusb/*/../power/control; do
+    [ -e "$ctl" ] && reload sudo sh -c "echo on > '$ctl'"
+  done
+fi
 echo "system files applied: ${#changed[@]} change(s)"
