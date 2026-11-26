@@ -8,7 +8,8 @@
 	// Middle: when (one capsule: notifications, time, date).
 	// Right: the machine, from temporary to permanent: indicators that only
 	// show while something is on (caps lock, hotspot, containers,
-	// ekatva, jyoti), then connectivity, then system, then quick settings (which
+	// ekatva, jyoti), then connectivity, then CPU and RAM (colour only), then
+	// volume, brightness and battery, then quick settings (which
 	// also has the power menu and lock). Rare toggles (theme, wallpaper, DND, power profile...) live in
 	// quick settings (vyom quick), not on the bar.
 	"modules-left": ["sway/workspaces", "custom/nada"],
@@ -22,6 +23,8 @@
 		"custom/jyoti",
 		"bluetooth",
 		"group/connectivity",
+		"cpu",
+		"memory",
 		"group/system",
 		"custom/quick"
 	],
@@ -30,7 +33,7 @@
 	// #system: waybar names a group widget after it), modules inside
 	// are plain segments (spacing only, no dividers).
 	"group/clockbox": { "orientation": "horizontal", "modules": ["custom/notifications", "clock#time", "clock"] },
-	"group/connectivity": { "orientation": "horizontal", "modules": ["network", "network#speed"] },
+	"group/connectivity": { "orientation": "horizontal", "modules": ["network"] },
 	"group/system": { "orientation": "horizontal", "modules": ["pulseaudio", "backlight", "battery"] },
 
 	"sway/workspaces": {
@@ -59,22 +62,6 @@
 		}
 	},
 
-	"backlight": {
-		// Material brightness-5/6/7: a sun that fills as it gets
-		// brighter (outline, half, full). Replaced circle-slice pies,
-		// which read as a clock at low levels. 125% matches the volume
-		// icon's weight next to it (this sun fills more of its box than
-		// the speaker does, so 150% looked bigger); rise='-1pt' centres
-		// it on the digits, measured from screenshots (2026-09-29).
-		"format": "<span size='125%' rise='-1pt' color='{{yellow}}'>{icon}</span>  {percent}%",
-		"format-icons": ["󰃞", "󰃟", "󰃠"],
-		"tooltip-format": "Click: drag to set   Scroll: +/-5%",
-		"on-click": "$HOME/.local/bin/brightness-slider.sh",
-		"on-scroll-up": "$HOME/.config/sway/scripts/brightness_osd.sh +5%",
-		"on-scroll-down": "$HOME/.config/sway/scripts/brightness_osd.sh 5%-",
-		"smooth-scrolling-threshold": 1,
-		"reverse-scrolling": true
-	},
 
 	"custom/capslock": {
 		"exec": "$HOME/.local/bin/keylock-status.sh capslock",
@@ -90,8 +77,7 @@
 	// Date half. Time lives in a separate "clock#time" instance right next
 	// to it -- waybar's clock format only accepts one {:...} placeholder
 	// per module (confirmed: a second one throws "invalid arg-id in format
-	// string"), so two colors means two module instances, same pattern as
-	// network/network#speed.
+	// string"), so two colors means two module instances.
 	"format": "{:%a %d %b}",
 	"tooltip-format": "<tt><small>{calendar}</small></tt>"
 	},
@@ -133,19 +119,19 @@
 	},
 
 	"network": {
-		// Just the icon (Wi-Fi signal or the wired-network glyph), then the
-		// speed next to it; the network name and IP are in the tooltip.
-		"format-wifi": "<span size='150%' rise='-2pt' color='{{teal}}'>{icon}</span> ",
-		"format-ethernet": "<span size='150%' rise='-2pt' color='{{teal}}'>󰌗</span> ",
-		"format-disconnected": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span> ",
-		"format-disabled": "<span size='150%' rise='-2pt' color='{{red}}'>󰖪</span> ",
-		"format-linked": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span> ",
+		// Just the icon (Wi-Fi signal or the wired-network glyph); the network
+		// name and IP are in the tooltip, the speed in the click panel (tarang).
+		"format-wifi": "<span size='150%' rise='-2pt' color='{{text}}'>{icon}</span>",
+		"format-ethernet": "<span size='150%' rise='-2pt' color='{{text}}'>󰌗</span>",
+		"format-disconnected": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span>",
+		"format-disabled": "<span size='150%' rise='-2pt' color='{{red}}'>󰖪</span>",
+		"format-linked": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span>",
 		"format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
 		"interval": 30,
-		"tooltip-format-wifi": "{essid}\nSignal: {signalStrength}%  ({signaldBm} dBm)\nFrequency: {frequency} GHz\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
-		"tooltip-format-ethernet": "{ifname}\nIP: {ipaddr}/{cidr}\nGateway: {gwaddr}",
-		"tooltip-format-disconnected": "Disconnected",
-		"tooltip-format-disabled": "Wi-Fi disabled (rfkill)",
+		"tooltip-format-wifi": "<span weight='bold' color='{{teal}}'>{essid}</span>\n<span color='{{subtext0}}'>Signal {signalStrength}%  ·  {frequency} GHz\nIP {ipaddr}/{cidr}  ·  gateway {gwaddr}</span>\n<span size='small' color='{{overlay1}}'>Click: Wi-Fi and hotspot</span>",
+		"tooltip-format-ethernet": "<span weight='bold' color='{{teal}}'>Wired</span>  {ifname}\n<span color='{{subtext0}}'>IP {ipaddr}/{cidr}  ·  gateway {gwaddr}</span>\n<span size='small' color='{{overlay1}}'>Click: network panel</span>",
+		"tooltip-format-disconnected": "<span weight='bold' color='{{red}}'>Disconnected</span>\n<span size='small' color='{{overlay1}}'>Click: pick a Wi-Fi network</span>",
+		"tooltip-format-disabled": "<span weight='bold' color='{{red}}'>Wi-Fi is off</span>  (rfkill)\n<span size='small' color='{{overlay1}}'>Click: Wi-Fi panel</span>",
 		"on-click": "$HOME/.local/bin/vyom tarang"
 	},
 
@@ -159,12 +145,92 @@
 		"on-click-right": "$HOME/.local/bin/vayu-hotspot off"
 	},
 
-	"network#speed": {
-		"interval": 2,
-		// Fixed-width values (monospace): the capsule never jitters as the
-		// numbers change length, without a min-width that left a gap.
-		"format": "<span color='{{green}}'>\uf063  {bandwidthDownBytes:<8}</span> <span color='{{peach}}'>\uf062  {bandwidthUpBytes:<8}</span>",
-		"tooltip": false
+
+	"backlight": {
+		// Material brightness-5/6/7: a sun that fills as it gets
+		// brighter (outline, half, full). Replaced circle-slice pies,
+		// which read as a clock at low levels. 125% matches the volume
+		// icon's weight next to it (this sun fills more of its box than
+		// the speaker does, so 150% looked bigger); rise='-1pt' centres
+		// it on the digits, measured from screenshots (2026-09-29).
+		"format": "<span size='125%' rise='-1pt' color='{{text}}'>{icon}</span>  {percent}%",
+		"format-icons": ["󰃞", "󰃟", "󰃠"],
+		// No tooltip (2026-11-24): it popped up over the slider pop-up while
+		// you scrolled. The value is on the capsule and in the pop-up.
+		"tooltip": false,
+		"on-click": "$HOME/.local/bin/brightness-slider.sh",
+		"on-scroll-up": "$HOME/.config/sway/scripts/brightness_osd.sh +5%",
+		"on-scroll-down": "$HOME/.config/sway/scripts/brightness_osd.sh 5%-",
+		"smooth-scrolling-threshold": 1,
+		"reverse-scrolling": true
+	},
+
+	"pulseaudio": {
+		// Icon at 150% (at 12px it read smaller than the brightness
+		// icon beside it). rise='-2pt' keeps it centred on the digits:
+		// without it the bigger glyph pushed the text 2 px down and the
+		// icon sat 2 px above the text's middle (measured from
+		// screenshots, 2026-09-29). An icon-only span was tried before
+		// and "broke", but that was the threshold-object format-icons
+		// bug below hiding the icon, not the span.
+		"format": "<span size='150%' rise='-2pt' color='{{text}}'>{icon}</span>  {volume}%",
+		"format-muted": "<span size='150%' rise='-2pt' color='{{red}}'>󰝟</span> 0%",
+		// Plain array, NOT waybar's threshold-object form
+		// ({"icon":...,"max":...}) -- that form is real and documented
+		// (waybar's own man page and source, src/ALabel.cpp), and was
+		// tried here specifically to give 0% its own icon separate from
+		// "just quiet". Confirmed directly, by dumping the actual
+		// rendered pixels as ASCII art rather than trusting color-based
+		// sampling again (which had already misled two verifications in
+		// a row on this exact feature) -- the threshold-object form
+		// silently renders NO icon at all for the regular (non-muted)
+		// pulseaudio format string in this waybar build (v0.15.0), while
+		// the plain array it replaced works correctly. A real bug/
+		// incompatibility in this version, not a config mistake -- filed
+		// under "don't use" rather than fought further. The 0%-looks-
+		// muted goal is handled at the source instead: volume_osd.sh
+		// now sets PulseAudio's real mute flag whenever scrolling/
+		// pressing down lands exactly on 0%, so format-muted above (the
+		// one path already proven correct the whole time) picks it up
+		// naturally, no dependence on the broken feature at all.
+		"format-icons": {
+			"default": ["󰕿", "󰖀", "󰕾"]
+		},
+		// No tooltip (2026-11-24): it popped up over the slider pop-up while
+		// you scrolled. The value is on the capsule and in the pop-up.
+		"tooltip": false,
+		"on-click": "$HOME/.config/sway/scripts/volume_osd.sh mute-toggle",
+		"on-click-right": "pavucontrol",
+		"on-scroll-up": "$HOME/.config/sway/scripts/volume_osd.sh +5%",
+		"on-scroll-down": "$HOME/.config/sway/scripts/volume_osd.sh -5%",
+		"smooth-scrolling-threshold": 1,
+		"reverse-scrolling": true
+	},
+
+	"cpu": {
+		"interval": 3,
+		"states": { "warning": 60, "critical": 85 },
+		// How hard the machine is working (2026-11-24: a RAM-full freeze gave
+		// no warning). Its own capsule, like memory's. Icon only, the colour is
+		// the status (green, yellow from 60%, red from 85%: 2026-11-26); the numbers
+		// are in the tooltip. The octicon chip (picked from a page of options,
+		// ~/Documents/mockups/bar-icons). 150% so it reads at bar size.
+		"format": "<span size='150%' rise='-2pt' color='{{green}}'>\uf4bc</span>",
+		"format-warning": "<span size='150%' rise='-2pt' color='{{yellow}}'>\uf4bc</span>",
+		"format-critical": "<span size='150%' rise='-2pt' color='{{red}}'>\uf4bc</span>",
+		"tooltip-format": "<span weight='bold'>CPU</span>  {usage}%\n<span color='{{subtext0}}'>Load {load}  ·  {avg_frequency} GHz</span>\n<span size='small' color='{{overlay1}}'>Click: btop</span>",
+		"on-click": "kitty --class dev.vayu.Btop -e btop -c ~/.local/state/varna/btop.conf"
+	},
+
+	"memory": {
+		"interval": 3,
+		"states": { "warning": 60, "critical": 85 },
+		// A RAM stick, same rules as the CPU chip.
+		"format": "<span size='150%' rise='-2pt' color='{{green}}'>\uefc5</span>",
+		"format-warning": "<span size='150%' rise='-2pt' color='{{yellow}}'>\uefc5</span>",
+		"format-critical": "<span size='150%' rise='-2pt' color='{{red}}'>\uefc5</span>",
+		"tooltip-format": "<span weight='bold'>RAM</span>  {percentage}%\n<span color='{{subtext0}}'>{used:0.1f} of {total:0.1f} GiB  ·  swap {swapUsed:0.1f} of {swapTotal:0.1f} GiB</span>\n<span size='small' color='{{overlay1}}'>Click: btop</span>",
+		"on-click": "kitty --class dev.vayu.Btop -e btop -c ~/.local/state/varna/btop.conf"
 	},
 
 	"bluetooth": {
@@ -174,8 +240,8 @@
 		"format-off": "",
 		"format-on": "",
 		"format-disabled": "",
-		"format-connected": "<span size='125%' rise='-1pt' color='{{blue}}'>󰂱</span>",
-		"format-connected-battery": "<span size='125%' rise='-1pt' color='{{blue}}'>󰂱</span>",
+		"format-connected": "<span size='125%' rise='-1pt' color='{{text}}'>󰂱</span>",
+		"format-connected-battery": "<span size='125%' rise='-1pt' color='{{text}}'>󰂱</span>",
 		"tooltip-format-connected": "{device_enumerate}",
 		"tooltip-format-enumerate-connected": "{device_alias}",
 		"tooltip-format-enumerate-connected-battery": "{device_alias}  {device_battery_percentage}%",
@@ -206,7 +272,10 @@
 
 	"custom/jyoti": {
 		"exec": "~/.local/bin/jyoti-status.sh",
-		"on-click": "~/.local/bin/jyoti-toggle.sh",
+		// Shown only while lit. Click: put it out. Right-click: switch
+		// Akhaṇḍa <-> Nandādīpa (needs ekatva).
+		"on-click": "~/.local/bin/jyoti-toggle.sh off",
+		"on-click-right": "~/.local/bin/jyoti-toggle.sh switch",
 		"interval": "once",
 		"signal": 12,
 		"return-type": "json"
@@ -217,15 +286,20 @@
 		// battery-limit-watch.sh does that on the kernel's power_supply events,
 		// so plugging in shows at once. This is only the fallback.
 		"interval": 10,
+		"tooltip-format": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>{timeTo}</span>",
+		"tooltip-format-discharging": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>{time} left  ·  using {power:.1f} W</span>",
+		"tooltip-format-charging": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>Charging  ·  {time} to full</span>",
+		"tooltip-format-plugged": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>Plugged in, not charging</span>",
+		"tooltip-format-full": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>Full, on the charger</span>",
 		"states": {
 			"critical": 15,
 			"warning": 30,
 			"moderate": 60
 		},
-		"format": "<span color='{{green}}'>{icon}</span>  {capacity}%",
-		"format-charging": "<span color='{{green}}'>{icon}</span>  {capacity}%",
-		"format-plugged": "<span color='{{green}}'>{icon}</span>  {capacity}%",
-		"format-full": "<span color='{{green}}'>{icon}</span>  {capacity}%",
+		"format": "<span color='{{text}}'>{icon}</span>  {capacity}%",
+		"format-charging": "<span color='{{peach}}'>{icon}</span>  {capacity}%",
+		"format-plugged": "<span color='{{peach}}'>{icon}</span>  {capacity}%",
+		"format-full": "<span color='{{text}}'>{icon}</span>  {capacity}%",
 		"format-warning": "<span color='{{yellow}}'>{icon}</span>  {capacity}%",
 		"format-critical": "<span color='{{red}}'>{icon}</span>  {capacity}%",
 		"format-icons": {
@@ -237,45 +311,6 @@
 		"on-click": "$HOME/.local/bin/vyom urja"
 	},
 
-	"pulseaudio": {
-		// Icon at 150% (at 12px it read smaller than the brightness
-		// icon beside it). rise='-2pt' keeps it centred on the digits:
-		// without it the bigger glyph pushed the text 2 px down and the
-		// icon sat 2 px above the text's middle (measured from
-		// screenshots, 2026-09-29). An icon-only span was tried before
-		// and "broke", but that was the threshold-object format-icons
-		// bug below hiding the icon, not the span.
-		"format": "<span size='150%' rise='-2pt' color='{{blue}}'>{icon}</span>  {volume}%",
-		"format-muted": "<span size='150%' rise='-2pt' color='{{red}}'>󰝟</span>  Muted",
-		// Plain array, NOT waybar's threshold-object form
-		// ({"icon":...,"max":...}) -- that form is real and documented
-		// (waybar's own man page and source, src/ALabel.cpp), and was
-		// tried here specifically to give 0% its own icon separate from
-		// "just quiet". Confirmed directly, by dumping the actual
-		// rendered pixels as ASCII art rather than trusting color-based
-		// sampling again (which had already misled two verifications in
-		// a row on this exact feature) -- the threshold-object form
-		// silently renders NO icon at all for the regular (non-muted)
-		// pulseaudio format string in this waybar build (v0.15.0), while
-		// the plain array it replaced works correctly. A real bug/
-		// incompatibility in this version, not a config mistake -- filed
-		// under "don't use" rather than fought further. The 0%-looks-
-		// muted goal is handled at the source instead: volume_osd.sh
-		// now sets PulseAudio's real mute flag whenever scrolling/
-		// pressing down lands exactly on 0%, so format-muted above (the
-		// one path already proven correct the whole time) picks it up
-		// naturally, no dependence on the broken feature at all.
-		"format-icons": {
-			"default": ["󰕿", "󰖀", "󰕾"]
-		},
-		"tooltip-format": "Click: mute/unmute   Right-click: mixer   Scroll: +/-5%",
-		"on-click": "$HOME/.config/sway/scripts/volume_osd.sh mute-toggle",
-		"on-click-right": "pavucontrol",
-		"on-scroll-up": "$HOME/.config/sway/scripts/volume_osd.sh +5%",
-		"on-scroll-down": "$HOME/.config/sway/scripts/volume_osd.sh -5%",
-		"smooth-scrolling-threshold": 1,
-		"reverse-scrolling": true
-	},
 
 	// Now playing (MPD, played through rmpc). Hidden when stopped.
 	// What's playing (nāda), right after the workspaces: moving bars and the
@@ -296,7 +331,7 @@
 	// theme, wallpaper, power profile, volume, brightness, lock, power.
 	"custom/quick": {
 		"format": "󰒓",
-		"tooltip-format": "Quick settings",
+		"tooltip-format": "<span weight='bold' color='{{pink}}'>Quick settings</span>\n<span size='small' color='{{overlay1}}'>Click: open</span>",
 		"on-click": "$HOME/.local/bin/vyom kendra"
 	}
 

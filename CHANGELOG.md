@@ -5,6 +5,14 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-26 (colour on the bar)
+
+- **The bar has colour where it says something**: the Docker whale in its
+  blue; the CPU and RAM chips green, yellow from 60%, red from 85%; the
+  battery red when low and kesari (peach) while it charges; Jyoti's lamp sky
+  blue for Akhaṇḍa and kesari for Nandādīpa, its outline to match. Wi-Fi,
+  Bluetooth and the phone stay white.
+
 ## 2026-11-25 (the website is Spatial)
 
 - **vayu.theyashsawarkar.dev, redesigned**: graphite glass over the desktop's
