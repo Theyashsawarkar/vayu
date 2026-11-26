@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""The bar's sound capsule (waybar custom/volume, a continuous JSON module).
+
+Shows what the sound comes out of, then the volume:
+  earbuds      a Bluetooth headset whose name says buds / pods / earbuds
+  headphones   any other Bluetooth headset or headphones; wired ones (the jack)
+  speaker      a Bluetooth speaker (speaker, portable, hi-fi)
+  car          a car's Bluetooth
+  monitor      HDMI / DisplayPort
+  built-in     the laptop's speakers: the speaker with waves by level
+Bluetooth devices are Bluetooth blue, the rest white; muted, the same icon
+turns red. The tooltip names the device.
+
+It listens to `pactl subscribe` (sink and server changes) and prints a line
+only when what's shown changes, so switching to the buds updates at once
+and scrolling costs one pactl call per step. Colours come from varna's
+palette (Vayu's theme engine), Vayu's own without it.
+
+  bar-volume          run as the module (waybar starts it)
+  bar-volume --once   print the current line and exit (for testing)
+"""
+import json
+import os
+import re
+import select
+import subprocess
+import sys
+import time
+
+PALETTE = os.path.join(os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state")), "varna/palette.json")
+BUDS = re.compile(r"bud|pod|earbud|ear ?phone", re.I)
+ICON = {
+    "earbuds": "\U000f184f", "headphones": "\U000f02cb", "speaker": "\U000f09a2",
+    "car": "\U000f010b", "monitor": "\U000f0379",
+}
+LEVELS = ("\U000f057f", "\U000f0580", "\U000f057e")      # built-in speakers: low, medium, high
+MUTED_BUILTIN = "\U000f075f"
+WORDS = {"earbuds": "Bluetooth earbuds", "headphones": "headphones", "speaker": "Bluetooth speaker",
+         "car": "car", "monitor": "TV or monitor", "builtin": "built-in speakers"}
+
+
+def colours():
+    try:
+        with open(PALETTE) as f:
+            c = json.load(f).get("colors", {})
+    except (OSError, ValueError):
+        c = {}
+    return c.get("text", "#f2f2f0"), c.get("blue", "#93c4ff"), c.get("red", "#ff9389")
+
+
+def pactl(*args):
+    try:
+        return subprocess.run(["pactl", *args], capture_output=True, text=True, timeout=3).stdout
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+
+def kind_of(sink):
+    """(kind, on Bluetooth?) for a sink from `pactl -f json list sinks`."""
+    p = sink.get("properties", {})
+    bus = p.get("device.bus", "")
+    ff = p.get("device.form-factor", "") or ""
+    name = sink.get("description", "") or ""
+    port = (sink.get("active_port") or "").lower()
+    if bus == "bluetooth" or p.get("device.api") == "bluez5":
+        if ff == "car":
+            return "car", True
+        if ff in ("speaker", "portable", "hifi"):
+            return "speaker", True
+        return ("earbuds" if BUDS.search(name) else "headphones"), True
+    if "hdmi" in port or "displayport" in port or ff in ("tv", "monitor") or "hdmi" in name.lower():
+        return "monitor", False
+    if "headphone" in port or ff in ("headphone", "headset"):
+        return "headphones", False
+    return "builtin", False
+
+
+def state():
+    default = pactl("get-default-sink").strip()
+    try:
+        sinks = json.loads(pactl("-f", "json", "list", "sinks") or "[]")
+    except ValueError:
+        sinks = []
+    sink = next((s for s in sinks if s.get("name") == default), None)
+    if sink is None:
+        return {"text": "", "class": "none", "tooltip": "No sound output"}
+    vols = [int(v["value_percent"].rstrip("%")) for v in sink.get("volume", {}).values() if "value_percent" in v]
+    vol = round(sum(vols) / len(vols)) if vols else 0
+    muted = bool(sink.get("mute"))
+    kind, bt = kind_of(sink)
+    text_c, blue, red = colours()
+    if kind == "builtin":
+        icon = MUTED_BUILTIN if muted else LEVELS[0 if vol < 34 else 1 if vol < 67 else 2]
+    else:
+        icon = ICON[kind]
+    colour = red if muted else blue if bt else text_c
+    shown = 0 if muted else vol
+    # 150% and rise -2pt: the same size and centring as the module it replaces
+    text = f"<span size='150%' rise='-2pt' color='{colour}'>{icon}</span>  {shown}%"
+    name = sink.get("description", "")
+    tip = f"<b>{esc(name)}</b> · {WORDS[kind]} · " + ("muted" if muted else f"{vol}%")
+    return {"text": text, "class": ["muted", kind] if muted else [kind], "tooltip": tip, "percentage": vol}
+
+
+def esc(s):
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def emit(last):
+    out = json.dumps(state(), ensure_ascii=False)
+    if out != last:
+        print(out, flush=True)
+    return out
+
+
+def main():
+    if "--once" in sys.argv:
+        print(json.dumps(state(), ensure_ascii=False))
+        return
+    last = emit(None)
+    while True:
+        try:
+            p = subprocess.Popen(["pactl", "subscribe"], stdout=subprocess.PIPE, text=True, bufsize=1)
+        except OSError:
+            time.sleep(5)
+            continue
+        while True:
+            line = p.stdout.readline()
+            if not line:
+                break                              # the sound server went away: start again
+            if "sink" not in line and "server" not in line and "card" not in line:
+                continue
+            # a scroll or a reconnect sends a burst: wait for it to settle
+            while select.select([p.stdout], [], [], 0.05)[0]:
+                if not p.stdout.readline():
+                    break
+            last = emit(last)
+        p.wait()
+        time.sleep(2)
+        last = emit(last)
+
+
+if __name__ == "__main__":
+    main()

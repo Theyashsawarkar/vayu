@@ -34,7 +34,7 @@
 	// are plain segments (spacing only, no dividers).
 	"group/clockbox": { "orientation": "horizontal", "modules": ["custom/notifications", "clock#time", "clock"] },
 	"group/connectivity": { "orientation": "horizontal", "modules": ["network"] },
-	"group/system": { "orientation": "horizontal", "modules": ["pulseaudio", "backlight", "battery"] },
+	"group/system": { "orientation": "horizontal", "modules": ["custom/volume", "backlight", "battery"] },
 
 	"sway/workspaces": {
 		"disable-scroll": true,
@@ -161,6 +161,25 @@
 		// No click (2026-11-26): scrolling does it, and kendra has the slider.
 		"on-scroll-up": "$HOME/.config/sway/scripts/brightness_osd.sh +5%",
 		"on-scroll-down": "$HOME/.config/sway/scripts/brightness_osd.sh 5%-",
+		"smooth-scrolling-threshold": 1,
+		"reverse-scrolling": true
+	},
+
+	"custom/volume": {
+		// The sound capsule (2026-11-26): the icon follows the output
+		// (earbuds, headphones, a speaker, the car, a TV, or the built-in
+		// speakers by level), Bluetooth ones in blue, red when muted;
+		// bar-volume listens to the sound server, so it changes the moment
+		// the buds connect. Replaces "pulseaudio", which can't tell buds
+		// from headphones; same size, centring, clicks and scroll.
+		"exec": "$HOME/.local/bin/bar-volume",
+		"return-type": "json",
+		"restart-interval": 3,
+		"escape": false,
+		"on-click": "$HOME/.config/sway/scripts/volume_osd.sh mute-toggle",
+		"on-click-right": "pavucontrol",
+		"on-scroll-up": "$HOME/.config/sway/scripts/volume_osd.sh +5%",
+		"on-scroll-down": "$HOME/.config/sway/scripts/volume_osd.sh -5%",
 		"smooth-scrolling-threshold": 1,
 		"reverse-scrolling": true
 	},

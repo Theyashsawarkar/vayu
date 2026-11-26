@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-26 (the sound icon follows the output)
+
+- **The bar's sound icon shows what you're listening on**: earbuds,
+  headphones, a Bluetooth speaker, the car, a TV, or the laptop's own
+  speakers (by level, as before). Bluetooth ones are blue, red when muted;
+  the tooltip names the device. `bar-volume` (a waybar custom module)
+  listens to the sound server, so it changes the moment the buds connect;
+  it replaces the built-in `pulseaudio` module, which can't tell earbuds
+  from headphones. Earbuds are Bluetooth headsets whose name says buds,
+  pods or earbuds. Clicks, scroll and alignment are unchanged.
+- Brightness on the bar only scrolls now (no click); Docker's whale and
+  count are centred in their capsule.
+
 ## 2026-11-26 (Bluetooth and Wi-Fi without reboots)
 
 - **Wi-Fi power saving is off** (`wifi-powersave-off.conf`): iwlwifi dozed
