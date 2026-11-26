@@ -67,7 +67,7 @@ lock = "~/.local/bin/vayu-lock"
 logout = "swaymsg exit"
 
 [plugin.kendra]
-tiles = ["wifi", "bluetooth", "hotspot", "dnd", "jyoti", "ekatva", "theme", "wallpaper", "power-profile"]
+tiles = ["wifi", "bluetooth", "hotspot", "notifications", "jyoti", "ekatva", "theme", "wallpaper", "power-profile"]
 lock = "~/.local/bin/vayu-lock"
 power = "~/.local/bin/vyom vishram"
 
@@ -82,6 +82,18 @@ open = "~/.local/bin/vyom setu"
 command = "~/.local/bin/vayu-hotspot"
 open = "~/.local/bin/vyom tarang hotspot"
 
+# Notifications: the three modes as one pill (kendra 0.7): normal shows
+# them with sound, silent shows them quietly, dnd shows nothing.
+[plugin.kendra.tile.notifications]
+title = "Notifications"
+status = "cat ~/.local/state/notification-mode/current"
+on_when = "."
+levels = [
+  { name = "Active", when = "^normal$", set = "~/.local/bin/notification-mode.sh normal", about = "they show, with sound" },
+  { name = "Silent", when = "^silent$", set = "~/.local/bin/notification-mode.sh silent", about = "they show, no sound" },
+  { name = "Do not disturb", when = "^dnd$", set = "~/.local/bin/notification-mode.sh dnd", about = "nothing shows" },
+]
+
 [plugin.kendra.tile.dnd]
 status = "cat ~/.local/state/notification-mode/current"
 on_when = "^dnd$"
@@ -94,8 +106,12 @@ subtitle_off = "off"
 status = "~/.local/bin/jyoti-status.sh"
 on_when = '"class":"(active|strong)"'
 toggle = "~/.local/bin/jyoti-toggle.sh"
-subtitle_on = "akhaṇḍa: stays awake"
 subtitle_off = "śānta: at rest"
+# While lit, pick the level under the tiles; the subtitle names it.
+levels = [
+  { name = "Akhaṇḍa", when = '"class":"active"', set = "~/.local/bin/jyoti-toggle.sh akhanda" },
+  { name = "Nandādīpa", when = '"class":"strong"', set = "~/.local/bin/jyoti-toggle.sh nandadipa" },
+]
 
 # ekatva, the phone link: off by default; the switch is remembered across
 # reboots (ekatva-toggle.sh, read by sway-session.sh at login).
