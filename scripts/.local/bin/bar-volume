@@ -55,6 +55,9 @@ def pactl(*args):
         return ""
 
 
+WATCH = re.compile(r"on (?:sink|card) #|on server\b")
+
+
 def kind_of(sink):
     """(kind, on Bluetooth?) for a sink from `pactl -f json list sinks`."""
     p = sink.get("properties", {})
@@ -128,7 +131,10 @@ def main():
             line = p.stdout.readline()
             if not line:
                 break                              # the sound server went away: start again
-            if "sink" not in line and "server" not in line and "card" not in line:
+            # Only the output itself: "on sink #N", "on server", "on card #N".
+            # A bare "sink" also matched every sink-input (each app's audio
+            # stream), so every browser tab starting a sound cost two pactl runs.
+            if not WATCH.search(line):
                 continue
             # a scroll or a reconnect sends a burst: wait for it to settle
             while select.select([p.stdout], [], [], 0.05)[0]:

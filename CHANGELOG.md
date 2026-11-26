@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-26 (less memory and fewer wakeups)
+
+- **An idle Gradle daemon exits after 15 minutes** (`gradle` package,
+  `~/.gradle/gradle.properties`; Gradle's default is 3 hours). A project
+  asking for an 8 GB heap left one sitting on ~9 GB of RAM and swap after a
+  build; swap use went from 14.7 to 6.4 GB when it stopped.
+- **ekatva and sutradhar run Node with a 1 MB young generation**
+  (`NODE_OPTIONS=--max-semi-space-size=1` in their `node.conf` drop-ins):
+  about 9 MB less each for these always-on daemons.
+- **The sound icon only wakes for the output itself**: `bar-volume` matched
+  any line with "sink" in it, so every app's sound stream (`sink-input`)
+  cost two `pactl` runs; it now watches `on sink #`, `on card #` and
+  `on server` only.
+
 ## 2026-11-26 (the sound icon follows the output)
 
 - **The bar's sound icon shows what you're listening on**: earbuds,

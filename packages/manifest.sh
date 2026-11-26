@@ -74,9 +74,10 @@ STOW_REAL_DIRS=(
   # Background daemons from other repos, moved into background.slice.
   .config/systemd/user/narada.service.d
   .config/systemd/user/vesha.service.d .config/systemd/user/vishvakarma.service.d
-  .config/systemd/user/ekatva.service.d
+  .config/systemd/user/ekatva.service.d .config/systemd/user/sutradhar.service.d
   .local .local/bin .local/share .local/share/applications .local/state
   .tmux .tmux/scripts
+  .gradle
 )
 
 # Vayu's own tools, each its own repo (github.com/Theyashsawarkar/<name>),
