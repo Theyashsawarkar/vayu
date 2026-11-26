@@ -117,7 +117,6 @@ window#waybar {
 
 #custom-theme.light {
     color: @yellow; /* Yellow */
-    text-shadow: 0 0 8px alpha(@yellow, 0.5);
 }
 
 /* Wallpaper refresh button: Rosewater -- genuinely unused anywhere else in
@@ -428,14 +427,12 @@ window#waybar {
    the size change that broke the bar's height. */
 #custom-capslock.locked {
     color: @peach;
-    text-shadow: 0 0 8px alpha(@peach, 0.9), 0 0 14px alpha(@peach, 0.5);
 }
 
 /* Num Lock: Teal — neutral, since it's usually on intentionally. Same
    treatment and same reasoning as Caps Lock above. */
 #custom-numlock.locked {
     color: @teal;
-    text-shadow: 0 0 8px alpha(@teal, 0.9), 0 0 14px alpha(@teal, 0.5);
 }
 
 /* WORKSPACES — same Mauve accent + neutral-gray language as the rest of
