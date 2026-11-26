@@ -158,7 +158,7 @@
 		// No tooltip (2026-11-24): it popped up over the slider pop-up while
 		// you scrolled. The value is on the capsule and in the pop-up.
 		"tooltip": false,
-		"on-click": "$HOME/.local/bin/brightness-slider.sh",
+		// No click (2026-11-26): scrolling does it, and kendra has the slider.
 		"on-scroll-up": "$HOME/.config/sway/scripts/brightness_osd.sh +5%",
 		"on-scroll-down": "$HOME/.config/sway/scripts/brightness_osd.sh 5%-",
 		"smooth-scrolling-threshold": 1,

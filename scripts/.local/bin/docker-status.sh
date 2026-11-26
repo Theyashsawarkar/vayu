@@ -27,7 +27,7 @@ fi
 
 # The whale in Docker's blue (the theme's blue), a size up so it reads at a
 # glance; the count in the text colour.
-text="<span size='135%' rise='-2pt' color='$(col blue '#93c4ff')'>$ICON</span>  <span color='$(col text '#f2f2f0')'>$count</span>"
+text="<span size='135%' rise='-2.6pt' color='$(col blue '#93c4ff')'>$ICON</span>  <span rise='-1.4pt' color='$(col text '#f2f2f0')'>$count</span>"
 # Hidden while nothing runs: an "only while on" indicator on the bar.
 [ "$count" -gt 0 ] || text=""
 printf '{"text":"%s","class":"%s","tooltip":"%s"}\n' "$text" "$class" "$tooltip"

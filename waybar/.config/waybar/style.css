@@ -926,3 +926,7 @@ tooltip {
     min-width: 34px; /* + the 1 px border each side = 36 px */
 }
 #connectivity { padding: 0; }
+
+/* Docker: the whale and its count sat 1.5 px above the capsule's middle
+   (measured at 2x, 2026-11-26); every other capsule is within half a pixel. */
+#custom-docker { padding-top: 1px; }
