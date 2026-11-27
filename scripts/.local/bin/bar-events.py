@@ -320,10 +320,40 @@ def tmux_narada():
     return False
 
 
+NARADA_COUNTS = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"),
+                             "narada", "counts.json")
+
+
+def read_narada_counts(*_):
+    """counts.json is exactly `narada status --json`, rewritten (by rename)
+    only when a count changes: read it, no narada process, no SQLite."""
+    try:
+        with open(NARADA_COUNTS) as f:
+            set_narada(f.read())
+    except OSError:
+        pass
+    return False
+
+
 def watch_narada():
-    """narada's data folder: its database (and WAL) change on every sync
-    write and every read/unread, from the screen, the CLI or an agent."""
+    """narada's unread counts. A narada that writes counts.json (its daemon
+    rewrites it only when a count changes) is watched there: one event per
+    change. An older narada: its data folder, whose database (and WAL)
+    change on every sync write, asking `narada status` each time (throttled)."""
     global narada_monitor
+    if os.path.exists(NARADA_COUNTS):
+        state = os.path.dirname(NARADA_COUNTS)
+        try:
+            narada_monitor = Gio.File.new_for_path(state).monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        except GLib.Error as e:
+            log(f"can't watch {state}:", e.message)
+        else:
+            def changed(_m, f, other, _event):
+                if NARADA_COUNTS in (f.get_path(), other.get_path() if other else None):
+                    debounce("narada-counts", read_narada_counts, 200)
+            narada_monitor.connect("changed", changed)
+            read_narada_counts()
+            return
     data = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "narada")
     try:
         narada_monitor = Gio.File.new_for_path(data).monitor_directory(Gio.FileMonitorFlags.NONE, None)

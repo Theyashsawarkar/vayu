@@ -5,6 +5,19 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-27 (agents' MCP through pranali; the bar stops asking narada)
+
+- **pranali** joins the kosha packages (before narada, darshan and
+  sutradhar, which run it): one tiny pipe from every AI agent's MCP client
+  to the tool's daemon, whose socket systemd now holds
+  (`<tool>-mcp.socket`), so a daemon restart no longer drops agents.
+- **The mail capsule follows `counts.json`**: narada now writes its unread
+  counts to `~/.local/state/narada/counts.json` only when one changes, and
+  `bar-events` watches that file instead of narada's database folder, which
+  changed about every second with WhatsApp syncing and made it run
+  `narada status` every ~3.6 s, all day. An older narada without the file
+  keeps the old watch.
+
 ## 2026-11-26 (less memory and fewer wakeups)
 
 - **An idle Gradle daemon exits after 15 minutes** (`gradle` package,
