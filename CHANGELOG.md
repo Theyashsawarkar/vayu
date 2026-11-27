@@ -39,6 +39,9 @@ from /proc and each unit's cgroup CPU:
   (NetworkManager, `iw event`; it also ran its script every 30 s), the
   battery's fallback every 60 s (was 10; plugging in still shows at once
   through battery-limit-watch), CPU and memory every 5 s (was 3).
+- **bar-events runs dev-ports' code itself** instead of starting the script
+  every 15 s: a look is two /proc reads (~1.5 ms, no process). It also drops
+  the theme signal (11), which no capsule has listened to for a while.
 
 ## 2026-11-27 (two fewer Python processes behind the bars; capsules are a `cat`)
 

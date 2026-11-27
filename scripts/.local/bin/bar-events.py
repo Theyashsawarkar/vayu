@@ -8,7 +8,6 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               (the history grows when one closes), and
                               akashvani's dev.vayu.Akashvani Changed (modes:
                               do not disturb from the panel, a timer, a key)
-  theme       11              GSettings color-scheme changed (dconf)
   jyoti       12              swayidle.service ActiveState (user systemd),
                               and ~/.local/state/jyoti/enabled (its level)
   ekatva      13              ekatva.service ActiveState (user systemd)
@@ -32,8 +31,9 @@ through `sangam mcp`). Its unread mail and chat capsule (@narada_mail,
 @narada_chat) follows narada's local copy (its database changes when a
 sync brings mail or you read something), asking `narada status`; WhatsApp
 gets its own green capsule (@narada_whatsapp). Its dev
-servers capsule (@dev_ports) from dev-ports every 15 seconds (listening
-sockets have no event). Its Claude limit capsule (@claude_limit, and
+servers capsule (@dev_ports) from dev-ports' code loaded here, every 15
+seconds (listening sockets have no event): two /proc reads, and process
+mapping plus one tmux call only when the listening set changed. Its Claude limit capsule (@claude_limit, and
 @claude_limit_class ok/warn/full) runs `vesha waybar --once` when one of
 the files `vesha waybar --sources` names changes: the accounts (a switch,
 at once) and the usage cache (at most once a minute, as the stream did). A
@@ -49,8 +49,8 @@ signals waybar only when it changed; waybar's exec is a `cat` of that file,
 the script itself only when the file is missing (this daemon isn't
 running; it removes the files when it stops). The scripts still build the
 text (run here, off waybar); the sound line is built in-process, without
-a debounce, so a scroll step shows as soon as pactl answers. theme and
-hotspot are still only signalled (their scripts run in waybar). Bursts
+a debounce, so a scroll step shows as soon as pactl answers. hotspot is
+still only signalled (its script runs in waybar). Bursts
 (compose starts several containers) collapse into one refresh 0.3 s after
 the last event. Children that follow something (`pactl subscribe`, `iw
 event`, `docker events`) run under `setpriv --pdeathsig`, so they die with
@@ -70,7 +70,7 @@ import sys
 
 from gi.repository import Gio, GLib
 
-WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "jyoti": 12, "ekatva": 13, "docker": 14, "hotspot": 15, "volume": 17}
+WAYBAR_SIGNAL = {"bell": 8, "jyoti": 12, "ekatva": 13, "docker": 14, "hotspot": 15, "volume": 17}
 # Capsules whose line this daemon writes to BAR_DIR/<name>.json, so waybar's
 # exec on the signal is a `cat` of it (falling back to the script when the
 # file is missing). The script still builds the line (it stays the one
@@ -510,9 +510,39 @@ def throttle(key, fn, ms):
         pending[key] = GLib.timeout_add(ms, lambda: (pending.pop(key, None), fn(), False)[2])
 
 
+dev_ports_watch = None   # dev-ports' Watch, loaded once; None: run the script instead
+
+
+def load_dev_ports():
+    """dev-ports' code in this process: a look is two /proc reads (~2 ms)
+    and starts nothing, where running the script every 15 s cost a Python
+    start (~35 ms). Falls back to the script if it can't be loaded."""
+    global dev_ports_watch, dev_ports_mod
+    import importlib.machinery
+    import importlib.util
+    path = os.path.expanduser("~/.local/bin/dev-ports")
+    try:
+        loader = importlib.machinery.SourceFileLoader("dev_ports", path)
+        spec = importlib.util.spec_from_loader("dev_ports", loader)
+        dev_ports_mod = importlib.util.module_from_spec(spec)
+        loader.exec_module(dev_ports_mod)
+        dev_ports_watch = dev_ports_mod.Watch()
+    except Exception as e:   # an older dev-ports (no Watch) or a broken file
+        log("dev-ports: running the script instead:", e)
+        dev_ports_watch = None
+
+
 def dev_ports():
-    """dev-ports sets tmux's @dev_ports."""
-    return run_once("dev-ports", "--set-tmux")
+    """Sets tmux's @dev_ports when the listening sockets changed."""
+    if dev_ports_watch is None:
+        return run_once("dev-ports", "--set-tmux")
+    try:
+        items = dev_ports_watch.poll()
+        if items is not None:
+            dev_ports_mod.set_tmux(items)
+    except Exception as e:
+        log("dev-ports:", e)
+    return True
 
 
 claude_last = None   # the (text, class) last set: skip tmux when unchanged
@@ -885,9 +915,6 @@ def main():
     session.signal_subscribe(None, "dev.vayu.Akashvani", "Changed", None,
                              None, Gio.DBusSignalFlags.NONE, lambda *a: refresh("bell"))
 
-    settings = Gio.Settings.new("org.gnome.desktop.interface")
-    settings.connect("changed::color-scheme", lambda *a: refresh("theme"))
-
     watch_unit(session, "swayidle.service",
                lambda s: s in ("active", "inactive", "failed") and refresh("jyoti"))
     watch_unit(session, "ekatva.service",
@@ -911,6 +938,7 @@ def main():
     tmux_narada()
     watch_narada()
     GLib.timeout_add_seconds(120, lambda: (tmux_narada(), True)[1])   # if the watch misses one
+    load_dev_ports()
     dev_ports()
     GLib.timeout_add_seconds(15, dev_ports)
     watch_claude_limit()
