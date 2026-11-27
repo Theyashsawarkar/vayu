@@ -16,11 +16,14 @@ Systemd user unit bar-events.service, started by sway after waybar.
   hotspot     15              NetworkManager's ActiveConnections, and
                               `iw event` new/del station (a device joined
                               or left the hotspot)
-  volume      17              `pactl subscribe`: the output itself changed
-                              (a sink, a card, the server's default), not
-                              each app's stream; the line is built here
-                              with bar-volume's line() (this used to be
-                              a second interpreter, `bar-volume` streaming)
+  volume      17              Vyom's sound state (dev.vayu.Vyom.State's
+                              volume on D-Bus: vyom/live.py already follows
+                              the sound server), or, while Vyom isn't
+                              running or publishing it, `pactl subscribe`
+                              here: the output itself changed (a sink, a
+                              card, the server's default), not each app's
+                              stream; the line is built here with
+                              bar-volume's from_state() / line()
 
 tmux's pull request capsule (@gh_reviews, @gh_prs) is set from gh-review-count every
 2 minutes (GitHub has no push for "review requested" to a desktop), and
@@ -49,7 +52,11 @@ signals waybar only when it changed; waybar's exec is a `cat` of that file,
 the script itself only when the file is missing (this daemon isn't
 running; it removes the files when it stops). The scripts still build the
 text (run here, off waybar); the sound line is built in-process, without
-a debounce, so a scroll step shows as soon as pactl answers. hotspot is
+a debounce, so a scroll step shows as soon as Vyom (or pactl) answers.
+Vyom follows the sound server anyway, so with it there is one `pactl
+subscribe` on the desktop, not two, and a step runs one pactl, not three
+(Vyom's and this daemon's own); when Vyom goes (or an older Vyom doesn't
+publish the output's kind) this daemon follows pactl itself again. hotspot is
 still only signalled (its script runs in waybar). Bursts
 (compose starts several containers) collapse into one refresh 0.3 s after
 the last event. Children that follow something (`pactl subscribe`, `iw
@@ -849,26 +856,40 @@ def volume_line():
         finish()
 
 
+volume_proc = None    # our own `pactl subscribe`, while Vyom doesn't follow the sound for us
+volume_gen = 0        # bumped when we stop following ourselves: the old watcher's exit is no news
+via_vyom = False      # the capsule comes from Vyom's state right now
+
+
 def watch_volume():
-    """The sound capsule: `pactl subscribe`, a new line on a change to the
-    output. If the sound server goes away (pactl exits), follow it again
-    after 2 s, then longer each time it fails at once, up to a minute."""
+    """The sound capsule without Vyom: `pactl subscribe`, a new line on a
+    change to the output. If the sound server goes away (pactl exits),
+    follow it again after 2 s, then longer each time it fails at once, up to
+    a minute."""
+    global volume_proc
+    if via_vyom or volume_proc is not None:
+        return False
     try:
         proc = Gio.Subprocess.new(watcher(["pactl", "subscribe"]),
                                   Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
     except GLib.Error as e:
         log("no `pactl`, the sound capsule only shows what it had at waybar's start:", e.message)
         return False
+    volume_proc = proc
+    gen = volume_gen
     started = GLib.get_monotonic_time()
     stream = Gio.DataInputStream.new(proc.get_stdout_pipe())
 
     def got_line(s, result):
-        global pactl_retry
+        global pactl_retry, volume_proc
         try:
             line, _ = s.read_line_finish_utf8(result)
         except GLib.Error:
             line = None
+        if gen != volume_gen:   # stopped on purpose: Vyom follows the sound now
+            return
         if line is None:
+            volume_proc = None
             # ran a while: the server restarted, come back quickly; else back off
             pactl_retry = 2 if GLib.get_monotonic_time() - started > 60_000_000 else min(pactl_retry * 2, 60)
             log(f"pactl subscribe exited; following the sound server again in {pactl_retry} s")
@@ -882,6 +903,85 @@ def watch_volume():
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
     volume_line()   # whatever changed while nothing followed it
     return False
+
+
+def stop_watch_volume():
+    global volume_proc, volume_gen
+    volume_gen += 1
+    if volume_proc is not None:
+        volume_proc.send_signal(signal.SIGTERM)   # setpriv passes it on to pactl
+        volume_proc.wait_async(None, None)        # reaped when it's gone
+        volume_proc = None
+
+
+VYOM = "dev.vayu.Vyom"
+VYOM_STATE = "/dev/vayu/Vyom/State"
+VYOM_IFACE = "dev.vayu.Vyom.State"
+
+
+def vyom_volume(text):
+    """Vyom's published sound state (JSON text): writes the capsule from it
+    and returns True, or False when it can't be used (Vyom doesn't follow
+    the sound server yet, or is older and leaves out the output's kind)."""
+    import json
+    if bar_volume is None or not hasattr(bar_volume, "from_state"):
+        return False
+    try:
+        st = json.loads(text) if text else None
+    except ValueError:
+        st = None
+    if not isinstance(st, dict) or "sink" not in st:
+        return False
+    try:
+        line = json.dumps(bar_volume.from_state(st), ensure_ascii=False)
+    except (AttributeError, KeyError, TypeError, ValueError) as e:
+        log("sound capsule from vyom:", e)
+        return False
+    if write_capsule("volume", line):
+        signal_waybar(WAYBAR_SIGNAL["volume"])
+    return True
+
+
+def use_vyom_volume(text):
+    """Follows Vyom's sound state when it's usable, else our own pactl."""
+    global via_vyom
+    if vyom_volume(text):
+        if not via_vyom:
+            via_vyom = True
+            stop_watch_volume()
+            log("the sound capsule follows Vyom's state")
+    elif via_vyom or volume_proc is None:
+        if via_vyom:
+            log("Vyom doesn't publish the sound state; following pactl here")
+        via_vyom = False
+        watch_volume()
+
+
+def follow_vyom(session):
+    """The sound capsule from Vyom's live state while Vyom runs (its
+    PropertiesChanged on dev.vayu.Vyom.State, routed only from Vyom), our
+    own `pactl subscribe` while it doesn't."""
+    def changed(_c, _sender, _path, _iface, _member, params):
+        iface, props, _ = params.unpack()
+        if iface == VYOM_IFACE and "volume" in props:
+            use_vyom_volume(props["volume"])
+
+    session.signal_subscribe(VYOM, "org.freedesktop.DBus.Properties", "PropertiesChanged", VYOM_STATE,
+                             VYOM_IFACE, Gio.DBusSignalFlags.NONE, changed)
+
+    def appeared(conn, _name, _owner):
+        def got(c, res):
+            try:
+                text = c.call_finish(res).unpack()[0]
+            except GLib.Error:
+                text = None   # no state exported (an older Vyom, or `live = false`)
+            use_vyom_volume(text)
+        conn.call(VYOM, VYOM_STATE, "org.freedesktop.DBus.Properties", "Get",
+                  GLib.Variant("(ss)", (VYOM_IFACE, "volume")), GLib.VariantType("(v)"),
+                  Gio.DBusCallFlags.NO_AUTO_START, 2000, None, got)
+
+    Gio.bus_watch_name_on_connection(session, VYOM, Gio.BusNameWatcherFlags.NONE, appeared,
+                                     lambda *_: use_vyom_volume(None))
 
 
 def main():
@@ -930,7 +1030,7 @@ def main():
                             and refresh("hotspot"))
     watch_stations()
     load_bar_volume()
-    watch_volume()
+    follow_vyom(session)   # then Vyom's state, or watch_volume() without it
 
     gh_reviews()
     GLib.timeout_add_seconds(120, gh_reviews)

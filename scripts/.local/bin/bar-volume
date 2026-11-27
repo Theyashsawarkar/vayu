@@ -19,11 +19,11 @@ palette (Vayu's theme engine), Vayu's own without it.
   bar-volume          stream the lines (a waybar module on its own)
   bar-volume --once   print the current line and exit
 
-Vayu doesn't run it as a process: bar-events.py imports this file, follows
-`pactl subscribe` in its own main loop, builds the line with line() and
-writes it to $XDG_RUNTIME_DIR/vayu/bar/volume.json; waybar's custom/volume
-cats that file on signal 17 (`--once` is its fallback when the file is
-missing).
+Vayu doesn't run it as a process: bar-events.py imports this file, builds
+the line with from_state() from Vyom's sound state (or, without Vyom,
+follows `pactl subscribe` itself and uses line()) and writes it to
+$XDG_RUNTIME_DIR/vayu/bar/volume.json; waybar's custom/volume cats that
+file on signal 17 (`--once` is its fallback when the file is missing).
 """
 import json
 import os
@@ -115,6 +115,21 @@ def line(default, sinks):
     name = sink.get("description", "")
     tip = f"<b>{esc(name)}</b> · {WORDS[kind]} · " + ("muted" if muted else f"{vol}%")
     return {"text": text, "class": ["muted", kind] if muted else [kind], "tooltip": tip, "percentage": vol}
+
+
+def from_state(st):
+    """The capsule's JSON from Vyom's published sound state (vyom/live.py's
+    summary of the default output: sink, device, volume, muted, bus, api,
+    form_factor, port). bar-events.py follows it on D-Bus when Vyom runs,
+    so nothing here asks the sound server again."""
+    if not st.get("sink"):
+        return line("", [])
+    sink = {"name": st["sink"], "description": st.get("device", ""), "mute": bool(st.get("muted")),
+            "active_port": st.get("port", ""),
+            "volume": {"all": {"value_percent": f"{int(st.get('volume') or 0)}%"}},
+            "properties": {"device.bus": st.get("bus", ""), "device.api": st.get("api", ""),
+                           "device.form-factor": st.get("form_factor", "")}}
+    return line(st["sink"], [sink])
 
 
 def esc(s):

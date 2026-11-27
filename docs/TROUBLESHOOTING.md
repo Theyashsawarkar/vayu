@@ -605,19 +605,24 @@ bar-events`) when it falls back to the old stream (a vesha before v0.7.0).
 
 ## Bar: the sound icon (or bell, lamp, phone, Docker) doesn't change
 
-These capsules are written by bar-events: it follows the sound server
-(`pactl subscribe`), notifications, the units and Docker, writes each line
-to `$XDG_RUNTIME_DIR/vayu/bar/<name>.json` and signals waybar, which only
-`cat`s the file. If one is stuck, bar-events isn't running or lost what it
-follows:
+These capsules are written by bar-events: it follows the sound (Vyom's
+live state while Vyom runs, else `pactl subscribe` itself), notifications,
+the units and Docker, writes each line to `$XDG_RUNTIME_DIR/vayu/bar/<name>.json`
+and signals waybar, which only `cat`s the file. If one is stuck, bar-events
+isn't running or lost what it follows:
 
 ```
 systemctl --user status bar-events.service
-vayu-logs bar-events            # "pactl subscribe exited ..." when PipeWire restarted
+vayu-logs bar-events            # "the sound capsule follows Vyom's state", or
+                                # "pactl subscribe exited ..." when PipeWire restarted
+cat $XDG_RUNTIME_DIR/vayu/state/volume.json   # what Vyom sees (with Vyom running)
 ls $XDG_RUNTIME_DIR/vayu/bar/    # the lines it wrote
 ~/.local/bin/bar-volume --once  # what the sound capsule should show
 ```
 
+With Vyom, the sound icon is as current as Vyom's state: if
+`volume.json` is wrong too, it's Vyom's (`vayu-logs vyom`); when Vyom
+stops, bar-events follows pactl itself within a moment. Without Vyom,
 bar-events follows the sound server again by itself (2 s after it goes,
 then longer, up to a minute, while it stays gone);
 `systemctl --user restart bar-events.service` forces it. Stopping it removes

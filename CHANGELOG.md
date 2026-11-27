@@ -5,6 +5,27 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-28 (one sound watcher on the desktop, not two)
+
+- **The sound capsule follows Vyom's live state** (vyom/live.py, which
+  follows the sound server for kendra anyway): bar-events listens to
+  `dev.vayu.Vyom.State`'s `PropertiesChanged` for `volume` (only Vyom's
+  state signals are routed to it) and builds the line with `bar-volume`'s
+  new `from_state()`, so it no longer runs its own `pactl subscribe` (about
+  1 MB) and a volume step costs one `pactl` run on the desktop instead of
+  three (Vyom's `wpctl`, bar-events' two `pactl`s). Not slower: in a
+  headless test (fake `pactl` at its real ~9 ms, waybar on signal 17) a
+  step reached the capsule in 21-22 ms median through Vyom against 22 ms
+  before; a 10-step scroll ends on the right value. Needs a Vyom that
+  publishes the output's kind (bus, port, form factor) and publishes sound
+  at once (vyom `dedup` branch, next release); with an older Vyom, without
+  Vyom, or while it's restarting, bar-events follows `pactl subscribe`
+  itself as before, and switches back when Vyom's state returns.
+- The hotspot capsule keeps its own watchers: NetworkManager's
+  `ActiveConnections` signal is a match rule, not a process, and narrower
+  than Vyom's Wi-Fi state (which changes with every NetworkManager update),
+  and `iw event` (who joins the hotspot) is something Vyom doesn't follow.
+
 ## 2026-11-27 (panels open instantly)
 
 - **Vyom keeps the panels you open most ready** (`keep = ["dvara", "ganit",
