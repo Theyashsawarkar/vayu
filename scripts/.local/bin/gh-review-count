@@ -13,6 +13,16 @@
 # agree: the one picked there with u (~/.cache/sangam/last-account; empty
 # means all signed-in accounts), else gh's active one (gh auth switch).
 #
+# Cheap when nothing happened (2026-11-27): the accounts are read from gh's
+# hosts.yml (no `gh auth status`, which checks every token online), and the
+# two searches run only when an account's GitHub notifications changed (a
+# review asked of you, a comment, a merge: a conditional request with the
+# last ETag, answered 304 for free, no more often than GitHub's
+# X-Poll-Interval) or 10 minutes have passed (your own new pull request
+# makes no notification). Kept per account in
+# $XDG_RUNTIME_DIR/gh-review-count/. A run that changes nothing costs two gh
+# calls per account instead of up to nine.
+#
 # Services and tmux run without the login shell's PATH: find a Homebrew gh.
 # Errors to the journal when nothing would show them (tmux `run -b` drops
 # stderr): read them with `vayu-logs gh-review-count`.
@@ -31,7 +41,16 @@ flock -w 60 9 || { echo "gh-review-count: another run is stuck, skipping" >&2; e
 
 # Which accounts to count. Read locally: no network needed to know whose
 # numbers these should be.
-signed_in=$(gh auth status 2>&1 | sed -n 's/.*Logged in to github.com account \([^ ]*\).*/\1/p')
+hosts=${GH_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/gh}/hosts.yml
+hosts_get() { # users | user: github.com's signed-in accounts, or the active one
+  awk -v want="$1" '/^github\.com:/{h=1;next} /^[^ ]/{h=0}
+    h&&/^    users:/{u=1;next} h&&/^    [^ ]/{u=0}
+    want=="users"&&h&&u&&/^        [^ ]/{sub(/^ +/,"");sub(/:.*/,"");print}
+    want=="user"&&h&&/^    user:/{print $2}' "$hosts" 2>/dev/null
+}
+signed_in=$(hosts_get users)
+# An older gh without users: in hosts.yml: ask it.
+[ -n "$signed_in" ] || signed_in=$(gh auth status 2>&1 | sed -n 's/.*Logged in to github.com account \([^ ]*\).*/\1/p')
 [ -n "$signed_in" ] || exit 0
 picked=${XDG_CACHE_HOME:-$HOME/.cache}/sangam/last-account
 if [ -f "$picked" ]; then
@@ -40,25 +59,58 @@ if [ -f "$picked" ]; then
   if [ -n "$p" ] && grep -qixF "$p" <<<"$signed_in"; then accounts=$p label=$p
   else accounts=$signed_in label=all; fi
 else
-  accounts=$(gh config get user -h github.com 2>/dev/null) label=$accounts
+  accounts=$(hosts_get user) label=$accounts
+  [ -n "$accounts" ] || { accounts=$(gh config get user -h github.com 2>/dev/null) label=$accounts; }
   [ -n "$accounts" ] || { accounts=$signed_in label=all; }
 fi
 [ "${1:-}" = --account ] && { echo "$label"; exit 0; }
 
-count() { # count <account> <search query>
-  local token
-  token=$(gh auth token --user "$1" 2>/dev/null) && [ -n "$token" ] || return 1
+state=${XDG_RUNTIME_DIR:-/tmp}/gh-review-count
+mkdir -p "$state" 2>/dev/null && chmod 700 "$state" 2>/dev/null
+FULL_EVERY=600   # seconds: a recount even when no notification came
+
+count() { # count <search query>   (GH_TOKEN set)
   # timeout: a hung network (captive portal) mustn't leave this running.
-  GH_TOKEN=$token timeout 20 gh api -X GET search/issues \
-    -f q="$2" -f per_page=1 --jq .total_count 2>/dev/null
+  timeout 20 gh api -X GET search/issues -f q="$1" -f per_page=1 --jq .total_count 2>/dev/null
 }
+
+# changed <account>: 0 when its counts must be looked up again (GH_TOKEN set).
+changed() {
+  local f=$state/$1 now etag head code
+  now=$(date +%s)
+  [ -s "$f.counts" ] || return 0
+  [ $((now - $(cat "$f.full" 2>/dev/null || echo 0))) -ge $FULL_EVERY ] && return 0
+  [ "$now" -lt "$(cat "$f.next" 2>/dev/null || echo 0)" ] && return 1   # GitHub asked us to wait
+  etag=$(cat "$f.etag" 2>/dev/null)
+  head=$(timeout 20 gh api -i -X GET notifications ${etag:+-H "If-None-Match: $etag"} 2>/dev/null \
+    | sed -n '1,/^\r\{0,1\}$/p' | tr -d '\r') || return 0
+  code=$(sed -n '1s/^HTTP[^ ]* \([0-9]*\).*/\1/p' <<<"$head")
+  poll=$(sed -n 's/^[Xx]-[Pp]oll-[Ii]nterval: *\([0-9]*\).*/\1/p' <<<"$head")
+  echo $((now + ${poll:-60})) >"$f.next"
+  [ "$code" = 304 ] && return 1
+  sed -n 's/^[Ee][Tt]ag: *//p' <<<"$head" >"$f.etag"
+  return 0
+}
+
 total=0 mine=0 ok=1
 for a in $accounts; do
-  n=$(count "$a" 'is:pr is:open archived:false review-requested:@me') && [[ $n =~ ^[0-9]+$ ]] || { ok=0; break; }
-  # and your own open pull requests (the PR icon on the bar)
-  p=$(count "$a" 'is:pr is:open archived:false author:@me') && [[ $p =~ ^[0-9]+$ ]] || { ok=0; break; }
+  token=$(gh auth token --user "$a" 2>/dev/null) && [ -n "$token" ] || { ok=0; break; }
+  export GH_TOKEN=$token
+  if changed "$a"; then
+    # (a failed lookup forgets the ETag, so the next run looks again)
+    n=$(count 'is:pr is:open archived:false review-requested:@me') && [[ $n =~ ^[0-9]+$ ]] \
+      || { ok=0; rm -f "$state/$a.etag" "$state/$a.next"; break; }
+    # and your own open pull requests (the PR icon on the bar)
+    p=$(count 'is:pr is:open archived:false author:@me') && [[ $p =~ ^[0-9]+$ ]] \
+      || { ok=0; rm -f "$state/$a.etag" "$state/$a.next"; break; }
+    echo "$n $p" >"$state/$a.counts"
+    date +%s >"$state/$a.full"
+  else
+    read -r n p <"$state/$a.counts"
+  fi
   total=$((total + n)) mine=$((mine + p))
 done
+unset GH_TOKEN token
 
 if [ "$ok" != 1 ]; then
   echo "gh-review-count: lookup for $label failed (offline?)" >&2

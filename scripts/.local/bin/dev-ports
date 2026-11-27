@@ -7,68 +7,155 @@ so daemons (mpd, syncthing, the browser) don't show up.
   dev-ports --set-tmux   sets tmux's @dev_ports ("3000 5173") and
                          @dev_ports_fmt (the capsule: the server icon and
                          how many ports are open, "󰒋 5", clickable);
-                         bar-events.py runs this every 15 s
+                         bar-events.py runs this every 15 s. It does
+                         nothing more when the listening sockets (and the
+                         tmux server) are the ones it saw last time
+                         (remembered in $XDG_RUNTIME_DIR/vayu/dev-ports)
   dev-ports --open all   opens a server in the browser (a click on the
                          capsule): the only one, else pick one (KIND, e.g.
                          node, or a port number, narrows it)
+
+As a module (bar-events can load it and skip the process every 15 s):
+Watch().poll() returns the ports when what listens changed since its last
+call, else None; set_tmux(items) sets the options.
+
+Cheap by design (2026-11-27): the listening sockets come from
+/proc/net/tcp and tcp6 (a fraction of a millisecond, no `ss`), and only
+when they change are the sockets matched to processes (their /proc fds)
+and tmux told, in one tmux call. It used to cost ~70 ms of CPU and four or
+five processes every 15 s, all day.
 """
 import os
-import re
-import subprocess
 import sys
+# re and subprocess are imported where they're needed: on the every-15-s
+# path (nothing changed) they'd be most of the run's cost.
 
 HOME = os.path.expanduser("~")
 MAX = 3   # kinds of server shown in the capsule; the rest are "+N"
-# The kind of server a process is, and its icon (Nerd Font).
-KINDS = [
-    (re.compile(r"^(node|npm|npx|pnpm|yarn|bun|deno|next-server|vite|nuxt|astro)"), "node", "󰎙"),
-    (re.compile(r"^(python|uvicorn|gunicorn|flask|django|hypercorn|daphne)"), "python", ""),
-    (re.compile(r"^(ruby|puma|rails|unicorn)"), "ruby", ""),
-    (re.compile(r"^(java|gradle|mvn)"), "java", ""),
-    (re.compile(r"^(php|php-fpm|artisan)"), "php", ""),
-    (re.compile(r"^(go|air)$"), "go", ""),
-    (re.compile(r"^(cargo|rustc)"), "rust", ""),
-    (re.compile(r"^(dotnet)"), "dotnet", "󰪮"),
-    (re.compile(r"^docker-proxy"), "docker", ""),
-    (re.compile(r"^(postgres|postmaster)"), "postgres", ""),
-    (re.compile(r"^(redis)"), "redis", ""),
-    (re.compile(r"^(nginx|caddy|httpd)"), "web", "󰖟"),
+# The kind of server a process is, and its icon (Nerd Font): (pattern, kind, icon).
+KIND_PATTERNS = [
+    (r"^(node|npm|npx|pnpm|yarn|bun|deno|next-server|vite|nuxt|astro)", "node", "󰎙"),
+    (r"^(python|uvicorn|gunicorn|flask|django|hypercorn|daphne)", "python", ""),
+    (r"^(ruby|puma|rails|unicorn)", "ruby", ""),
+    (r"^(java|gradle|mvn)", "java", ""),
+    (r"^(php|php-fpm|artisan)", "php", ""),
+    (r"^(go|air)$", "go", ""),
+    (r"^(cargo|rustc)", "rust", ""),
+    (r"^(dotnet)", "dotnet", "󰪮"),
+    (r"^docker-proxy", "docker", ""),
+    (r"^(postgres|postmaster)", "postgres", ""),
+    (r"^(redis)", "redis", ""),
+    (r"^(nginx|caddy|httpd)", "web", "󰖟"),
 ]
 
 
+_kinds = []
+
+
 def kind(name):
-    for rx, k, icon in KINDS:
+    import re
+    if not _kinds:
+        _kinds.extend((re.compile(rx), k, icon) for rx, k, icon in KIND_PATTERNS)
+    for rx, k, icon in _kinds:
         if rx.match(name):
             return k, icon
     return "other", "󰒋"
 IGNORE = {"adb", "mpd", "syncthing"}   # listen on ports, but aren't servers you'd open
 
 
-def ports():
-    try:
-        out = subprocess.run(["ss", "-ltnpH"], capture_output=True, text=True, timeout=3).stdout
-    except (OSError, subprocess.TimeoutExpired):
-        return []
+def listening():
+    """{(port, socket inode)} of the TCP sockets listening on ports from 1024,
+    read from /proc/net/tcp and tcp6 (this network namespace, like ss)."""
+    out = set()
+    for path in ("/proc/net/tcp", "/proc/net/tcp6"):
+        try:
+            with open(path) as f:
+                next(f, None)
+                for line in f:
+                    c = line.split()
+                    if len(c) > 9 and c[3] == "0A":   # TCP_LISTEN
+                        port = int(c[1].rsplit(":", 1)[1], 16)
+                        if port >= 1024:
+                            out.add((port, c[9]))
+        except OSError:
+            continue
+    return out
+
+
+def owners(inodes):
+    """{socket inode: pid} for the sockets our own processes hold (others'
+    fds can't be read, as with ss without root)."""
+    want = {f"socket:[{i}]" for i in inodes}
     found = {}
-    for line in out.splitlines():
-        cols = line.split()
-        if len(cols) < 6:
-            continue
-        port = cols[3].rsplit(":", 1)[-1]
-        m = re.search(r'\("([^"]+)",pid=(\d+)', line)   # only our own processes are listed with a pid
-        if not port.isdigit() or int(port) < 1024 or not m:
-            continue
-        name, pid = m.group(1), m.group(2)
-        if name in IGNORE:
+    for pid in os.listdir("/proc"):
+        if not pid.isdigit():
             continue
         try:
+            fds = os.listdir(f"/proc/{pid}/fd")
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                link = os.readlink(f"/proc/{pid}/fd/{fd}")
+            except OSError:
+                continue
+            if link in want:
+                found.setdefault(link[8:-1], pid)
+    return found
+
+
+def ports(listen=None):
+    listen = listening() if listen is None else listen
+    pids = owners({i for _, i in listen})
+    found = {}
+    for port, inode in sorted(listen):
+        pid = pids.get(inode)
+        if not pid:
+            continue
+        try:
+            with open(f"/proc/{pid}/comm") as f:
+                name = f.read().strip()
             cwd = os.readlink(f"/proc/{pid}/cwd")
         except OSError:
             continue
+        if name in IGNORE:
+            continue
         if not cwd.startswith(HOME + "/") or "/." in cwd[len(HOME):]:   # a project folder, not ~ or ~/.config...
             continue
-        found.setdefault(int(port), (name, cwd.replace(HOME, "~", 1)))
+        found.setdefault(port, (name, cwd.replace(HOME, "~", 1)))
     return sorted(found.items())
+
+
+def tmux_server():
+    """Something that changes when the tmux server restarts (its socket's
+    inode and change time), so its options are set again."""
+    base = os.environ.get("TMUX_TMPDIR") or "/tmp"
+    try:
+        st = os.stat(os.path.join(base, f"tmux-{os.getuid()}", "default"))
+        return f"{st.st_ino}:{st.st_ctime_ns}"
+    except OSError:
+        return ""
+
+
+class Watch:
+    """Tells when what listens (or the tmux server) changed."""
+
+    def __init__(self, last=None):
+        self.last = last
+
+    def key(self):
+        return " ".join(f"{p}/{i}" for p, i in sorted(listening())) + " @" + tmux_server()
+
+    def poll(self):
+        """The ports when something changed since the last call, else None."""
+        key = self.key()
+        if key == self.last:
+            return None
+        self.last = key
+        return ports()
+
+
+STATE = os.path.join(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}", "vayu", "dev-ports")
 
 
 def groups(items):
@@ -81,18 +168,45 @@ def groups(items):
 
 
 def set_tmux(items):
+    """Sets @dev_ports and @dev_ports_fmt and redraws the status line, in one
+    tmux call (only made when the ports changed: see Watch)."""
     nums = [str(p) for p, _ in items]
     # the server icon and how many ports are open; a click picks one
     fmt = f"#[range=user|devall]󰒋 {len(nums)}#[norange]" if nums else ""
-    for k, v in (("@dev_ports", " ".join(nums)), ("@dev_ports_fmt", fmt)):
-        cur = subprocess.run(["tmux", "show", "-gv", k], capture_output=True, text=True).stdout.rstrip("\n")
-        if cur != v:
-            subprocess.run(["tmux", "set", "-g", k, v], capture_output=True)
-    subprocess.run(["tmux", "refresh-client", "-S"], capture_output=True)
+    import subprocess
+    try:
+        subprocess.run(["tmux", "set", "-g", "@dev_ports", " ".join(nums), ";",
+                        "set", "-g", "@dev_ports_fmt", fmt, ";", "refresh-client", "-S"],
+                       capture_output=True, timeout=3)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+
+
+def set_tmux_if_changed():
+    """--set-tmux: nothing more than reading two /proc files when nothing
+    changed since the last run."""
+    try:
+        with open(STATE) as f:
+            last = f.read()
+    except OSError:
+        last = None
+    w = Watch(last)
+    items = w.poll()
+    if items is None:
+        return
+    set_tmux(items)
+    try:
+        os.makedirs(os.path.dirname(STATE), exist_ok=True)
+        with open(STATE + ".tmp", "w") as f:
+            f.write(w.last)
+        os.replace(STATE + ".tmp", STATE)
+    except OSError:
+        pass
 
 
 def open_kind(items, want):
     """Open that kind's server: the only one, else pick from a list."""
+    import subprocess
     rows = [(p, name, cwd) for p, (name, cwd) in items if want == "all" or kind(name)[0] == want or str(p) == want]
     if not rows:
         return
@@ -111,10 +225,11 @@ def open_kind(items, want):
 
 
 if __name__ == "__main__":
-    items = ports()
     if sys.argv[1:] == ["--set-tmux"]:
-        set_tmux(items)
-    elif sys.argv[1:2] == ["--open"] and len(sys.argv) == 3:
+        set_tmux_if_changed()
+        sys.exit(0)
+    items = ports()
+    if sys.argv[1:2] == ["--open"] and len(sys.argv) == 3:
         open_kind(items, sys.argv[2])
     else:
         for p, (name, cwd) in items:

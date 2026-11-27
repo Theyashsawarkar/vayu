@@ -136,9 +136,12 @@
 	},
 
 	// Shown only while the hotspot (vayu-hotspot) is on: devices connected.
+	// Only on bar-events' signal 15 (NetworkManager, `iw event`): a device
+	// that vanishes without leaving is dropped by the access point after a
+	// few idle minutes, which `iw event` reports too (it ran every 30 s).
 	"custom/hotspot": {
 		"exec": "$HOME/.local/bin/hotspot-status.sh",
-		"interval": 30,
+		"interval": "once",
 		"signal": 15,
 		"return-type": "json",
 		"on-click": "$HOME/.local/bin/vyom tarang hotspot",
@@ -232,7 +235,7 @@
 	},
 
 	"cpu": {
-		"interval": 3,
+		"interval": 5,
 		"states": { "warning": 60, "critical": 85 },
 		// How hard the machine is working (2026-11-24: a RAM-full freeze gave
 		// no warning). Its own capsule, like memory's. Icon only, the colour is
@@ -247,7 +250,7 @@
 	},
 
 	"memory": {
-		"interval": 3,
+		"interval": 5,
 		"states": { "warning": 60, "critical": 85 },
 		// A RAM stick, same rules as the CPU chip.
 		"format": "<span size='150%' rise='-2pt' color='{{green}}'>\uefc5</span>",
@@ -308,8 +311,9 @@
 	"battery": {
 		// Waybar re-reads the battery when something reads its uevent file:
 		// battery-limit-watch.sh does that on the kernel's power_supply events,
-		// so plugging in shows at once. This is only the fallback.
-		"interval": 10,
+		// so plugging in shows at once. This is only the fallback (the
+		// percentage creeps a point every few minutes).
+		"interval": 60,
 		"tooltip-format": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>{timeTo}</span>",
 		"tooltip-format-discharging": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>{time} left  ·  using {power:.1f} W</span>",
 		"tooltip-format-charging": "<span weight='bold' color='{{green}}'>Battery</span>  {capacity}%\n<span color='{{subtext0}}'>Charging  ·  {time} to full</span>",

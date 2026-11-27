@@ -5,8 +5,10 @@
 #   off: nothing (waybar hides an empty module)
 # Click opens the hotspot panel (vyom tarang hotspot), right click turns
 # it off. Refreshed by bar-events.py (signal 15) when NetworkManager's
-# active connections change or a device joins or leaves (`iw event`), and
-# every 30 s for devices that vanish without leaving (off is one nmcli call).
+# active connections change or a device joins or leaves (`iw event`; one
+# that vanishes without leaving is dropped by the access point after a few
+# idle minutes, an event too), and only then (it ran every 30 s until
+# 2026-11-27).
 ICON=$'\U000F0003'   # nf-md-access_point_network
 # waybar runs this without the login shell's PATH (vayu-hotspot lives here).
 PATH=$HOME/.local/bin:$PATH

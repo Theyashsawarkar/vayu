@@ -5,6 +5,41 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-27 (an idle desktop wakes less)
+
+Measured at idle on this laptop (2 cores), per-thread context switches
+from /proc and each unit's cgroup CPU:
+
+- **Neovim stops its plugins' polling while it doesn't have focus**
+  (`nvim/.config/nvim/lua/quiet.lua`): lualine drains its refresh queue
+  every 16 ms and redraws every second, noice checks for updates every
+  33 ms, which-key the mode and snacks' statuscolumn its cache every 50 ms,
+  lazy.nvim its config every 2 s, focused or not. 2 s after FocusLost
+  (tmux's focus-events) those timers stop; FocusGained or the first key
+  starts the same ones again. An unfocused Neovim: ~117 wakeups and ~5 ms
+  CPU a second before, 0 after (each of the two that sat in detached tmux
+  sessions). A pane you can see but aren't in keeps its last statusline
+  until you go back (Troubleshooting).
+- **dev-ports reads /proc instead of running `ss`**, and does nothing more
+  when the listening sockets (and the tmux server) are the ones it saw
+  last time: no process mapping, no tmux calls (one `tmux` call, not four or
+  five, when they changed). Its run every 15 s went from ~70 ms of CPU plus
+  4-5 processes to ~35 ms and none; loaded as a module (`Watch().poll()`,
+  for bar-events) a look costs ~2 ms and no process at all.
+- **gh-review-count asks GitHub only when something happened**: the
+  accounts come from gh's `hosts.yml` (not `gh auth status`, which checks
+  every token online); the two searches run when the account's
+  notifications changed (a conditional request with the last ETag,
+  answered 304 for free, at most as often as GitHub's X-Poll-Interval) or
+  every 10 minutes (your own new pull request makes no notification). A run
+  with nothing new: 2 gh calls per account instead of up to 9.
+- **battery-limit-watch forks nothing on its minute tick**: its readers use
+  bash's `read` instead of `$(cat ...)` (~10 processes a minute before).
+- **The bar polls less**: the hotspot capsule only on bar-events' signal
+  (NetworkManager, `iw event`; it also ran its script every 30 s), the
+  battery's fallback every 60 s (was 10; plugging in still shows at once
+  through battery-limit-watch), CPU and memory every 5 s (was 3).
+
 ## 2026-11-27 (two fewer Python processes behind the bars; capsules are a `cat`)
 
 - **The sound capsule is no longer its own process, and is faster**:

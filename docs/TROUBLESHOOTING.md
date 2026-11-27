@@ -741,3 +741,24 @@ kosha install nada@0.1.0   # go back to (and pin) an older release; kosha unpin 
 change there, or `kosha update --force` (stashes it). dvarapala's and
 pramana's updates run their installers, which ask for your password: run
 them in a terminal.
+
+## Neovim: a pane I'm not in shows an old statusline or old signs
+
+Since 2026-11-27 Neovim stops its plugins' polling timers (lualine, noice,
+which-key, snacks' statuscolumn, lazy.nvim's config check) 2 s after it
+loses focus, and starts them again when it gets focus back or you press a
+key (`nvim/.config/nvim/lua/quiet.lua`). Idle, an unfocused Neovim went
+from ~117 wakeups and ~5 ms of CPU a second to none. The cost: a Neovim in
+a pane you can see but aren't in keeps its last statusline, clock and
+signs until you go back to it (they catch up within a few milliseconds).
+It relies on tmux's `focus-events` (on in tmux.conf); without them nothing
+is paused. To turn it off, remove the `require("quiet").setup()` line at
+the end of `lua/config/autocmds.lua`.
+
+## Bar: the hotspot capsule still counts a device that left
+
+The hotspot capsule changes only on events since 2026-11-27 (it also ran
+every 30 s): NetworkManager's, and `iw event` when a device joins or
+leaves. A device that goes away without saying so (out of range, battery
+died) is dropped by the access point after a few idle minutes, and the
+capsule follows then. Clicking it (the hotspot panel) shows the live list.

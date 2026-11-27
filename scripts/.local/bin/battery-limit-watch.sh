@@ -39,32 +39,44 @@ TICK="${BATTERY_TICK:-60}"
 
 prev_plugged=0
 
-capacity() {
-    local d
-    for d in "$PS_ROOT"/*; do
-        [ "$(cat "$d/type" 2>/dev/null)" = "Battery" ] || continue
-        cat "$d/capacity" 2>/dev/null && return
-    done
-    echo 0
+# The readers set a variable with bash's own `read` instead of printing for a
+# $(...): no process per file, so a tick (every minute, all day) forks
+# nothing until there's something to say. (2026-11-27; it was ~10 forks.)
+rd() {  # rd VAR FILE: VAR is FILE's first line ("" when unreadable)
+    local -n _v=$1
+    _v=""
+    { IFS= read -r _v < "$2"; } 2>/dev/null || true
 }
 
-plugged() {
+capacity() {  # sets cap
     local d t
     for d in "$PS_ROOT"/*; do
-        t=$(cat "$d/type" 2>/dev/null) || continue
-        [ "$t" = "Battery" ] && continue
-        [ "$(cat "$d/online" 2>/dev/null)" = "1" ] && { echo 1; return; }
+        rd t "$d/type"
+        [ "$t" = "Battery" ] || continue
+        rd cap "$d/capacity"
+        [ -n "$cap" ] && return
     done
-    echo 0
+    cap=0
 }
 
-threshold() {
-    local t
-    t=$(cat "$STATE_FILE" 2>/dev/null || true)
-    case "$t" in
-        ''|*[!0-9]*) return ;;                    # unset / "off" / garbage
+plugged() {  # sets now
+    local d t o
+    now=0
+    for d in "$PS_ROOT"/*; do
+        rd t "$d/type"
+        [ -n "$t" ] || continue
+        [ "$t" = "Battery" ] && continue
+        rd o "$d/online"
+        [ "$o" = "1" ] && { now=1; return; }
+    done
+}
+
+threshold() {  # sets thr ("" when the reminder is off)
+    rd thr "$STATE_FILE"
+    case "$thr" in
+        ''|*[!0-9]*) thr=""; return ;;            # unset / "off" / garbage
     esac
-    { [ "$t" -ge 1 ] && [ "$t" -le 100 ]; } && echo "$t"
+    { [ "$thr" -ge 1 ] && [ "$thr" -le 100 ]; } || thr=""
 }
 
 nudge() {  # title body capacity
@@ -74,11 +86,11 @@ nudge() {  # title body capacity
         -h string:x-canonical-private-synchronous:battery-limit "$1" "$2"
 }
 
-notified() { [ "$(cat "$NOTIFIED_FLAG" 2>/dev/null)" = "$1" ]; }
+notified() { local f; rd f "$NOTIFIED_FLAG"; [ "$f" = "$1" ]; }
 
 evaluate() {
     local now cap thr
-    now=$(plugged); cap=$(capacity); thr=$(threshold)
+    plugged; capacity; threshold
 
     if [ "$now" != "1" ]; then                     # on battery: reset everything
         rm -f "$NOTIFIED_FLAG" "$FULL_FLAG"
@@ -123,20 +135,22 @@ evaluate() {
 init() {
     mkdir -p "$STATE_DIR"
     rm -f "$NOTIFIED_FLAG" "$FULL_FLAG"
-    prev_plugged=$(plugged)
+    local now cap thr
+    plugged; prev_plugged=$now
     # Started with the charger already in and past the limit (boot, service
     # restart): stay quiet -- only a fresh plug-in or a real crossing nudges.
-    local thr; thr=$(threshold)
-    if [ "$prev_plugged" = "1" ] && [ -n "$thr" ] && [ "$(capacity)" -ge "$thr" ]; then
+    threshold; capacity
+    if [ "$prev_plugged" = "1" ] && [ -n "$thr" ] && [ "$cap" -ge "$thr" ]; then
         echo "$thr" > "$NOTIFIED_FLAG"
-        [ "$(capacity)" -ge 100 ] && touch "$FULL_FLAG"
+        [ "$cap" -ge 100 ] && touch "$FULL_FLAG"
     fi
 }
 
 refresh_bar() {
-    local d
+    local d t
     for d in "$PS_ROOT"/*; do
-        [ "$(cat "$d/type" 2>/dev/null)" = "Battery" ] && cat "$d/uevent" >/dev/null 2>&1
+        rd t "$d/type"
+        [ "$t" = "Battery" ] && rd t "$d/uevent"   # opening it is what waybar notices
     done
 }
 
