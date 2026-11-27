@@ -5,6 +5,27 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-27 (two fewer Python processes behind the bars)
+
+- **The sound capsule is no longer its own process**: `bar-events` (already
+  running for the other capsules) now follows `pactl subscribe` in its main
+  loop and signals waybar (`custom/volume`, signal 17) when the output
+  changes; waybar runs `bar-volume --once` for the line. Same icon, colours,
+  clicks and scroll; a scroll's burst of steps is one refresh 50 ms after the
+  last. One less interpreter (about 7 MB with its swap).
+- **The tmux Claude capsule no longer keeps `vesha waybar` running**:
+  `bar-events` asks `vesha waybar --sources` (vesha v0.7.0) which files the
+  line comes from, watches them, and runs `vesha waybar --once` when one
+  changes: a switch at once, a usage change at most once a minute (what the
+  stream did). About 18 MB less. With an older vesha it follows the stream as
+  before. Trade-off in docs/TROUBLESHOOTING.md ("tmux bar: the Claude usage
+  capsule is a few minutes late after a reset").
+- Measured: `bar-events` grows by about 0.5 MB; `bar-volume` (7 MB PSS+swap)
+  and `vesha waybar` (18 MB PSS, fresh) go. `nada waybar` stays: its playing
+  bars move twice a second, which a one-shot would have to be started for.
+  `vesha watch` stays: it is vesha's own watcher (warnings, switching at the
+  limit), not a bar feed.
+
 ## 2026-11-27 (agents' MCP through pranali; the bar stops asking narada)
 
 - **pranali** joins the kosha packages (before narada, darshan and

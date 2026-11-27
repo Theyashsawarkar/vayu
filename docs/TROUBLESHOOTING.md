@@ -591,6 +591,34 @@ sets it now, and tmux.conf runs that on every load. An empty `text` or class
 `unknown`/`error` means vesha couldn't read the usage: `vesha doctor`, and
 `~/.local/state/vesha/watch.log` for the watcher.
 
+## tmux bar: the Claude usage capsule is a few minutes late after a reset
+
+bar-events runs `vesha waybar --once` when vesha's accounts, usage cache or
+config change (the files `vesha waybar --sources` names), instead of keeping
+`vesha waybar` running to look once a minute. A switch shows at once and a
+usage change within a minute, but a usage window *resetting* changes the
+number without changing a file: it shows when the watcher next writes the
+usage cache (every few minutes; `vesha watch` must be running, `vesha
+doctor`), or at the next Claude reply. To refresh it now:
+`bar-events.py --tmux-claude`. bar-events says in its log (`vayu-logs
+bar-events`) when it falls back to the old stream (a vesha before v0.7.0).
+
+## Bar: the sound icon doesn't change with the volume or the output
+
+The sound capsule is redrawn by bar-events (it follows `pactl subscribe` and
+signals waybar, signal 17); `bar-volume --once` builds the line. If the icon
+is stuck, bar-events isn't running or lost the sound server:
+
+```
+systemctl --user status bar-events.service
+vayu-logs bar-events            # "pactl subscribe exited ..." when PipeWire restarted
+~/.local/bin/bar-volume --once  # what the capsule should show
+```
+
+bar-events follows the sound server again by itself (2 s after it goes,
+then longer, up to a minute, while it stays gone);
+`systemctl --user restart bar-events.service` forces it.
+
 ## tmux bar: the PR capsule shows the wrong account's PRs, or an old count
 
 The capsule (`  N` your open PRs, `󰊤 N` waiting for your review) counts

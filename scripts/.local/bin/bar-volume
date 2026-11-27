@@ -16,8 +16,12 @@ only when what's shown changes, so switching to the buds updates at once
 and scrolling costs one pactl call per step. Colours come from varna's
 palette (Vayu's theme engine), Vayu's own without it.
 
-  bar-volume          run as the module (waybar starts it)
-  bar-volume --once   print the current line and exit (for testing)
+  bar-volume          stream the lines (a waybar module on its own)
+  bar-volume --once   print the current line and exit
+
+Vayu runs `--once` (waybar's custom/volume, signal 17): bar-events already
+follows `pactl subscribe` in its main loop and signals waybar on a change
+to the output, so no second interpreter waits on the sound server.
 """
 import json
 import os

@@ -169,12 +169,15 @@
 		// The sound capsule (2026-11-26): the icon follows the output
 		// (earbuds, headphones, a speaker, the car, a TV, or the built-in
 		// speakers by level), Bluetooth ones in blue, red when muted;
-		// bar-volume listens to the sound server, so it changes the moment
-		// the buds connect. Replaces "pulseaudio", which can't tell buds
+		// bar-events listens to the sound server (pactl subscribe) and
+		// signals 17, so it changes the moment the buds connect; `bar-volume
+		// --once` builds the line (2026-11-27: no longer a second Python
+		// process streaming it). Replaces "pulseaudio", which can't tell buds
 		// from headphones; same size, centring, clicks and scroll.
-		"exec": "$HOME/.local/bin/bar-volume",
+		"exec": "$HOME/.local/bin/bar-volume --once",
 		"return-type": "json",
-		"restart-interval": 3,
+		"interval": "once",
+		"signal": 17,
 		"escape": false,
 		"on-click": "$HOME/.config/sway/scripts/volume_osd.sh mute-toggle",
 		"on-click-right": "pavucontrol",

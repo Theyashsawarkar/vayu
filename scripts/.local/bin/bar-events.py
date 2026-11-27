@@ -16,6 +16,11 @@ Systemd user unit bar-events.service, started by sway after waybar.
   hotspot     15              NetworkManager's ActiveConnections, and
                               `iw event` new/del station (a device joined
                               or left the hotspot)
+  volume      17              `pactl subscribe`: the output itself changed
+                              (a sink, a card, the server's default), not
+                              each app's stream; waybar then runs
+                              `bar-volume --once` (this used to be a
+                              second interpreter, `bar-volume` streaming)
 
 tmux's pull request capsule (@gh_reviews, @gh_prs) is set from gh-review-count every
 2 minutes (GitHub has no push for "review requested" to a desktop), and
@@ -28,8 +33,11 @@ sync brings mail or you read something), asking `narada status`; WhatsApp
 gets its own green capsule (@narada_whatsapp). Its dev
 servers capsule (@dev_ports) from dev-ports every 15 seconds (listening
 sockets have no event). Its Claude limit capsule (@claude_limit, and
-@claude_limit_class ok/warn/full) follows `vesha waybar`, which prints a
-line whenever the active account or its usage changes.
+@claude_limit_class ok/warn/full) runs `vesha waybar --once` when one of
+the files `vesha waybar --sources` names changes: the accounts (a switch,
+at once) and the usage cache (at most once a minute, as the stream did). A
+vesha without --sources (before v0.7.0) is followed through `vesha waybar`,
+which prints a line whenever the account or its usage changes.
 
 Caps Lock / Num Lock (9, 10) are signalled by sway's --release binds and
 keylock-toggle.sh. Everything else on the bar is waybar-internal.
@@ -45,13 +53,18 @@ the last event.
 so a tmux started after this daemon would otherwise never get it).
 """
 import os
+import re
 import signal
 import subprocess
 import sys
 
 from gi.repository import Gio, GLib
 
-WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "jyoti": 12, "ekatva": 13, "docker": 14, "hotspot": 15}
+WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "jyoti": 12, "ekatva": 13, "docker": 14, "hotspot": 15, "volume": 17}
+# How long a capsule waits for a burst to end before refreshing (ms): a
+# scroll on the sound capsule is a burst of volume steps, and the number
+# should follow the wheel.
+DELAY = {"volume": 50}
 NM = "org.freedesktop.NetworkManager"
 iw_events = None  # the running `iw event` Gio.Subprocess
 SD = "org.freedesktop.systemd1"
@@ -79,7 +92,7 @@ def tmux(*args):
 def refresh(name):
     if name in pending:
         GLib.source_remove(pending[name])
-    pending[name] = GLib.timeout_add(300, fire, name)
+    pending[name] = GLib.timeout_add(DELAY.get(name, 300), fire, name)
 
 
 def fire(name):
@@ -388,14 +401,21 @@ def dev_ports():
     return run_once("dev-ports", "--set-tmux")
 
 
+claude_last = None   # the (text, class) last set: skip tmux when unchanged
+
+
 def set_claude_limit(line):
     """@claude_limit from one `vesha waybar` line (JSON)."""
     import json
+    global claude_last
     try:
         d = json.loads(line)
         text, cls = d.get("text", ""), d.get("class", "")
     except ValueError:
         text, cls = "", ""
+    if (text, cls) == claude_last:
+        return
+    claude_last = (text, cls)
     if text and cls in ("ok", "warn", "full"):
         tmux("set", "-g", "@claude_limit", text)
         tmux("set", "-g", "@claude_limit_class", cls)
@@ -411,6 +431,8 @@ def claude_limit_line(stream, result, proc):
     except GLib.Error:
         line = None
     if line is None:   # vesha stopped (or isn't installed): hide the capsule, retry later
+        global claude_last
+        claude_last = None
         tmux("set", "-gu", "@claude_limit")
         GLib.timeout_add_seconds(300, watch_claude_limit)
         return
@@ -418,17 +440,161 @@ def claude_limit_line(stream, result, proc):
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, claude_limit_line, proc)
 
 
-def watch_claude_limit():
-    vesha = os.path.expanduser("~/.local/bin/vesha")
-    if not os.access(vesha, os.X_OK):
-        return False
+VESHA = os.path.expanduser("~/.local/bin/vesha")
+
+
+def claude_limit_stream():
+    """The fallback for a vesha before `waybar --sources`: its `vesha
+    waybar` stream, a whole interpreter kept running for the line."""
     try:
-        proc = Gio.Subprocess.new([vesha, "waybar"], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+        proc = Gio.Subprocess.new([VESHA, "waybar"], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
     except GLib.Error as e:
         log("vesha waybar:", e.message)
         return False
     stream = Gio.DataInputStream.new(proc.get_stdout_pipe())
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, claude_limit_line, proc)
+    return False
+
+
+def claude_limit_once():
+    """Runs `vesha waybar --once` in the background (it can fetch usage
+    when the cache is old) and sets the capsule from its line."""
+    if "vesha" in busy:
+        again.add("vesha")
+        return False
+    try:
+        proc = Gio.Subprocess.new([VESHA, "waybar", "--once"],
+                                  Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("vesha waybar --once:", e.message)
+        return False
+    busy.add("vesha")
+
+    def done(p, result):
+        busy.discard("vesha")
+        try:
+            _, out, _ = p.communicate_utf8_finish(result)
+        except GLib.Error as e:
+            log("vesha waybar --once:", e.message)
+            out = None
+        if p.get_if_exited() and p.get_exit_status() == 0 and out and out.strip():
+            set_claude_limit(out.strip().splitlines()[-1])
+        elif p.get_if_exited() and p.get_exit_status():
+            log(f"vesha waybar --once exited with status {p.get_exit_status()}")
+        if "vesha" in again:
+            again.discard("vesha")
+            claude_limit_once()
+    proc.communicate_utf8_async(None, None, done)
+    return False
+
+
+limited = {}   # key -> monotonic time of its last run (rate_limit)
+
+
+def rate_limit(key, fn, ms, settle=500):
+    """Runs fn soon (settle ms after the call, so one write's several events
+    are one run), but at most once every ms: a call inside that window runs
+    fn when it ends, once, however many calls came."""
+    if key in pending:
+        return
+    now = GLib.get_monotonic_time() // 1000
+    wait = max(settle, limited.get(key, -ms) + ms - now)
+
+    def run():
+        pending.pop(key, None)
+        limited[key] = GLib.get_monotonic_time() // 1000
+        fn()
+        return False
+    pending[key] = GLib.timeout_add(wait, run)
+
+
+path_monitors = []   # kept alive, like gh_monitors
+
+
+def watch_paths(paths, on_change):
+    """Calls on_change(path) when one of these files is written, replaced
+    (write-and-rename) or deleted, through a monitor on each one's folder.
+    A folder that doesn't exist yet is waited for from its nearest existing
+    parent (no polling), and watched once it appears."""
+    paths = set(paths)
+    wanted = {os.path.dirname(p) for p in paths}
+    for m in path_monitors:
+        m.cancel()
+    path_monitors.clear()
+    watched = set()
+    for d in wanted:
+        while not os.path.isdir(d) and os.path.dirname(d) != d:
+            d = os.path.dirname(d)
+        if d in watched:
+            continue
+        watched.add(d)
+        try:
+            m = Gio.File.new_for_path(d).monitor_directory(Gio.FileMonitorFlags.WATCH_MOVES, None)
+        except GLib.Error as e:
+            log(f"can't watch {d}:", e.message)
+            continue
+
+        def changed(_m, f, other, _event):
+            for p in (f.get_path(), other.get_path() if other else None):
+                if p in paths:
+                    on_change(p)
+                elif p and any(w == p or w.startswith(p + "/") for w in wanted - watched) and os.path.isdir(p):
+                    # a folder on the way to a wanted one appeared: watch again from there
+                    GLib.idle_add(lambda: (watch_paths(paths, on_change), on_change(None), False)[2])
+        m.connect("changed", changed)
+        path_monitors.append(m)
+
+
+def claude_limit_sources(paths):
+    """Follows the files the line comes from: the accounts and the config
+    at once (a switch shows the moment it happens), the usage cache at
+    most once a minute (the status line rewrites it while Claude works,
+    and the stream it replaces looked once a minute)."""
+    usage = next((p for p in paths if os.path.basename(p) == "usage.json"), None)
+
+    def on_change(path):
+        if path is not None and path == usage:
+            rate_limit("vesha-usage", claude_limit_once, 60000)
+        else:
+            debounce("vesha", claude_limit_once, 300)
+    watch_paths(paths, on_change)
+    claude_limit_once()
+
+
+def watch_claude_limit():
+    """Asks vesha which files its bar line comes from (`vesha waybar
+    --sources`); a vesha that doesn't know the flag treats it as `vesha
+    waybar` and starts streaming JSON instead: then stream (the old way)."""
+    if not os.access(VESHA, os.X_OK):
+        return False
+    try:
+        proc = Gio.Subprocess.new([VESHA, "waybar", "--sources"],
+                                  Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("vesha waybar --sources:", e.message)
+        return False
+    stream = Gio.DataInputStream.new(proc.get_stdout_pipe())
+    paths = []
+
+    def got_line(s, result):
+        try:
+            line, _ = s.read_line_finish_utf8(result)
+        except GLib.Error:
+            line = None
+        if line is not None and line.startswith("/"):
+            paths.append(line)
+            s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
+            return
+        if line is not None:   # JSON: an older vesha, streaming
+            proc.force_exit()
+            log("vesha has no `waybar --sources` (before v0.7.0): following `vesha waybar` instead")
+            claude_limit_stream()
+        elif paths:
+            claude_limit_sources(paths)
+        else:
+            log("vesha waybar --sources printed nothing; following `vesha waybar` instead")
+            claude_limit_stream()
+    stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
     return False
 
 
@@ -458,6 +624,48 @@ def watch_stations():
         s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
 
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
+
+
+# What `pactl subscribe` says when the output itself changes ("on sink #N",
+# "on card #N", "on server"); a bare "sink" also matches every sink-input
+# (each app's stream). The same match bar-volume makes when it streams.
+PACTL_WATCH = re.compile(r"on (?:sink|card) #|on server\b")
+pactl_retry = 1   # seconds before following the sound server again (2, 4... up to 60)
+
+
+def watch_volume():
+    """The sound capsule: `pactl subscribe`, refreshing on a change to the
+    output. If the sound server goes away (pactl exits), follow it again
+    after 2 s, then longer each time it fails at once, up to a minute."""
+    try:
+        proc = Gio.Subprocess.new(["pactl", "subscribe"],
+                                  Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log("no `pactl`, the sound capsule only shows what it had at waybar's start:", e.message)
+        return False
+    started = GLib.get_monotonic_time()
+    stream = Gio.DataInputStream.new(proc.get_stdout_pipe())
+
+    def got_line(s, result):
+        global pactl_retry
+        try:
+            line, _ = s.read_line_finish_utf8(result)
+        except GLib.Error:
+            line = None
+        if line is None:
+            # ran a while: the server restarted, come back quickly; else back off
+            pactl_retry = 2 if GLib.get_monotonic_time() - started > 60_000_000 else min(pactl_retry * 2, 60)
+            log(f"pactl subscribe exited; following the sound server again in {pactl_retry} s")
+            GLib.timeout_add_seconds(pactl_retry, watch_volume)
+            refresh("volume")
+            return
+        if PACTL_WATCH.search(line):
+            refresh("volume")
+        s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
+
+    stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
+    refresh("volume")   # whatever changed while nothing followed it
+    return False
 
 
 def main():
@@ -508,6 +716,7 @@ def main():
                             lambda c, s, p, i, m, params: "ActiveConnections" in params.unpack()[1]
                             and refresh("hotspot"))
     watch_stations()
+    watch_volume()
 
     gh_reviews()
     GLib.timeout_add_seconds(120, gh_reviews)
