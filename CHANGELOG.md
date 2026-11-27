@@ -5,14 +5,29 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
-## 2026-11-27 (two fewer Python processes behind the bars)
+## 2026-11-27 (two fewer Python processes behind the bars; capsules are a `cat`)
 
-- **The sound capsule is no longer its own process**: `bar-events` (already
-  running for the other capsules) now follows `pactl subscribe` in its main
-  loop and signals waybar (`custom/volume`, signal 17) when the output
-  changes; waybar runs `bar-volume --once` for the line. Same icon, colours,
-  clicks and scroll; a scroll's burst of steps is one refresh 50 ms after the
-  last. One less interpreter (about 7 MB with its swap).
+- **The sound capsule is no longer its own process, and is faster**:
+  `bar-events` (already running for the other capsules) follows `pactl
+  subscribe` in its main loop, builds the line with `bar-volume`'s own code
+  (two `pactl` runs side by side, no debounce), writes it to
+  `$XDG_RUNTIME_DIR/vayu/bar/volume.json` and signals waybar (signal 17),
+  whose exec is now a `cat` of that file. A scroll step reached the capsule
+  in ~80 ms with the old streaming `bar-volume` (it waited 50 ms for a burst
+  to settle, then ran pactl twice); now ~26 ms (headless test, pactl at its
+  real ~9 ms). One less interpreter (about 7 MB with its swap).
+- **bell, jyoti, ekatva and docker are a `cat` too**: bar-events runs their
+  scripts itself (off waybar), writes the line beside volume's and signals
+  only when it changed; waybar's exec is `cat <file> || <script>`, so it
+  still works without bar-events. Docker's script takes the count bar-events
+  already has (`docker-status.sh N`): one `docker ps` per change instead of
+  two. bar-events now also watches `~/.local/state/jyoti/enabled`, so the
+  lamp's level shows even when nothing else signals it. When bar-events
+  stops it removes the files (the scripts take over).
+- **Watchers die with bar-events**: `pactl subscribe`, `iw event`, `docker
+  events` and a fallback `vesha waybar` run under `setpriv --pdeathsig`
+  (and `bar-volume`'s own stream sets PR_SET_PDEATHSIG), so a killed
+  daemon leaves no orphan (a `pactl subscribe` had lived on for a day).
 - **The tmux Claude capsule no longer keeps `vesha waybar` running**:
   `bar-events` asks `vesha waybar --sources` (vesha v0.7.0) which files the
   line comes from, watches them, and runs `vesha waybar --once` when one
@@ -20,7 +35,7 @@ full branch/release process.
   stream did). About 18 MB less. With an older vesha it follows the stream as
   before. Trade-off in docs/TROUBLESHOOTING.md ("tmux bar: the Claude usage
   capsule is a few minutes late after a reset").
-- Measured: `bar-events` grows by about 0.5 MB; `bar-volume` (7 MB PSS+swap)
+- Measured: `bar-events` grows by about 1 MB; `bar-volume` (7 MB PSS+swap)
   and `vesha waybar` (18 MB PSS, fresh) go. `nada waybar` stays: its playing
   bars move twice a second, which a one-shot would have to be started for.
   `vesha watch` stays: it is vesha's own watcher (warnings, switching at the

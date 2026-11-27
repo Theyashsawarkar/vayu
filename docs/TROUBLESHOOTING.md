@@ -603,21 +603,26 @@ doctor`), or at the next Claude reply. To refresh it now:
 `bar-events.py --tmux-claude`. bar-events says in its log (`vayu-logs
 bar-events`) when it falls back to the old stream (a vesha before v0.7.0).
 
-## Bar: the sound icon doesn't change with the volume or the output
+## Bar: the sound icon (or bell, lamp, phone, Docker) doesn't change
 
-The sound capsule is redrawn by bar-events (it follows `pactl subscribe` and
-signals waybar, signal 17); `bar-volume --once` builds the line. If the icon
-is stuck, bar-events isn't running or lost the sound server:
+These capsules are written by bar-events: it follows the sound server
+(`pactl subscribe`), notifications, the units and Docker, writes each line
+to `$XDG_RUNTIME_DIR/vayu/bar/<name>.json` and signals waybar, which only
+`cat`s the file. If one is stuck, bar-events isn't running or lost what it
+follows:
 
 ```
 systemctl --user status bar-events.service
 vayu-logs bar-events            # "pactl subscribe exited ..." when PipeWire restarted
-~/.local/bin/bar-volume --once  # what the capsule should show
+ls $XDG_RUNTIME_DIR/vayu/bar/    # the lines it wrote
+~/.local/bin/bar-volume --once  # what the sound capsule should show
 ```
 
 bar-events follows the sound server again by itself (2 s after it goes,
 then longer, up to a minute, while it stays gone);
-`systemctl --user restart bar-events.service` forces it.
+`systemctl --user restart bar-events.service` forces it. Stopping it removes
+the files, and waybar runs each capsule's script itself again (the sound
+capsule then stays as it was until waybar restarts).
 
 ## tmux bar: the PR capsule shows the wrong account's PRs, or an old count
 

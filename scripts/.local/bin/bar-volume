@@ -19,9 +19,11 @@ palette (Vayu's theme engine), Vayu's own without it.
   bar-volume          stream the lines (a waybar module on its own)
   bar-volume --once   print the current line and exit
 
-Vayu runs `--once` (waybar's custom/volume, signal 17): bar-events already
-follows `pactl subscribe` in its main loop and signals waybar on a change
-to the output, so no second interpreter waits on the sound server.
+Vayu doesn't run it as a process: bar-events.py imports this file, follows
+`pactl subscribe` in its own main loop, builds the line with line() and
+writes it to $XDG_RUNTIME_DIR/vayu/bar/volume.json; waybar's custom/volume
+cats that file on signal 17 (`--once` is its fallback when the file is
+missing).
 """
 import json
 import os
@@ -83,11 +85,17 @@ def kind_of(sink):
 
 
 def state():
-    default = pactl("get-default-sink").strip()
     try:
         sinks = json.loads(pactl("-f", "json", "list", "sinks") or "[]")
     except ValueError:
         sinks = []
+    return line(pactl("get-default-sink").strip(), sinks)
+
+
+def line(default, sinks):
+    """The capsule's JSON (a dict) from the default sink's name and
+    `pactl -f json list sinks`. bar-events.py imports this file and calls
+    it with the answers of its own (non-blocking) pactl runs."""
     sink = next((s for s in sinks if s.get("name") == default), None)
     if sink is None:
         return {"text": "", "class": "none", "tooltip": "No sound output"}
@@ -120,6 +128,15 @@ def emit(last):
     return out
 
 
+def die_with_parent():
+    """In the child, before exec: SIGTERM when this process dies, so a
+    killed bar-volume never leaves `pactl subscribe` running (one did, a
+    whole day)."""
+    import ctypes
+    import signal
+    ctypes.CDLL(None, use_errno=True).prctl(1, signal.SIGTERM)   # PR_SET_PDEATHSIG
+
+
 def main():
     if "--once" in sys.argv:
         print(json.dumps(state(), ensure_ascii=False))
@@ -127,7 +144,8 @@ def main():
     last = emit(None)
     while True:
         try:
-            p = subprocess.Popen(["pactl", "subscribe"], stdout=subprocess.PIPE, text=True, bufsize=1)
+            p = subprocess.Popen(["pactl", "subscribe"], stdout=subprocess.PIPE, text=True, bufsize=1,
+                                 preexec_fn=die_with_parent)
         except OSError:
             time.sleep(5)
             continue

@@ -94,7 +94,7 @@
 	},
 
 	"custom/notifications": {
-		"exec": "$HOME/.local/bin/notification-history-status.sh",
+		"exec": "cat \"$XDG_RUNTIME_DIR/vayu/bar/bell.json\" 2>/dev/null || $HOME/.local/bin/notification-history-status.sh",
 		"interval": "once",
 		"return-type": "json",
 		"on-click": "$HOME/.local/bin/vyom akashvani",
@@ -111,7 +111,7 @@
 
 
 	"custom/docker": {
-		"exec": "$HOME/.local/bin/docker-status.sh",
+		"exec": "cat \"$XDG_RUNTIME_DIR/vayu/bar/docker.json\" 2>/dev/null || $HOME/.local/bin/docker-status.sh",
 		"interval": "once",
 		"signal": 14,
 		"return-type": "json",
@@ -169,12 +169,14 @@
 		// The sound capsule (2026-11-26): the icon follows the output
 		// (earbuds, headphones, a speaker, the car, a TV, or the built-in
 		// speakers by level), Bluetooth ones in blue, red when muted;
-		// bar-events listens to the sound server (pactl subscribe) and
-		// signals 17, so it changes the moment the buds connect; `bar-volume
-		// --once` builds the line (2026-11-27: no longer a second Python
-		// process streaming it). Replaces "pulseaudio", which can't tell buds
-		// from headphones; same size, centring, clicks and scroll.
-		"exec": "$HOME/.local/bin/bar-volume --once",
+		// bar-events listens to the sound server (pactl subscribe), builds
+		// the line with bar-volume's code and signals 17, so it changes the
+		// moment the buds connect and a scroll step shows in ~15 ms; the exec
+		// is a cat of its file (2026-11-27: no longer a second Python process
+		// streaming it; `bar-volume --once` when bar-events isn't running).
+		// Replaces "pulseaudio", which can't tell buds from headphones; same
+		// size, centring, clicks and scroll.
+		"exec": "cat \"$XDG_RUNTIME_DIR/vayu/bar/volume.json\" 2>/dev/null || $HOME/.local/bin/bar-volume --once",
 		"return-type": "json",
 		"interval": "once",
 		"signal": 17,
@@ -284,7 +286,7 @@
 	// on/off is remembered across reboots (ekatva-toggle.sh). Click opens it,
 	// right click turns it off; quick settings has the switch.
 	"custom/ekatva": {
-		"exec": "$HOME/.local/bin/ekatva-status.sh",
+		"exec": "cat \"$XDG_RUNTIME_DIR/vayu/bar/ekatva.json\" 2>/dev/null || $HOME/.local/bin/ekatva-status.sh",
 		"interval": "once",
 		"signal": 13,
 		"return-type": "json",
@@ -293,7 +295,7 @@
 	},
 
 	"custom/jyoti": {
-		"exec": "~/.local/bin/jyoti-status.sh",
+		"exec": "cat \"$XDG_RUNTIME_DIR/vayu/bar/jyoti.json\" 2>/dev/null || $HOME/.local/bin/jyoti-status.sh",
 		// Shown only while lit. Click: put it out. Right-click: switch
 		// Akhaṇḍa <-> Nandādīpa (needs ekatva).
 		"on-click": "~/.local/bin/jyoti-toggle.sh off",

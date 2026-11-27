@@ -14,8 +14,14 @@ ICON=$''
 # docker is socket-activated (install.sh), so `docker ps` against a stopped
 # daemon would start it -- on every refresh of this capsule. Only ask docker
 # once it is actually running.
+# bar-events.py passes the count it already has (it runs `docker ps` for
+# tmux's capsule): `docker-status.sh N` skips asking again.
 count=0
-systemctl is-active --quiet docker.service && count=$(docker ps -q | wc -l)
+if [[ ${1:-} =~ ^[0-9]+$ ]]; then
+    count=$1
+else
+    systemctl is-active --quiet docker.service && count=$(docker ps -q | wc -l)
+fi
 
 if [ "$count" -gt 0 ]; then
     class="running"

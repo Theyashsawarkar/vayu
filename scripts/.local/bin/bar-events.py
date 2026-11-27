@@ -9,7 +9,8 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               akashvani's dev.vayu.Akashvani Changed (modes:
                               do not disturb from the panel, a timer, a key)
   theme       11              GSettings color-scheme changed (dconf)
-  jyoti     12              swayidle.service ActiveState (user systemd)
+  jyoti       12              swayidle.service ActiveState (user systemd),
+                              and ~/.local/state/jyoti/enabled (its level)
   ekatva      13              ekatva.service ActiveState (user systemd)
   docker      14              docker.service ActiveState (system systemd),
                               then `docker events` start/die while it runs
@@ -18,9 +19,9 @@ Systemd user unit bar-events.service, started by sway after waybar.
                               or left the hotspot)
   volume      17              `pactl subscribe`: the output itself changed
                               (a sink, a card, the server's default), not
-                              each app's stream; waybar then runs
-                              `bar-volume --once` (this used to be a
-                              second interpreter, `bar-volume` streaming)
+                              each app's stream; the line is built here
+                              with bar-volume's line() (this used to be
+                              a second interpreter, `bar-volume` streaming)
 
 tmux's pull request capsule (@gh_reviews, @gh_prs) is set from gh-review-count every
 2 minutes (GitHub has no push for "review requested" to a desktop), and
@@ -42,9 +43,18 @@ which prints a line whenever the account or its usage changes.
 Caps Lock / Num Lock (9, 10) are signalled by sway's --release binds and
 keylock-toggle.sh. Everything else on the bar is waybar-internal.
 
-Each capsule's own script still builds its text; this only says "now".
-Bursts (compose starts several containers) collapse into one refresh 0.3 s after
-the last event.
+bell, jyoti, ekatva, docker and volume: this daemon writes the capsule's
+line to $XDG_RUNTIME_DIR/vayu/bar/<name>.json (write and rename) and
+signals waybar only when it changed; waybar's exec is a `cat` of that file,
+the script itself only when the file is missing (this daemon isn't
+running; it removes the files when it stops). The scripts still build the
+text (run here, off waybar); the sound line is built in-process, without
+a debounce, so a scroll step shows as soon as pactl answers. theme and
+hotspot are still only signalled (their scripts run in waybar). Bursts
+(compose starts several containers) collapse into one refresh 0.3 s after
+the last event. Children that follow something (`pactl subscribe`, `iw
+event`, `docker events`) run under `setpriv --pdeathsig`, so they die with
+this daemon even when it is killed.
 
 `bar-events.py --tmux-docker` sets tmux's @docker_count once and exits
 (tmux.conf runs it on load, since tmux can start after this daemon);
@@ -61,10 +71,16 @@ import sys
 from gi.repository import Gio, GLib
 
 WAYBAR_SIGNAL = {"bell": 8, "theme": 11, "jyoti": 12, "ekatva": 13, "docker": 14, "hotspot": 15, "volume": 17}
-# How long a capsule waits for a burst to end before refreshing (ms): a
-# scroll on the sound capsule is a burst of volume steps, and the number
-# should follow the wheel.
-DELAY = {"volume": 50}
+# Capsules whose line this daemon writes to BAR_DIR/<name>.json, so waybar's
+# exec on the signal is a `cat` of it (falling back to the script when the
+# file is missing). The script still builds the line (it stays the one
+# place its text lives, and kendra or waybar alone can run it); it runs
+# here, off waybar, once per event, and waybar is signalled only when the
+# line changed. The sound capsule is built in-process (watch_volume).
+BIN = os.path.dirname(os.path.realpath(__file__))
+CAPSULE_SCRIPT = {"bell": "notification-history-status.sh", "jyoti": "jyoti-status.sh",
+                  "ekatva": "ekatva-status.sh", "docker": "docker-status.sh"}
+BAR_DIR = os.path.join(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}", "vayu", "bar")
 NM = "org.freedesktop.NetworkManager"
 iw_events = None  # the running `iw event` Gio.Subprocess
 SD = "org.freedesktop.systemd1"
@@ -92,15 +108,98 @@ def tmux(*args):
 def refresh(name):
     if name in pending:
         GLib.source_remove(pending[name])
-    pending[name] = GLib.timeout_add(DELAY.get(name, 300), fire, name)
+    pending[name] = GLib.timeout_add(300, fire, name)
 
 
 def fire(name):
     pending.pop(name, None)
+    args = []
     if name == "docker":
-        tmux_docker()
-    signal_waybar(WAYBAR_SIGNAL[name])
+        args = [str(tmux_docker())]   # docker-status.sh takes the count: no second `docker ps`
+    if name in CAPSULE_SCRIPT:
+        run_capsule(name, args)
+    elif name == "volume":
+        volume_line()
+    else:
+        signal_waybar(WAYBAR_SIGNAL[name])
     return False
+
+
+def write_capsule(name, line):
+    """Writes a capsule's line to BAR_DIR/<name>.json (write and rename, so
+    waybar's cat never reads half of it). Returns whether it changed."""
+    path = os.path.join(BAR_DIR, f"{name}.json")
+    line = line.rstrip("\n") + "\n"
+    try:
+        with open(path) as f:
+            if f.read() == line:
+                return False
+    except OSError:
+        pass
+    try:
+        os.makedirs(BAR_DIR, exist_ok=True)
+        with open(path + ".tmp", "w") as f:
+            f.write(line)
+        os.replace(path + ".tmp", path)
+    except OSError as e:
+        log(f"can't write {path}:", e)
+    return True
+
+
+def clear_capsules(*_):
+    """On stop: remove the lines, so waybar runs the scripts itself again
+    instead of showing what this daemon last saw."""
+    for name in (*CAPSULE_SCRIPT, "volume"):
+        try:
+            os.unlink(os.path.join(BAR_DIR, f"{name}.json"))
+        except OSError:
+            pass
+    loop.quit()
+    return False
+
+
+def run_capsule(name, args=()):
+    """Runs the capsule's script in the background, writes its line, and
+    signals waybar if it changed. A refresh asked for while it runs runs
+    once more after it (the state moved on meanwhile)."""
+    key = f"capsule-{name}"
+    if key in busy:
+        again.add(key)
+        return
+    try:
+        proc = Gio.Subprocess.new([os.path.join(BIN, CAPSULE_SCRIPT[name]), *args],
+                                  Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+    except GLib.Error as e:
+        log(f"{CAPSULE_SCRIPT[name]}:", e.message)
+        signal_waybar(WAYBAR_SIGNAL[name])   # waybar's exec runs it itself, if it can
+        return
+    busy.add(key)
+
+    def done(p, result):
+        busy.discard(key)
+        try:
+            _, out, _ = p.communicate_utf8_finish(result)
+        except GLib.Error as e:
+            log(f"{CAPSULE_SCRIPT[name]}:", e.message)
+            out = None
+        lines = (out or "").strip().splitlines()
+        if lines and write_capsule(name, lines[-1]):
+            signal_waybar(WAYBAR_SIGNAL[name])
+        elif not lines:
+            log(f"{CAPSULE_SCRIPT[name]} printed nothing")
+        if key in again:
+            again.discard(key)
+            fire(name)
+    proc.communicate_utf8_async(None, None, done)
+
+
+def watcher(argv):
+    """argv for a child that follows something for as long as this daemon
+    runs (`pactl subscribe`, `iw event`, `docker events`...): through
+    setpriv --pdeathsig, so it gets SIGTERM if this daemon dies, even by
+    SIGKILL, instead of living on as an orphan (one did, a whole day)."""
+    setpriv = "/usr/bin/setpriv"
+    return [setpriv, "--pdeathsig", "TERM", "--", *argv] if os.access(setpriv, os.X_OK) else list(argv)
 
 
 def signal_waybar(n):
@@ -110,14 +209,28 @@ def signal_waybar(n):
     daemon's startup refresh did at login. A starting waybar runs every
     capsule script anyway. Same check as the waybar-signal script."""
     sig = signal.SIGRTMIN + n
-    for pid in filter(str.isdigit, os.listdir("/proc")):
+    known = [p for p in waybar_pids if waybar_status(p) is not None]
+    pids = known or [p for p in filter(str.isdigit, os.listdir("/proc")) if waybar_status(p) is not None]
+    waybar_pids[:] = pids   # the next refresh skips the /proc walk (a few ms)
+    for pid in pids:
         try:
-            with open(f"/proc/{pid}/status") as f:
-                fields = dict(line.split(":", 1) for line in f if line.startswith(("Name:", "SigCgt:")))
-            if fields.get("Name", "").strip() == "waybar" and int(fields["SigCgt"], 16) >> (sig - 1) & 1:
+            if int(waybar_status(pid), 16) >> (sig - 1) & 1:
                 os.kill(int(pid), sig)
-        except (OSError, KeyError, ValueError):
-            pass  # exited meanwhile, or not ours to read
+        except (OSError, TypeError, ValueError):
+            pass  # exited meanwhile
+
+
+waybar_pids = []
+
+
+def waybar_status(pid):
+    """SigCgt of a waybar process, None for anything else."""
+    try:
+        with open(f"/proc/{pid}/status") as f:
+            fields = dict(line.split(":", 1) for line in f if line.startswith(("Name:", "SigCgt:")))
+    except OSError:
+        return None   # exited, or not ours to read
+    return fields.get("SigCgt", "").strip() if fields.get("Name", "").strip() == "waybar" else None
 
 
 def tmux_docker():
@@ -132,6 +245,7 @@ def tmux_docker():
         except (OSError, subprocess.TimeoutExpired) as e:
             log("docker ps failed:", e)
     tmux("set", "-g", "@docker_count", str(count))
+    return count
 
 
 def watch_unit(bus, unit, on_state):
@@ -167,9 +281,9 @@ def on_docker_state(state):
         return  # activating / deactivating: wait for where it lands
     docker_active = state == "active"
     if docker_active and docker_events is None:
-        docker_events = Gio.Subprocess.new(
+        docker_events = Gio.Subprocess.new(watcher(
             ["docker", "events", "--filter", "type=container", "--filter", "event=start",
-             "--filter", "event=die", "--format", "{{.Action}}"],
+             "--filter", "event=die", "--format", "{{.Action}}"]),
             Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
         read_docker_events(Gio.DataInputStream.new(docker_events.get_stdout_pipe()), docker_events)
     elif not docker_active and docker_events is not None:
@@ -447,7 +561,7 @@ def claude_limit_stream():
     """The fallback for a vesha before `waybar --sources`: its `vesha
     waybar` stream, a whole interpreter kept running for the line."""
     try:
-        proc = Gio.Subprocess.new([VESHA, "waybar"], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+        proc = Gio.Subprocess.new(watcher([VESHA, "waybar"]), Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
     except GLib.Error as e:
         log("vesha waybar:", e.message)
         return False
@@ -508,19 +622,19 @@ def rate_limit(key, fn, ms, settle=500):
     pending[key] = GLib.timeout_add(wait, run)
 
 
-path_monitors = []   # kept alive, like gh_monitors
+path_monitors = {}   # key -> its monitors, kept alive like gh_monitors
 
 
-def watch_paths(paths, on_change):
+def watch_paths(key, paths, on_change):
     """Calls on_change(path) when one of these files is written, replaced
     (write-and-rename) or deleted, through a monitor on each one's folder.
     A folder that doesn't exist yet is waited for from its nearest existing
     parent (no polling), and watched once it appears."""
     paths = set(paths)
     wanted = {os.path.dirname(p) for p in paths}
-    for m in path_monitors:
+    for m in path_monitors.pop(key, []):
         m.cancel()
-    path_monitors.clear()
+    mine = path_monitors.setdefault(key, [])
     watched = set()
     for d in wanted:
         while not os.path.isdir(d) and os.path.dirname(d) != d:
@@ -540,9 +654,9 @@ def watch_paths(paths, on_change):
                     on_change(p)
                 elif p and any(w == p or w.startswith(p + "/") for w in wanted - watched) and os.path.isdir(p):
                     # a folder on the way to a wanted one appeared: watch again from there
-                    GLib.idle_add(lambda: (watch_paths(paths, on_change), on_change(None), False)[2])
+                    GLib.idle_add(lambda: (watch_paths(key, paths, on_change), on_change(None), False)[2])
         m.connect("changed", changed)
-        path_monitors.append(m)
+        mine.append(m)
 
 
 def claude_limit_sources(paths):
@@ -557,7 +671,7 @@ def claude_limit_sources(paths):
             rate_limit("vesha-usage", claude_limit_once, 60000)
         else:
             debounce("vesha", claude_limit_once, 300)
-    watch_paths(paths, on_change)
+    watch_paths("vesha", paths, on_change)
     claude_limit_once()
 
 
@@ -603,7 +717,7 @@ def watch_stations():
     devices join or leave any access point on this machine (the hotspot)."""
     global iw_events
     try:
-        iw_events = Gio.Subprocess.new(["iw", "event"],
+        iw_events = Gio.Subprocess.new(watcher(["iw", "event"]),
                                        Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
     except GLib.Error as e:
         log("no `iw event`, hotspot capsule only updates on its timer:", e.message)
@@ -631,14 +745,86 @@ def watch_stations():
 # (each app's stream). The same match bar-volume makes when it streams.
 PACTL_WATCH = re.compile(r"on (?:sink|card) #|on server\b")
 pactl_retry = 1   # seconds before following the sound server again (2, 4... up to 60)
+bar_volume = None  # bar-volume, imported: its line() builds the capsule
+
+
+def load_bar_volume():
+    """bar-volume (beside this file) as a module, for its line(): the one
+    place the sound capsule's look lives."""
+    global bar_volume
+    from importlib.machinery import SourceFileLoader
+    from importlib.util import module_from_spec, spec_from_loader
+    try:
+        loader = SourceFileLoader("bar_volume", os.path.join(BIN, "bar-volume"))
+        mod = module_from_spec(spec_from_loader("bar_volume", loader))
+        loader.exec_module(mod)
+        bar_volume = mod
+    except (OSError, SyntaxError, ImportError) as e:
+        log("can't load bar-volume; waybar runs it itself on each change:", e)
+
+
+def volume_line():
+    """Asks the sound server for the default sink and the sinks (two pactl
+    runs side by side, ~10 ms, off the main loop), builds the line with
+    bar-volume's line(), writes it and signals waybar if it changed. No
+    debounce: a scroll step shows as soon as pactl answers; steps that come
+    while it asks are one more run after it."""
+    if bar_volume is None:
+        signal_waybar(WAYBAR_SIGNAL["volume"])   # waybar's exec falls back to `bar-volume --once`
+        return
+    if "volume" in busy:
+        again.add("volume")
+        return
+    busy.add("volume")
+    answers = {}
+
+    def ask(key, *args):
+        try:
+            p = Gio.Subprocess.new(["pactl", "-f", "json", *args],
+                                   Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
+        except GLib.Error as e:
+            log("pactl:", e.message)
+            answers[key] = ""
+            return
+
+        def done(proc, result):
+            try:
+                _, out, _ = proc.communicate_utf8_finish(result)
+            except GLib.Error:
+                out = ""
+            answers[key] = out or ""
+            if len(answers) == 2:
+                finish()
+        p.communicate_utf8_async(None, None, done)
+
+    def finish():
+        import json
+        busy.discard("volume")
+        try:
+            default = json.loads(answers["info"] or "{}").get("default_sink_name", "")
+            sinks = json.loads(answers["sinks"] or "[]")
+            line = json.dumps(bar_volume.line(default, sinks), ensure_ascii=False)
+        except (ValueError, AttributeError, KeyError, TypeError) as e:
+            log("sound capsule:", e)
+            line = None
+        if line and write_capsule("volume", line):
+            signal_waybar(WAYBAR_SIGNAL["volume"])
+        if "volume" in again:
+            again.discard("volume")
+            volume_line()
+
+    ask("info", "info")
+    ask("sinks", "list", "sinks")
+    if len(answers) == 2:   # both failed to start
+        finish()
 
 
 def watch_volume():
-    """The sound capsule: `pactl subscribe`, refreshing on a change to the
+    """The sound capsule: `pactl subscribe`, a new line on a change to the
     output. If the sound server goes away (pactl exits), follow it again
     after 2 s, then longer each time it fails at once, up to a minute."""
     try:
-        proc = Gio.Subprocess.new(["pactl", "subscribe"],
+        proc = Gio.Subprocess.new(watcher(["pactl", "subscribe"]),
                                   Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE)
     except GLib.Error as e:
         log("no `pactl`, the sound capsule only shows what it had at waybar's start:", e.message)
@@ -657,14 +843,14 @@ def watch_volume():
             pactl_retry = 2 if GLib.get_monotonic_time() - started > 60_000_000 else min(pactl_retry * 2, 60)
             log(f"pactl subscribe exited; following the sound server again in {pactl_retry} s")
             GLib.timeout_add_seconds(pactl_retry, watch_volume)
-            refresh("volume")
+            volume_line()
             return
         if PACTL_WATCH.search(line):
-            refresh("volume")
+            volume_line()
         s.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
 
     stream.read_line_async(GLib.PRIORITY_DEFAULT, None, got_line)
-    refresh("volume")   # whatever changed while nothing followed it
+    volume_line()   # whatever changed while nothing followed it
     return False
 
 
@@ -716,6 +902,7 @@ def main():
                             lambda c, s, p, i, m, params: "ActiveConnections" in params.unpack()[1]
                             and refresh("hotspot"))
     watch_stations()
+    load_bar_volume()
     watch_volume()
 
     gh_reviews()
@@ -728,11 +915,26 @@ def main():
     GLib.timeout_add_seconds(15, dev_ports)
     watch_claude_limit()
 
-    # Whatever changed while this wasn't running.
-    for name in WAYBAR_SIGNAL:
-        refresh(name)
-    GLib.MainLoop().run()
+    # jyoti's level ("high": Nandādīpa) is a file ekatva and jyoti-toggle.sh write
+    jyoti_state = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"),
+                               "jyoti", "enabled")
+    watch_paths("jyoti", [jyoti_state], lambda _p: refresh("jyoti"))
 
+    # Whatever changed while this wasn't running (volume: watch_volume did).
+    for name in WAYBAR_SIGNAL:
+        if name != "volume":
+            refresh(name)
+    try:   # GLib 2.80 moved it
+        from gi.repository import GLibUnix
+        signal_add = GLibUnix.signal_add
+    except ImportError:
+        signal_add = GLib.unix_signal_add
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        signal_add(GLib.PRIORITY_HIGH, sig, clear_capsules)
+    loop.run()
+
+
+loop = GLib.MainLoop()
 
 if __name__ == "__main__":
     main()
