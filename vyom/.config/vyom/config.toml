@@ -5,6 +5,7 @@
 # README lists them. Reload after editing: vyom reload
 
 [vyom]
+keep = ["dvara", "ganit", "smriti", "bhava", "kendra"]
 # Every panel opens at one size, width x height times scale (capped at
 # 90% of the screen); only kendra, under the bar, keeps its own.
 width = 900
@@ -85,6 +86,7 @@ open = "~/.local/bin/vyom tarang hotspot"
 # Notifications: the three modes as one pill (kendra 0.7): normal shows
 # them with sound, silent shows them quietly, dnd shows nothing.
 [plugin.kendra.tile.notifications]
+live = "akashvani"
 title = "Notifications"
 status = "cat ~/.local/state/notification-mode/current"
 on_when = "."
@@ -95,6 +97,7 @@ levels = [
 ]
 
 [plugin.kendra.tile.dnd]
+live = "akashvani"
 status = "cat ~/.local/state/notification-mode/current"
 on_when = "^dnd$"
 on = "~/.local/bin/notification-mode.sh dnd"
@@ -103,24 +106,26 @@ subtitle_on = "notifications held"
 subtitle_off = "off"
 
 [plugin.kendra.tile.jyoti]
+live = ["unit:swayidle.service", "file:~/.local/state/jyoti/enabled"]
+on_when = '\A(inactive|failed)'
 status = "~/.local/bin/jyoti-status.sh"
-on_when = '"class":"(active|strong)"'
 toggle = "~/.local/bin/jyoti-toggle.sh"
 subtitle_off = "śānta: at rest"
 # While lit, pick the level under the tiles; the subtitle names it.
 levels = [
-  { name = "Akhaṇḍa", when = '"class":"active"', set = "~/.local/bin/jyoti-toggle.sh akhanda" },
-  { name = "Nandādīpa", when = '"class":"strong"', set = "~/.local/bin/jyoti-toggle.sh nandadipa" },
+  { name = "Akhaṇḍa", when = '\A(inactive|failed)\n(?!high)', set = "~/.local/bin/jyoti-toggle.sh akhanda" },
+  { name = "Nandādīpa", when = '\nhigh', set = "~/.local/bin/jyoti-toggle.sh nandadipa" },
 ]
 
 # ekatva, the phone link: off by default; the switch is remembered across
 # reboots (ekatva-toggle.sh, read by sway-session.sh at login).
 [plugin.kendra.tile.ekatva]
+live = "unit:ekatva.service"
+on_when = "^active$"
 title = "Phone link"
 icon = "\U000f011c"
 color = "green"
 status = "~/.local/bin/ekatva-status.sh"
-on_when = '"class":"(active|strong)"'
 on = "~/.local/bin/ekatva-toggle.sh on"
 off = "~/.local/bin/ekatva-toggle.sh off"
 open = "~/.local/bin/ekatva-open.sh"
@@ -129,8 +134,9 @@ subtitle_off = "off"
 
 # theme-toggle.sh restyles waybar, mako and the rest too, not just GTK.
 [plugin.kendra.tile.theme]
+live = "theme"
+on_when = "^(?!prefer-light)"
 status = "~/.local/bin/theme-status.sh"
-on_when = '"class":"dark"'
 toggle = "~/.local/bin/theme-toggle.sh"
 subtitle_on = "on"
 subtitle_off = "light"

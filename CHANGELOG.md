@@ -5,6 +5,20 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-27 (panels open instantly)
+
+- **Vyom keeps the panels you open most ready** (`keep = ["dvara", "ganit",
+  "smriti", "bhava", "kendra"]`, vyom 0.9.0): they never let go of their
+  surface, so reopening is as fast as it gets; a panel you rarely open lets
+  go after 10 minutes hidden.
+- **kendra's tiles read Vyom's live state** (`live = …`, kendra 1.1.0):
+  notifications and do-not-disturb from akashvani in the same process,
+  jyoti from swayidle.service and its level file, the phone link from
+  ekatva.service, the theme from GSettings, so opening kendra runs none of
+  their status scripts. With Vyom's live state (NetworkManager, BlueZ,
+  UPower, power profiles, audio, backlight), kendra opened in ~0.6-0.85 s
+  and now in ~0.1 s (reopen ~30 ms), urja in ~0.86 s and now ~70 ms.
+
 ## 2026-11-27 (an idle desktop wakes less)
 
 Measured at idle on this laptop (2 cores), per-thread context switches
