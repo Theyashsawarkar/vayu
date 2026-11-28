@@ -835,11 +835,14 @@ tooltip label {
    sky blue for Akhaṇḍa, kesari for Nandādīpa (the colours are set in the
    config's formats, docker-status.sh and the lamp SVGs). Wi-Fi, Bluetooth
    and the phone stay white; red still means disconnected or muted. */
-#custom-quick, #custom-hotspot, #custom-hotspot.on, #custom-ekatva, #custom-ekatva.active,
+#custom-quick, #custom-hotspot, #custom-hotspot.on, #custom-ekatva,
 #bluetooth, #bluetooth.on, #bluetooth.connected, #network, #network.wifi, #network.ethernet,
 #connectivity #network, #custom-docker, #custom-docker.running, #custom-capslock, #custom-numlock,
 #pulseaudio, #backlight, #battery, #cpu, #memory, #custom-volume { color: @text; }
 #custom-docker.idle, #custom-ekatva.inactive, #bluetooth.off, #bluetooth.disabled { color: @overlay1; }
+/* The phone link in mauve while it is linked (2026-11-28): its own colour
+   beside Bluetooth's blue and the lamp, with no warning meaning. */
+#custom-ekatva.active { color: @mauve; }
 #network.disconnected, #network.disabled, #connectivity #network.disconnected,
 #connectivity #network.disabled, #system #pulseaudio.muted, #custom-recording, #system #custom-volume.muted { color: @red; }
 #clockbox #custom-notifications, #custom-notifications.normal { color: @text; }

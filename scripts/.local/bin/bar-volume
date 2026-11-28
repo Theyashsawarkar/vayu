@@ -51,7 +51,7 @@ def colours():
             c = json.load(f).get("colors", {})
     except (OSError, ValueError):
         c = {}
-    return c.get("text", "#f2f2f0"), c.get("blue", "#93c4ff"), c.get("red", "#ff9389")
+    return c.get("lavender", "#b8c2ff"), c.get("blue", "#93c4ff"), c.get("red", "#ff9389")
 
 
 def pactl(*args):

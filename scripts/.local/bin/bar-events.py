@@ -1058,10 +1058,11 @@ def main():
     GLib.timeout_add_seconds(15, dev_ports)
     watch_claude_limit()
 
-    # jyoti's level ("high": Nandādīpa) is a file ekatva and jyoti-toggle.sh write
-    jyoti_state = os.path.join(os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"),
-                               "jyoti", "enabled")
-    watch_paths("jyoti", [jyoti_state], lambda _p: refresh("jyoti"))
+    # jyoti's level: ekatva's own saved state (what it holds, the source of
+    # truth while it runs) and the marker file jyoti-toggle.sh writes without it
+    state_home = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
+    watch_paths("jyoti", [os.path.join(state_home, "jyoti", "enabled"),
+                          os.path.join(state_home, "ekatva", "jyoti.json")], lambda _p: refresh("jyoti"))
 
     # Whatever changed while this wasn't running (volume: watch_volume did).
     for name in WAYBAR_SIGNAL:

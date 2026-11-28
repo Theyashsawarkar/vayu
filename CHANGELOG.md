@@ -5,6 +5,39 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-28 (the bar's icons in colour, sliders out of the way, btop toggles)
+
+- **The bar's device icons have colour** (cool half of the theme only, so
+  red, yellow, green and peach still stand out as meaning): Wi-Fi teal,
+  Bluetooth blue, volume lavender (`bar-volume`; blue still means a
+  Bluetooth output), brightness sky, battery green while healthy, the phone
+  link (ekatva) mauve while linked (a late white rule in style.css had hidden
+  its green). Theme names
+  in `config.varna`, so they follow a varna theme switch. The volume and
+  brightness sliders (akashvani's `style.css`) use the same colours.
+- **The sliders show at the bottom centre** (`osd_position`, was top right),
+  so the volume capsule's tooltip never covers them.
+- **The brightness capsule shows the hand cursor** like volume (`"cursor":
+  true`: waybar only shows it on modules with a click, and it only scrolls).
+- **Jyoti stays at the level you set, and the bar shows it.** The capsule
+  read Nandādīpa from `~/.local/state/jyoti/enabled`, which a headless test
+  run with the real home deleted (its `jyoti-toggle.sh` couldn't reach
+  systemd and took the fallback that removes it): ekatva still held
+  Nandādīpa, the bar said Akhaṇḍa. Now `jyoti-status.sh` reads ekatva's own
+  saved level while it runs (bar-events watches that file too), and the
+  toggle's fallback changes the marker only after systemctl succeeded.
+  ekatva no longer drops Nandādīpa to Akhaṇḍa at 10% battery: the level
+  is manual.
+- **Jyoti is the same everywhere**: kendra's Jyoti tile reads ekatva's own saved level (`~/.local/state/ekatva/jyoti.json`), the source the bar and the phone already follow, instead of swayidle plus the marker file (which could be missing or stale), and, with kendra's file watching, it changes while open when the level is set from the phone or the bar.
+- **The login screen can be used from the phone** (ekatva-link): with
+  ekatva's `ekatva-greeter` installed, `greeter/apply.sh` writes greetd's
+  command as `ekatva-greeter -- tuigreet-launch` (the same tuigreet, wrapped),
+  so a re-run doesn't undo ekatva's install. A paired phone can then log in
+  after a reboot; the screen says "Logging in from <phone>…".
+- **A click on CPU or RAM toggles btop** (`btop-toggle.sh`): a second click
+  closes it instead of opening another window on top. It quits rather than
+  hides, since a hidden btop would still read every process every 2 s.
+
 ## 2026-11-28 (volume, brightness and the bell feel instant)
 
 - **A volume or brightness key is one call into Vyom** (Vyom 0.11,

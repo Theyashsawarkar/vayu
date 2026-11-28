@@ -28,13 +28,17 @@ sudo install -Dm755 "$here/tuigreet-launch" /usr/local/bin/tuigreet-launch
 sudo install -Dm644 "$here/vtrgb" /etc/vtrgb
 sudo install -Dm644 "$here/vt-palette.service" /etc/systemd/system/vt-palette.service
 sudo mkdir -p /etc/greetd
-# The session command lives in /etc/tuigreet/config.toml.
-sudo tee /etc/greetd/config.toml >/dev/null <<'TOML'
+# The session command lives in /etc/tuigreet/config.toml. With ekatva-link
+# installed, its greeter wraps tuigreet so a paired phone can log in after a
+# reboot (ekatva's apps/link/install/install.sh); the screen is the same.
+greeter_cmd=/usr/local/bin/tuigreet-launch
+[ -x /usr/local/lib/ekatva/ekatva-greeter ] && greeter_cmd="/usr/local/lib/ekatva/ekatva-greeter -- $greeter_cmd"
+sudo tee /etc/greetd/config.toml >/dev/null <<TOML
 [terminal]
 vt = 1
 
 [default_session]
-command = "/usr/local/bin/tuigreet-launch"
+command = "$greeter_cmd"
 user = "greeter"
 TOML
 

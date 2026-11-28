@@ -121,8 +121,8 @@
 	"network": {
 		// Just the icon (Wi-Fi signal or the wired-network glyph); the network
 		// name and IP are in the tooltip, the speed in the click panel (tarang).
-		"format-wifi": "<span size='150%' rise='-2pt' color='{{text}}'>{icon}</span>",
-		"format-ethernet": "<span size='150%' rise='-2pt' color='{{text}}'>󰌗</span>",
+		"format-wifi": "<span size='150%' rise='-2pt' color='{{teal}}'>{icon}</span>",
+		"format-ethernet": "<span size='150%' rise='-2pt' color='{{teal}}'>󰌗</span>",
 		"format-disconnected": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span>",
 		"format-disabled": "<span size='150%' rise='-2pt' color='{{red}}'>󰖪</span>",
 		"format-linked": "<span size='150%' rise='-2pt' color='{{red}}'>󰌘</span>",
@@ -156,7 +156,7 @@
 		// icon's weight next to it (this sun fills more of its box than
 		// the speaker does, so 150% looked bigger); rise='-1pt' centres
 		// it on the digits, measured from screenshots (2026-09-29).
-		"format": "<span size='125%' rise='-1pt' color='{{text}}'>{icon}</span>  {percent}%",
+		"format": "<span size='125%' rise='-1pt' color='{{sky}}'>{icon}</span>  {percent}%",
 		"format-icons": ["󰃞", "󰃟", "󰃠"],
 		// No tooltip (2026-11-24): it popped up over the slider pop-up while
 		// you scrolled. The value is on the capsule and in the pop-up.
@@ -165,7 +165,10 @@
 		"on-scroll-up": "$HOME/.config/sway/scripts/brightness_osd.sh +5%",
 		"on-scroll-down": "$HOME/.config/sway/scripts/brightness_osd.sh 5%-",
 		"smooth-scrolling-threshold": 1,
-		"reverse-scrolling": true
+		"reverse-scrolling": true,
+		// The hand cursor, like the volume beside it (2026-11-28): waybar
+		// only shows it for modules with a click, and this one only scrolls.
+		"cursor": true
 	},
 
 	"custom/volume": {
@@ -200,7 +203,7 @@
 		// screenshots, 2026-09-29). An icon-only span was tried before
 		// and "broke", but that was the threshold-object format-icons
 		// bug below hiding the icon, not the span.
-		"format": "<span size='150%' rise='-2pt' color='{{text}}'>{icon}</span>  {volume}%",
+		"format": "<span size='150%' rise='-2pt' color='{{lavender}}'>{icon}</span>  {volume}%",
 		"format-muted": "<span size='150%' rise='-2pt' color='{{red}}'>󰝟</span> 0%",
 		// Plain array, NOT waybar's threshold-object form
 		// ({"icon":...,"max":...}) -- that form is real and documented
@@ -245,8 +248,8 @@
 		"format": "<span size='150%' rise='-2pt' color='{{green}}'>\uf4bc</span>",
 		"format-warning": "<span size='150%' rise='-2pt' color='{{yellow}}'>\uf4bc</span>",
 		"format-critical": "<span size='150%' rise='-2pt' color='{{red}}'>\uf4bc</span>",
-		"tooltip-format": "<span weight='bold'>CPU</span>  {usage}%\n<span color='{{subtext0}}'>Load {load}  ·  {avg_frequency} GHz</span>\n<span size='small' color='{{overlay1}}'>Click: btop</span>",
-		"on-click": "kitty --class dev.vayu.Btop -e btop -c ~/.local/state/varna/btop.conf"
+		"tooltip-format": "<span weight='bold'>CPU</span>  {usage}%\n<span color='{{subtext0}}'>Load {load}  ·  {avg_frequency} GHz</span>\n<span size='small' color='{{overlay1}}'>Click: open or close btop</span>",
+		"on-click": "$HOME/.local/bin/btop-toggle.sh"
 	},
 
 	"memory": {
@@ -256,8 +259,8 @@
 		"format": "<span size='150%' rise='-2pt' color='{{green}}'>\uefc5</span>",
 		"format-warning": "<span size='150%' rise='-2pt' color='{{yellow}}'>\uefc5</span>",
 		"format-critical": "<span size='150%' rise='-2pt' color='{{red}}'>\uefc5</span>",
-		"tooltip-format": "<span weight='bold'>RAM</span>  {percentage}%\n<span color='{{subtext0}}'>{used:0.1f} of {total:0.1f} GiB  ·  swap {swapUsed:0.1f} of {swapTotal:0.1f} GiB</span>\n<span size='small' color='{{overlay1}}'>Click: btop</span>",
-		"on-click": "kitty --class dev.vayu.Btop -e btop -c ~/.local/state/varna/btop.conf"
+		"tooltip-format": "<span weight='bold'>RAM</span>  {percentage}%\n<span color='{{subtext0}}'>{used:0.1f} of {total:0.1f} GiB  ·  swap {swapUsed:0.1f} of {swapTotal:0.1f} GiB</span>\n<span size='small' color='{{overlay1}}'>Click: open or close btop</span>",
+		"on-click": "$HOME/.local/bin/btop-toggle.sh"
 	},
 
 	"bluetooth": {
@@ -267,8 +270,8 @@
 		"format-off": "",
 		"format-on": "",
 		"format-disabled": "",
-		"format-connected": "<span size='125%' rise='-1pt' color='{{text}}'>󰂱</span>",
-		"format-connected-battery": "<span size='125%' rise='-1pt' color='{{text}}'>󰂱</span>",
+		"format-connected": "<span size='125%' rise='-1pt' color='{{blue}}'>󰂱</span>",
+		"format-connected-battery": "<span size='125%' rise='-1pt' color='{{blue}}'>󰂱</span>",
 		"tooltip-format-connected": "{device_enumerate}",
 		"tooltip-format-enumerate-connected": "{device_alias}",
 		"tooltip-format-enumerate-connected-battery": "{device_alias}  {device_battery_percentage}%",
@@ -324,10 +327,10 @@
 			"warning": 30,
 			"moderate": 60
 		},
-		"format": "<span color='{{text}}'>{icon}</span>  {capacity}%",
+		"format": "<span color='{{green}}'>{icon}</span>  {capacity}%",
 		"format-charging": "<span color='{{peach}}'>{icon}</span>  {capacity}%",
 		"format-plugged": "<span color='{{peach}}'>{icon}</span>  {capacity}%",
-		"format-full": "<span color='{{text}}'>{icon}</span>  {capacity}%",
+		"format-full": "<span color='{{green}}'>{icon}</span>  {capacity}%",
 		"format-warning": "<span color='{{yellow}}'>{icon}</span>  {capacity}%",
 		"format-critical": "<span color='{{red}}'>{icon}</span>  {capacity}%",
 		"format-icons": {

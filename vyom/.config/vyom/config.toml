@@ -30,7 +30,10 @@ terminal = "kitty"
 # (normal / silent / dnd: notification-mode.sh, Super+n) are akashvani's own.
 [plugin.akashvani]
 position = "top-center"         # notifications drop from the clock capsule
-osd_position = "top-right"     # volume / brightness sliders stay in the corner
+osd_position = "bottom-center" # volume / brightness sliders: away from the bar, so the
+                               # capsule's tooltip never covers them (2026-11-28)
+osd_margin_y = 64              # float above the bottom edge
+osd_width = 340
 margin_x = 20                  # clear of the bar's pills
 margin_y = 10
 width = 420
@@ -106,15 +109,18 @@ subtitle_on = "notifications held"
 subtitle_off = "off"
 
 [plugin.kendra.tile.jyoti]
-live = ["unit:swayidle.service", "file:~/.local/state/jyoti/enabled"]
-on_when = '\A(inactive|failed)'
-status = "~/.local/bin/jyoti-status.sh"
+# One source for every place Jyoti shows (kendra, the bar, the phone): ekatva's
+# own saved level, {"level":"off|on|high",...}; kendra watches the file while
+# open, so a change from the phone or the bar shows at once (2026-11-28).
+live = ["file:~/.local/state/ekatva/jyoti.json"]
+on_when = '"level":"(on|high)"'
+status = "cat ~/.local/state/ekatva/jyoti.json"
 toggle = "~/.local/bin/jyoti-toggle.sh"
 subtitle_off = "śānta: at rest"
 # While lit, pick the level under the tiles; the subtitle names it.
 levels = [
-  { name = "Akhaṇḍa", when = '\A(inactive|failed)\n(?!high)', set = "~/.local/bin/jyoti-toggle.sh akhanda" },
-  { name = "Nandādīpa", when = '\nhigh', set = "~/.local/bin/jyoti-toggle.sh nandadipa" },
+  { name = "Akhaṇḍa", when = '"level":"on"', set = "~/.local/bin/jyoti-toggle.sh akhanda" },
+  { name = "Nandādīpa", when = '"level":"high"', set = "~/.local/bin/jyoti-toggle.sh nandadipa" },
 ]
 
 # ekatva, the phone link: off by default; the switch is remembered across

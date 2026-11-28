@@ -14,12 +14,30 @@
 # the text is only a space for it to sit in.
 
 LAMP=$'  '
-STATE_FILE="$HOME/.local/state/jyoti/enabled"
+# With ekatva running, its own saved state says the level (it is what holds
+# the block). The marker file can be lost (2026-11-28: a test run with the
+# real home deleted it, and Nandādīpa showed as Akhaṇḍa); ekatva's changes
+# only when the level does. Without ekatva: swayidle and the marker file.
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}"
+STATE_FILE="$STATE/jyoti/enabled"
+EKATVA_STATE="$STATE/ekatva/jyoti.json"
+SOCK="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/ekatva.sock"
 
-if systemctl --user is-active --quiet swayidle.service; then
-    printf '{"text":"","class":"inactive","tooltip":"Jyoti: Śānta"}\n'
-elif [ "$(head -c 8 "$STATE_FILE" 2>/dev/null | tr -d '[:space:]')" = high ]; then
-    printf '{"text":"%s","class":"strong","tooltip":"Jyoti: Nandādīpa -- awake even with the lid closed. Click to let it sleep again"}\n' "$LAMP"
+level=
+if [ -S "$SOCK" ] && [ -r "$EKATVA_STATE" ]; then
+    level=$(grep -o '"level":"[a-z]*"' "$EKATVA_STATE" | cut -d'"' -f4)
+fi
+if [ -z "$level" ]; then
+    if systemctl --user is-active --quiet swayidle.service; then level=off
+    elif [ "$(head -c 8 "$STATE_FILE" 2>/dev/null | tr -d '[:space:]')" = high ]; then level=high
+    else level=on
+    fi
+fi
+
+if [ "$level" = off ]; then
+    printf '{"text":"","class":"inactive","tooltip":"<b>Jyoti</b>  Śānta"}\n'
+elif [ "$level" = high ]; then
+    printf '{"text":"%s","class":"strong","tooltip":"<b>Jyoti</b>  Nandādīpa\\nAwake, even with the lid closed\\n<span size=\\"small\\" alpha=\\"60%%\\">Click: put it out  ·  Right-click: Akhaṇḍa</span>"}\n' "$LAMP"
 else
-    printf '{"text":"%s","class":"active","tooltip":"Jyoti: Akhaṇḍa -- no dimming, lock or sleep. Click to let it sleep again"}\n' "$LAMP"
+    printf '{"text":"%s","class":"active","tooltip":"<b>Jyoti</b>  Akhaṇḍa\\nNo dimming, lock or sleep\\n<span size=\\"small\\" alpha=\\"60%%\\">Click: put it out  ·  Right-click: Nandādīpa</span>"}\n' "$LAMP"
 fi
