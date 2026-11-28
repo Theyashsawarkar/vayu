@@ -12,6 +12,20 @@
 # per-tick step before settling.
 LOCK="${XDG_RUNTIME_DIR:-/tmp}/brightness_osd.lock"
 
+# Fast path (2026-11-28): one call into Vyom, which knows the backlight's
+# level, shows the slider at once and sets it through logind (no process);
+# the rest runs only when Vyom isn't running. brightnessctl's "+5%" / "5%-"
+# become "+5" / "-5".
+case "$1" in
+    +[0-9]*%) step="+${1:1:${#1}-2}" ;;
+    [0-9]*%-) step="-${1%\%-}" ;;
+    *) step= ;;
+esac
+if [ -n "$step" ] && [ "$(busctl --user --auto-start=no call dev.vayu.Vyom /dev/vayu/Vyom/Osd \
+        dev.vayu.Vyom.Osd Step s "brightness $step" 2>/dev/null)" = "b true" ]; then
+    exit 0
+fi
+
 (
     flock -x 9
     brightnessctl set "$1" >/dev/null

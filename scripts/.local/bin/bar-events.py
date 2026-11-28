@@ -57,9 +57,9 @@ Vyom follows the sound server anyway, so with it there is one `pactl
 subscribe` on the desktop, not two, and a step runs one pactl, not three
 (Vyom's and this daemon's own); when Vyom goes (or an older Vyom doesn't
 publish the output's kind) this daemon follows pactl itself again. hotspot is
-still only signalled (its script runs in waybar). Bursts
-(compose starts several containers) collapse into one refresh 0.3 s after
-the last event. Children that follow something (`pactl subscribe`, `iw
+still only signalled (its script runs in waybar). The first event after
+a quiet spell refreshes at once; bursts (compose starts several
+containers) collapse into one more refresh 0.3 s after the last event. Children that follow something (`pactl subscribe`, `iw
 event`, `docker events`) run under `setpriv --pdeathsig`, so they die with
 this daemon even when it is killed.
 
@@ -93,6 +93,7 @@ iw_events = None  # the running `iw event` Gio.Subprocess
 SD = "org.freedesktop.systemd1"
 
 pending = {}          # capsule -> GLib source id of its scheduled refresh
+fired = {}            # capsule -> monotonic µs of its last refresh
 docker_active = False
 docker_events = None  # the running `docker events` Gio.Subprocess
 
@@ -113,9 +114,23 @@ def tmux(*args):
 
 
 def refresh(name):
+    """The first event after a quiet spell refreshes at once (a dismissed
+    notification, Jyoti switched: the capsule follows in ~20 ms, not 300+);
+    events within 0.3 s of the last refresh collapse into one more, 0.3 s
+    after the last of them (compose starting several containers)."""
+    now = GLib.get_monotonic_time()
+    if name not in pending and now - fired.get(name, 0) >= 300_000:
+        fired[name] = now
+        fire(name)
+        return
     if name in pending:
         GLib.source_remove(pending[name])
-    pending[name] = GLib.timeout_add(300, fire, name)
+    pending[name] = GLib.timeout_add(300, trailing, name)
+
+
+def trailing(name):
+    fired[name] = GLib.get_monotonic_time()
+    return fire(name)
 
 
 def fire(name):

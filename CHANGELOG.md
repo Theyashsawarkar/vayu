@@ -5,6 +5,22 @@ along the way. Newest first. Version markers (`## vX.Y.Z`) mark release
 boundaries on top of the dated entries -- see `docs/VERSIONING.md` for the
 full branch/release process.
 
+## 2026-11-28 (volume, brightness and the bell feel instant)
+
+- **A volume or brightness key is one call into Vyom** (Vyom 0.11,
+  `dev.vayu.Vyom.Osd.Step`): `volume_osd.sh` and `brightness_osd.sh` ask
+  Vyom first, which already follows both levels, shows the slider at once
+  and applies the step behind it (one `pactl`, or logind for the
+  backlight). The slider looks the same. A press was ~11 processes and
+  40-80 ms to the slider; now the script's shell and one `busctl`, 14-17 ms
+  (brightness 10-16). The old way stays as the fallback (Vyom not running
+  or older, no sound server).
+- **The bell, Jyoti, phone link and Docker capsules follow at once**:
+  bar-events refreshed a capsule 0.3 s after every event (to fold bursts);
+  now the first event after a quiet spell refreshes at once and only the
+  rest of a burst waits for one more refresh. Dismissing a notification to
+  the bell's new count: 325-336 ms -> 25-30 ms (headless, waybar's exec).
+
 ## 2026-11-28 (one sound watcher on the desktop, not two)
 
 - **The sound capsule follows Vyom's live state** (vyom/live.py, which

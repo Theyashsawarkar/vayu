@@ -14,6 +14,17 @@
 #      overdrive well past 100%.
 LOCK="${XDG_RUNTIME_DIR:-/tmp}/volume_osd.lock"
 
+# Fast path (2026-11-28): Vyom already follows the volume (vyom/live.py), so
+# one call does the step, the clamp, the unmute and the slider, without the
+# ~11 processes below (40-80 ms a press; now ~5 ms, the slider first). Vyom
+# serialises bursts itself. The rest of this script runs only when Vyom
+# isn't running or doesn't know the volume (no sound server).
+case "$1" in
+    mute-toggle | [+-][0-9]*%)
+        [ "$(busctl --user --auto-start=no call dev.vayu.Vyom /dev/vayu/Vyom/Osd dev.vayu.Vyom.Osd \
+            Step s "volume ${1%\%}" 2>/dev/null)" = "b true" ] && exit 0 ;;
+esac
+
 # Same tiering convention as waybar's own battery icons elsewhere in this
 # desktop (different icon per range, not one static speaker glyph).
 #
